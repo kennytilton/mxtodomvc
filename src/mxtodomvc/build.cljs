@@ -29,52 +29,56 @@
                   "Inspired by <a href=\"https://github.com/tastejs/todomvc/blob/master/app-spec.md\">TodoMVC</a>."]]
       (p credit))))
 
-;(defn wall-clock [interval detail]
-;  (let [steps (atom 100)]
-;    (div {:class   "std-clock"
-;          :content (cF (subs (.toTimeString
-;                               (js/Date.
-;                                 (<mget me :clock)))
-;                         0 9))}
-;      {:clock  (cI (util/now))
-;       :ticker (cFonce (js/setInterval
-;                         #(when (pos? (swap! steps dec))
-;                            (let [time-step 1000
-;                                  w (<mget me :clock)]
-;                              (mset!> me :clock (+ w time-step))))
-;                         interval))})))
-
-;(defn wall-clock [interval detail]
-;  (let [steps (atom 100)]
-;    (div {:class   "std-clock"}
-;      {:clock  (cI (util/now))
-;       :ticker (cFonce (js/setInterval
-;                         #(when (pos? (swap! steps dec))
-;                            (let [time-step 1000
-;                                  w (<mget me :clock)]
-;                              (mset!> me :clock (+ w time-step))))
-;                         interval))}
-;      ;; and now the simple string content for the div...
-;      (do
-;        (prn "clock")
-;        (subs (->> (<mget me :clock)
-;              (js/Date.)
-;              (.toTimeString)) 0 9)))))
-
-(defn wall-clock [interval detail]
+(defn wall-clock [mode interval start end]
   (div {:class "std-clock"}
+
+    ;; Here we introduce custom properties for the widget. The popular term
+    ;; for keeping state alongside the widget most involved with that state
+    ;; is "co-location". Was "together" was too easy? At any rate, the idea
+    ;; is that the HTML stand-ins can have a life outside the DOM, if you
+    ;; will. Our state ends up distributed across the application.
+    ;;
+    ;; We also introduce one of the pillars of Matrix: "lifting" an
+    ;; existing component that knows nothing about the Matrix, in this
+    ;; case the system clock, into the Matrix with whatever glue it takes.
+    ;;
+    ;; The system clock lift here is superficial and requires just a few lines
+    ;; of code, but the essence is achieved: the view now enjoys dataflow
+    ;; from the system clock.
+    ;;
+    ;; One final point: we illustrate a parameterized component, the wall-clock.
+    ;;
+    ;; Glossary:
+    ;;    cI     -- make a Matrix input cell initialized with the value shown;
+    ;;    cFonce -- a formulaic cell that runs just once, for Matrix
+    ;;              lifecycle reasons we will visit when needed; and
+    ;;    mset!> -- procedural, imperative assignment to an input cell.
+
     {:clock  (cI (util/now))
      :ticker (cFonce
                ;; cFonce provides the timer function access to
                ;; the anaphoric "me" (aka this aka self) so
-               ;; it can feed the app matrix
+               ;; it can feed the app matrix.
+               ;;
+               ;; This is a lifecycle thing: cell formulas run after
+               ;; a model instance has been created, so they have access
+               ;; to the instance.
+               ;;
                (js/setInterval
                  #(mset!> me :clock (util/now))
                  interval))}
-    ;; and now the simple string content for the div...
-    (subs (->> (<mget me :clock)
-            (js/Date.)
-            (.toTimeString)) 0 detail)))
+
+    ;; and now the simple string content as the one and only
+    ;; child element of the div...
+
+    (as-> (<mget me :clock) date
+      (js/Date. date)
+      (case mode
+        :time (.toTimeString date)
+        :date (.toDateString date))
+
+      (subs date start end))
+    ))
 
 (defn matrix-build []
   (md/make
@@ -82,7 +86,8 @@
     ;; HTML tag syntax is (<tag> [dom-attribute-map [custom-property map] children*]
     ;;
     :mx-dom (section {:class "todoapp"}
-              (wall-clock 1000 9)
+              (wall-clock :date 60000 0 15)
+              (wall-clock :time 1000 0 8)
               (header {:class "header"}
-                (h1 "todos")
+                (h1 "todos?")
                 (mxtodo-credits)))))
