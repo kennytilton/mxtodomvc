@@ -1,4 +1,5 @@
-# mxTodoMVC: An Introduction by Example to Matrix dataflow and mxWeb
+# mxTodoMVC
+#### An Introduction by Example to Matrix dataflow and mxWeb
 
 The `Matrix` dataflow library endows application state with causal power over other such state, freeing the developer from the burden of reliably propagating unpredictable change across highly interdependent models. It does this by intervening at the fundamental level of reading and writing properties, and by providing a precise mechanism by which application models can operate on the world, if only to update a computer screen.
 
