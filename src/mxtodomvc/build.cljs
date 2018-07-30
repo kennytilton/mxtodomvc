@@ -82,7 +82,9 @@
                  interval))}
 
     ;; and now the simple string content as the one and only
-    ;; child element of the div...
+    ;; child element of the div. FYI, the macro DIV wraps all
+    ;; forms after this point in a formulaic Cell, hiding the
+    ;; necessary boilerplate.
 
     (do
       ;; watch the console to see this is the only PRN that repeats
