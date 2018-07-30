@@ -30,13 +30,26 @@
       (p credit))))
 
 (defn wall-clock [mode interval start end]
+  ;; watch the console to see this run just once
+  (prn :making-new-wall-clock-DIV!!)
   (div {:class "std-clock"}
-
-    ;; Here we introduce custom properties for the widget. The popular term
-    ;; for keeping state alongside the widget most involved with that state
-    ;; is "co-location". Was "together" was too easy? At any rate, the idea
+    ;;
+    ;; We see our first dataflow, from one property of a DIV to the
+    ;; formula (auto-wrapped, so do not look for it) for its children,
+    ;; in this case just a string showing date or time.
+    ;;
+    ;; We see also the efficiency of mxWeb, with only the print statement
+    ;; in the date/time string calculation repeating (if you have your
+    ;; JS console open. By tracking dependency at the property level, we
+    ;; give mxWeb the information it needs to update the minimum DOM
+    ;; necessary.
+    ;;
+    ;; Note also the custom 'clock' and 'ticker' properties for the widget.
+    ;; The popular term for coding state alongside the interested widget
+    ;; is "co-location". (Was "together" was too easy?) At any rate, the idea
     ;; is that the HTML stand-ins can have a life outside the DOM, if you
-    ;; will. Our state ends up distributed across the application.
+    ;; will; model and view can be one. Our state ends up distributed across
+    ;; the page architecture, naturally organized by same.
     ;;
     ;; We also introduce one of the pillars of Matrix: "lifting" an
     ;; existing component that knows nothing about the Matrix, in this
@@ -57,12 +70,12 @@
     {:clock  (cI (util/now))
      :ticker (cFonce
                ;; cFonce provides the timer function access to
-               ;; the anaphoric "me" (aka this aka self) so
+               ;; the anaphoric "me" (think "this" or "self") so
                ;; it can feed the app matrix.
                ;;
                ;; This is a lifecycle thing: cell formulas run after
                ;; a model instance has been created, so they have access
-               ;; to the instance.
+               ;; to the instance. But let's stay out of the weeds.
                ;;
                (js/setInterval
                  #(mset!> me :clock (util/now))
@@ -71,13 +84,17 @@
     ;; and now the simple string content as the one and only
     ;; child element of the div...
 
-    (as-> (<mget me :clock) date
-      (js/Date. date)
-      (case mode
-        :time (.toTimeString date)
-        :date (.toDateString date))
+    (do
+      ;; watch the console to see this is the only PRN that repeats
+      (prn :new-div-content)
 
-      (subs date start end))
+      (as-> (<mget me :clock) date
+        (js/Date. date)
+        (case mode
+          :time (.toTimeString date)
+          :date (.toDateString date))
+
+        (subs date start end)))
     ))
 
 (defn matrix-build []
