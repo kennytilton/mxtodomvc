@@ -7,7 +7,9 @@
   :min-lein-version "2.7.1"
 
   :dependencies [[org.clojure/clojure "1.9.0"]
-                 [org.clojure/clojurescript "1.10.238"]]
+                 [org.clojure/clojurescript "1.10.339"]
+                 [tiltontec/matrix "0.1.5-SNAPSHOT"]
+                 [tiltontec/mxweb "0.1.5-SNAPSHOT"]]
 
   :source-paths ["src"]
 
