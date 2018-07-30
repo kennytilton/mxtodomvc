@@ -2,18 +2,15 @@
   (:require
     [goog.dom :as dom]
     [clojure.string :as str]
+    [taoensso.tufte :as tufte]
     [tiltontec.cell.core :refer-macros [cFonce]]
     [tiltontec.model.core :refer [<mget] :as md]
     [mxweb.gen :refer-macros [h1 div]]
-    [mxweb.html :refer [tag-dom-create]]))
+    [mxweb.html :refer [tag-dom-create]]
+    [mxtodomvc.build :refer [matrix-build]]))
 
 (enable-console-print!)
-
-(defn matrix-build []
-  (md/make
-    :mx-dom (cFonce (md/with-par me
-                      [(div {}
-                         (h1 {} "hello, Matrix"))]))))
+(tufte/add-basic-println-handler! {})
 
 (let [root (dom/getElement "tagroot")
       app-matrix (matrix-build)]
