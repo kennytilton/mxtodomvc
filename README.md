@@ -44,6 +44,8 @@ We always start with just the title and footer, our own "hello, world" when star
 ````bash
 git checkout title-and-credits
 ````
+From now on, our cue to check out a new tag will be these headers:
+#### tag: title-and-credits
 And here is the mxWeb HTML work-aike, look-alike code:
 ````clojure
 (defn matrix-build []
