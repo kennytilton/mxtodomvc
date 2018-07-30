@@ -17,7 +17,7 @@ Matrix enjoys much good company in this field. We believe Matrix offers more sim
 ### mxWeb, "poster" application
 `mxWeb` is a thin web un-framework built atop Matrix. We introduce Matrix in the context of mxWeb, because nothing challenges a developer more than keeping application state consistent while an intelligent user does their best to use a rich interface correctly. Then marketing wants the U/X redone.
 
-We say "un-framework" because mxWeb  exists only to equip the DOM for dataflow. The API design imperative is that the MDN reference be the mxWeb reference; mxWeb itself introduces no new architecture.
+We say "un-framework" because mxWeb exists only to wire the DOM for dataflow. The API design imperative is that the MDN reference be the mxWeb reference; mxWeb itself introduces no new architecture.
 
 ### TodoMVC
 So far, so abstract. Ourselves, we think better in concrete. Let's get "hello, Matrix" running and then start building TodoMVC from scratch. 
@@ -66,7 +66,7 @@ The sharp-eyed reader has spotted an unlikely HTML tag, `mxtodo-credits`. Here i
 ````
 One nice win is that we now effectively have [Web Components](https://developer.mozilla.org/en-US/docs/Web/Web_Components). `mxtodo-credits` is rather simple, but another function could take as many parameters as necessary to be reusable.
 
-Note also that, yes, we can mix standard CLJS with our HTML because it is not HTML.
+Note also that, yes, we can mix standard CLJS with our "HTML" because it is all HTML.
 ## License
 
 Copyright © 2018 Kenneth Tilton
