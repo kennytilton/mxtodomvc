@@ -126,17 +126,19 @@ VDOM introduces more than the run-time cost of VDOM generation and diffing. It a
    Above we see the function `wall-clock` has four parameters, `[mode interval start end]`. Achieving component re-use with mxWeb differs not at all from parameterizing any Clojure function for maximum utility.
 1. all dataflow all the time: "lifting" components into the Matrix  
 
-   Browsers do not know about the Matrix dataflow library, so we have to write more or less glue code to bring them into the datafow. 
+   Browsers do not know about the Matrix dataflow library, so we have to write more or less glue code to bring them into the datafow.  
 ````clojure
 (js/setInterval
     #(mset!> me :clock (util/now))
     interval)
-````
-We call this gluing process "lifting". Lifting the system clock required just a few lines of code. We hinted earlier that mxWeb exemplifies "lifting". That took almost two thousand lines.
+```` . 
+We call this gluing process "lifting". Lifting the system clock required just a few lines of code. We hinted earlier that mxWeb exemplifies "lifting". That took almost two thousand lines.  
+
 1. the Grand Unification of Behavior: co-location of model and view . 
 
    This may be an anti-feature to many. Our wall clock widget needs application state, and it generates and relays that state itself. The `clock` property holds the JS epoch, and the 'ticker' property holds a timer driving `clock`. Nearby in the code, a child element consumes the stream of `clock` values. Everything resides together in the source for quick authoring, debugging, revision, and understanding.
-> The current trend in web library architecture involves decomposing monolithic apps into small elements combined usefully at run-time by the library to form the desired application. With mxWeb, the elements shaping an application behavior are found together in the source. Bucking trends makes us nervous, so we were happy to see Facebook engineers bragging on their "co-location" of GraphQL snippets alongside the components that consumed them.
+> The current trend in web library architecture involves decomposing monolithic apps into small elements combined usefully at run-time by the library to form the desired application. With mxWeb, the elements shaping an application behavior are found together in the source. Bucking trends makes us nervous, so we were happy to see Facebook engineers bragging on their "co-location" of GraphQL snippets alongside the components that consumed them.  
+
 1. the Grail of object re-use . 
 
    DIV elements do not generally need a stream of clock values, but with Matrix we need not create a new "class" or type to have the equivalent of a DIV with a clock. As with the prototype model of OOP, we can author a new dataflow-capable property on the fly.
