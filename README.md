@@ -69,6 +69,30 @@ The sharp-eyed reader has spotted an unlikely HTML tag, `mxtodo-credits`. Here i
 One nice win is that we now effectively have [Web Components](https://developer.mozilla.org/en-US/docs/Web/Web_Components). `mxtodo-credits` is rather simple, but another function could take as many parameters as necessary to be reusable.
 
 Note also that, yes, we can mix standard CLJS with our "HTML" because it is all HTML.
+### tag: wall-clock
+Reminder:
+````bash
+git checkout wall-clock
+````
+The TodoMVC spec does not include a time or date display, but adding now a "wall clock" we will need later for extensions to the spec lets us learn more about Matrix faster. Here are the things this tag introduces:
+* automatic state management: our first dataflow;
+* DOM efficiency without VDOM complexity;
+* the mxWeb approach to Web Components;
+* all dataflow all the time: "lifting" components into the Matrix;
+* the Grand Unification of Behavior: co-location of model and view;
+* the Grail of object re-use;
+
+And now the code. First, the big picture illustrating the code re-use of the mxWeb solution to "Web Components":
+````clojure
+(defn matrix-build []
+  (md/make
+    :mx-dom (section {:class "todoapp"}
+              (wall-clock :date 60000 0 15)
+              (wall-clock :time 1000 0 8)
+              (header {:class "header"}
+                (h1 "todos?")
+                (mxtodo-credits)))))
+````
 ## License
 
 Copyright © 2018 Kenneth Tilton
