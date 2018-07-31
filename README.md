@@ -1,13 +1,11 @@
-# mxTodoMVC
-#### An introduction by example to Matrix dataflow and mxWeb
+# TodoMVC, with Matrix Inside&trade;
+*An introduction by example to Matrix dataflow and mxWeb*
 
-The `Matrix` dataflow library endows application state with causal power over other such state, freeing the developer from the burden of propagating unpredictable change across highly interdependent models. It does so working at the fundamental level of reading and writing properties, and by providing a precise mechanism by which applications can operate on the world, if only to update a computer screen.
-
-More grandly, Matrix brings our application models to life, animating them in response to streams of external inputs. Hence the name.
+The `Matrix` dataflow library endows application state with causal power over other such state, freeing the developer from the burden of propagating unpredictable change across highly interdependent models. It does so working at the fundamental level of reading and writing properties, and by providing a precise mechanism for applications to act on the world, if only to update a computer screen.
 
 > ma·trix ˈmātriks *noun* an environment in which something else takes form. *Origin:* Latin, female animal used for breeding, parent plant, from *matr-*, *mater*
 
-The movies were fun, but their matrix existed to suck energy from humans to feed machines. Mr. Hickey, a careful man with the dictionary, might disapprove the misconstruction.
+More grandly, Matrix brings our application models to life, animating them in response to streams of external inputs. Hence the name. The movies were fun, but that Matrix sucked energy from humans to feed machines. Mr. Hickey, a careful man with the dictionary, might disapprove the misconstruction.
 
 #### You say "reactive", we say "dataflow"
 Most today call this _reactive programming_. That describes well the programmer mindset in the small, but we find _dataflow_ more descriptive of the emergent systems.
@@ -41,12 +39,12 @@ This will auto compile and send all changes to the browser without the need to r
 For issues, questions, or comments, ping us at kentilton on gmail, or DM @hiskennyness on Slack in the #Clojurians channel.
 
 ## Building TodoMVC from Scratch
-We always start with just the title and footer, our own "hello, world" when starting on TodoMVC. Let us jump now to just after we put up that milestone:
+When starting on a TodoMVC implementation, we execute first just the title and footer as our own little "hello, world". Let us jump now to the commit of that milestone:
 ````bash
 git checkout title-and-credits
 ````
 From now on, our cue to check out a new tag will be these headers:
-#### tag: title-and-credits
+#### checkout tag: title-and-credits
 And here is the mxWeb HTML work-aike, look-alike code:
 ````clojure
 (defn matrix-build []
@@ -56,9 +54,12 @@ And here is the mxWeb HTML work-aike, look-alike code:
                 (h1 "todos")
                 (mxtodo-credits)))))
 ````
-The "tags" such as `header` and `h` are CLJS macros. (It's *all* CLJS.)
+The "tags" such as `header` and `h` are CLJS macros. It is *all* CLJS.
 
-Each tag macro takes an optional map of DOM attributes as the first arg, an optional map of custom application properties as the second, and then any number of child elements.
+As with HTML, each mxWeb tag macro takes the same parameters:
+* an optional map of DOM attributes;
+* an optional map of custom application properties; and
+* any number of child elements.
 
 The sharp-eyed reader has spotted an unlikely HTML tag, `mxtodo-credits`. Here is the code for that:
 ````clojure
@@ -69,10 +70,10 @@ The sharp-eyed reader has spotted an unlikely HTML tag, `mxtodo-credits`. Here i
                   "Inspired by <a href=\"https://github.com/tastejs/todomvc/blob/master/app-spec.md\">TodoMVC</a>."]]
       (p credit))))
 ````
-One nice win is that we now effectively have [Web Components](https://developer.mozilla.org/en-US/docs/Web/Web_Components). `mxtodo-credits` is rather simple, but another function could take as many parameters as necessary to be reusable.
+We now effectively have [Web Components](https://developer.mozilla.org/en-US/docs/Web/Web_Components). `mxtodo-credits` is rather simple, but another function could take as many parameters as necessary to be reusable.
 
 Note also that, yes, we can mix standard CLJS with our "HTML" because, again, it is all CLJS.
-### tag: wall-clock
+### checkout tag: wall-clock
 Reminder:
 ````bash
 git checkout wall-clock
@@ -83,7 +84,7 @@ The TodoMVC spec does not include a time or date display, but adding now a "wall
 2. DOM efficiency without VDOM complexity;
 3. the mxWeb approach to Web Components;
 4. all dataflow all the time: "lifting" components into the Matrix;
-5. ta single source of behavior: co-location of model and view; and
+5. a single source of behavior: co-location of model and view; and
 6. the Grail of object re-use.
 
 And now the code. First, the big picture illustrating the code re-use of the mxWeb solution to "Web Components":
