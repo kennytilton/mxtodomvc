@@ -74,7 +74,7 @@ Reminder:
 ````bash
 git checkout wall-clock
 ````
-The TodoMVC spec does not include a time or date display, but adding now a "wall clock" we will need later for extensions to the spec lets us learn more about Matrix faster. Here are the things this tag introduces:
+The TodoMVC spec does not include a time or date display, but adding now a "wall clock" we will need later for extensions to the spec lets us learn more about Matrix faster. The wall clock component demonstrates:
 * automatic state management: our first dataflow;
 * DOM efficiency without VDOM complexity;
 * the mxWeb approach to Web Components;
@@ -93,6 +93,38 @@ And now the code. First, the big picture illustrating the code re-use of the mxW
                 (h1 "todos?")
                 (mxtodo-credits)))))
 ````
+One `wallclock` shows the date and updates every hour [no, this makes no sense], the other shows the time second by second. And now the component:
+````clojure
+(defn wall-clock [mode interval start end]
+  (div
+    {:class "std-clock"}
+    {:clock  (cI (util/now))
+     :ticker (cFonce
+               (js/setInterval
+                 #(mset!> me :clock (util/now))
+                 interval))}
+    (as-> (<mget me :clock) date
+      (js/Date. date)
+      (case mode
+        :time (.toTimeString date)
+        :date (.toDateString date))
+      (subs date start end))))
+````
+If you prefer, check out the actual source. It is heavily commented with everything we will say here. Now let's work through the features above one by one.
+#### automatic state management: our first dataflow
+On every interval, the imperative `mset!>` feeds the browser clock epoch into the application Matrix `clock` property. The child string content of the DIV gets regenerated because `clock` changed. In code we will learn about later, mxWeb knows to reset the innerHTML of the DOM element corresponding to our proxy DIV.
+#### DOM efficiency without VDOM complexity
+The above explains why mxWeb is faster than ReactJS; property-to-property dataflow means the system knows with fine granularity when and what DOM needs updating when new inputs hit the Matrix. The actual code includes strategically placed print statements that illustrate in the console that the DIV is created once but its content on each interval. This is a small win, but established the principle.
+#### the mxWeb approach to Web Components
+Above we see the function `wall-clock` has four parameters, `[mode interval start end]`. Achieving component re-use with mxWeb differs not at all from parameterizing any Clojure function for maximum utility.
+#### all dataflow all the time: "lifting" components into the Matrix
+Browsers do not know about the Matrix dataflow library, so we have to write more or less glue code to bring them into the datafow. We call this gluing process "lifting". Lifting the system clock required just a few lines of code. The astute reader may have recognized that mxWeb itself is another example of "lifting". That required almost two thusand lines.
+#### the Grand Unification of Behavior: co-location of model and view
+Our wall clock widget needs application state, and it generates and relays that state itself. The `clock` property holds the JS epoch, and the 'ticker' property holds a timer driving `clock`. Nearby in tge code, a child element consumes the stream of `clock` values. Everything resides close by in the source for quick authoring, debugging, revision, and understanding.
+> The current trend in web library architecture involves decomposing monolithic apps into small elements combined usefully at run-time by the library to form the desired application. With mxWeb, the elements shaping an application behavior are found together in the source. Bucking trends makes us nervous, so we were happy to see Facebook engineers bragging on their "co-location" of GraphQL snippets alongside the components that consumed them.
+#### the Grail of object re-use
+DIV elements do not generally need a stream of clock values, but with Matrix we need not create a new "class" or type to have the equivalent of a DIV but with a clock. As with the prototype model of OOP, we can author a new dataflow-capable property on the fly.
+
 ## License
 
 Copyright © 2018 Kenneth Tilton
