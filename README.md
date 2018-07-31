@@ -119,13 +119,17 @@ One `wallclock` shows the date and updates every hour [no, this makes no sense],
 If you prefer, check out the actual source. It is heavily commented with everything we will say here. Now let's work through the features above one by one.
 #### 1. automatic state management: our first dataflow  
 > "Derived Values, Flowing" -- [re-frame](https://github.com/Day8/re-frame/blob/master/README.md) tag-line
+
 > "Anything that can be derived from the application state, should be derived. Automatically." -- the MobX philosophy
+
 On every interval, the imperative `mset!>` feeds the browser clock epoch into the application Matrix `clock` property. The child string content of the DIV gets regenerated because `clock` changed. In code we will learn about later, mxWeb knows to reset the innerHTML of the DOM element corresponding to our proxy DIV. Hello, dataflow.
 #### 2. transparent state management
 > "Instead of worrying about subscribing or “listening” to events and managing the order of callbacks, you just write rules to compute values." -- Python [Trellis](https://pypi.org/project/Trellis/)
+
 There is no explicit publish or subscribe. We simply read with `mget` and assign with `mset!>`. When we get to managing Todo items, we will hide mget/mset!> behind functions. (Dependency tracking sees into function calls.)
 #### 3. DOM efficiency without VDOM cost and complexity
 > "When part of the data source changes, Binding.scala knows about the exact corresponding partial DOM affected by the change." -- binding.Scala [design](https://github.com/ThoughtWorksInc/Binding.scala)
+
 The preceding explains why mxWeb is faster than VDOM; property-to-property dataflow means the system knows with fine granularity when and what DOM needs updating when new inputs hit the Matrix. The actual code includes strategically placed print statements that illustrate in the console that the DIV is created once but its content on each interval. This is a small win, but in examples to come we achieve significant changes with no more than `classlist/set`.
 #### 4. the mxWeb approach to Web Components
 Above we see the function `wall-clock` has four parameters, `[mode interval start end]`. Achieving component reuse with mxWeb differs not at all from parameterizing any Clojure function for maximum utility.
