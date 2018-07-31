@@ -3,9 +3,19 @@
     [tiltontec.util.core :as util]
 
     [tiltontec.cell.core :refer-macros [cF cF+ cFn cF+n cFonce cF1] :refer [cI]]
-    [tiltontec.model.core :refer [<mget mset!>] :as md]
+
+    [tiltontec.model.core
+     ; todo trim
+     :refer-macros [with-par]
+     :refer [matrix mx-par <mget mset!> mswap!>
+             fget mxi-find mxu-find-type
+             kid-values-kids] :as md]
     [mxweb.gen
-     :refer-macros [div section header h1 footer p]]))
+     :refer-macros [div section header h1 footer p ul li span]]
+    [mxtodomvc.todo
+     :refer [make-todo td-title] :as todo]
+    [mxtodomvc.todo-view
+     :refer [todo-list-item]]))
 
 ;; Below we demonstrate the HTML work-alike quality of mxWeb, and that
 ;; CLJS can be coded naturally as needed.
@@ -30,9 +40,8 @@
       (p credit))))
 
 (defn wall-clock [mode interval start end]
-  ;; watch the console to see this run just once
-  (prn :making-new-wall-clock-DIV!!)
-  (div {:class "std-clock"}
+
+  (div {:class "wall-clock"}
     ;;
     ;; We see our first dataflow, from one property of a DIV to the
     ;; formula (auto-wrapped, so do not look for it) for its children,
@@ -92,27 +101,37 @@
     ;; forms after this point in a formulaic Cell, hiding the
     ;; necessary boilerplate.
 
-    (do
-      ;; watch the console to see this is the only PRN that repeats
-      (prn :new-div-content)
+    (as-> (<mget me :clock) date
+      (js/Date. date)
+      (case mode
+        :time (.toTimeString date)
+        :date (.toDateString date))
 
-      (as-> (<mget me :clock) date
-        (js/Date. date)
-        (case mode
-          :time (.toTimeString date)
-          :date (.toDateString date))
-
-        (subs date start end)))
-    ))
+      (subs date start end))))
 
 (defn matrix-build []
-  (md/make
-    ;;
-    ;; HTML tag syntax is (<tag> [dom-attribute-map [custom-property map] children*]
-    ;;
-    :mx-dom (section {:class "todoapp"}
-              (wall-clock :date 60000 0 15)
-              (wall-clock :time 1000 0 8)
-              (header {:class "header"}
-                (h1 "todos?")
-                (mxtodo-credits)))))
+  (reset! md/matrix
+    ;; now we provide an optional "type" to support Matrix node space search
+    (md/make ::todoApp
+      ;;
+      ;; HTML tag syntax is (<tag> [dom-attribute-map [custom-property map] children*]
+      ;;
+      :todos (todo/todo-list ["Wash car"
+                               "Walk dog"
+                               "Do laundry"
+                               "Mow lawn"])
+      :mx-dom (cFonce
+                (with-par me
+                  (section {:class "todoapp"}
+                    (wall-clock :date 60000 0 15)
+                    (wall-clock :time 1000 0 8)
+                    (header {:class "header"}
+                      (h1 "todos")
+                      (section {:class "main"}
+                        (ul {:class "todo-list"}
+                          (let [matrix (mxu-find-type me ::todoApp)
+                                todo-list (<mget matrix :todos)]
+                            (prn :items (count (<mget todo-list :items-raw)))
+                            (doall (for [todo (<mget todo-list :items-raw)]
+                                      (todo-list-item todo))))))
+                      (mxtodo-credits))))))))
