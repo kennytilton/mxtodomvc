@@ -26,8 +26,6 @@ So far, so abstract. Ourselves, we think better in concrete. Let's get "hello, M
 
 The TodoMVC project specifies a trivial Web application as the basis for comparing Web frameworks. We will first satisfy the requirements, then extend the spec to include XHRs. Along the way we will tag milestones so the reader can conveniently visit any stage of development.
 
-We begin.
-
 ## Set-Up
 
 ````bash
