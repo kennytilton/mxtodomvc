@@ -7,7 +7,7 @@ The `Matrix` dataflow library endows application state with causal power over ot
 
 More grandly, Matrix brings our application models to life, animating them in response to streams of external inputs. The movies were fun, but that Matrix sucked energy from humans to feed machines. Mr. Hickey, a careful man with the dictionary, might disapprove the misconstruction.
 
-*You say "reactive", we say "dataflow"*
+> "Derived Values, Flowing" -- [re-frame](https://github.com/Day8/re-frame/blob/master/README.md) tag-line
 
 Most today call this _reactive programming_. That describes well the programmer mindset in the small, but we find _dataflow_ more descriptive of the emergent systems.
 
@@ -71,7 +71,7 @@ The sharp-eyed reader has spotted an unlikely HTML tag, `mxtodo-credits`. Here i
                   "Inspired by <a href=\"https://github.com/tastejs/todomvc/blob/master/app-spec.md\">TodoMVC</a>."]]
       (p credit))))
 ````
-We now effectively have [Web Components](https://developer.mozilla.org/en-US/docs/Web/Web_Components). `mxtodo-credits` is rather simple, but another function could take as many parameters as necessary to be reusable.
+Above we see the potential for custom HTML tags wrapping arbitrarily complex, reusable native DOM clusters, aka [Web Components](https://developer.mozilla.org/en-US/docs/Web/Web_Components). `mxtodo-credits` is rather simple, but next up is function taking as many parameters as needed to be reusable.
 
 Note also that, yes, we can mix standard CLJS with our "HTML" because, again, it is all CLJS.
 ### checkout tag: wall-clock
@@ -79,7 +79,7 @@ Reminder:
 ````bash
 git checkout wall-clock
 ````
-The TodoMVC spec does not include a time or date display, but adding a "wall clock" lets us learn more about Matrix faster. The wall clock component demonstrates:
+The TodoMVC spec does not include a time or date display, but a simple "wall clock" permits a quick but deep dive into:
 1. automatic state management: our first dataflow;
 1. transparent state management;
 2. DOM efficiency without VDOM complexity;
@@ -99,7 +99,7 @@ And now the code. First, the big picture illustrating mxWeb's approach to "Web C
                 (h1 "todos?")
                 (mxtodo-credits)))))
 ````
-One `wallclock` shows the date and updates every hour [no, this makes no sense], the other shows the time second by second. And now the component:
+The first `wall-clock` shows the date and updates every hour (no, this makes no sense), the second shows the time second by second. And now the component:
 ````clojure
 (defn wall-clock [mode interval start end]
   (div
@@ -116,13 +116,14 @@ One `wallclock` shows the date and updates every hour [no, this makes no sense],
         :date (.toDateString date))
       (subs date start end))))
 ````
-If you prefer, check out the actual source. It is heavily commented with everything we will say here. Now let's work through the features above one by one.
 #### 1. automatic state management: our first dataflow  
-> "Derived Values, Flowing" -- [re-frame](https://github.com/Day8/re-frame/blob/master/README.md) tag-line
+> "Any component that uses an atom is automagically re-rendered when its value changes." -- [Reagent](https://reagent-project.github.io/)
 
 > "Anything that can be derived from the application state, should be derived. Automatically." -- the MobX philosophy
 
 On every interval, the imperative `mset!>` feeds the browser clock epoch into the application Matrix `clock` property. The child string content of the DIV gets regenerated because `clock` changed. In code we will learn about later, mxWeb knows to reset the innerHTML of the DOM element corresponding to our proxy DIV. Hello, dataflow.
+
+> "Cells automatically and consistently propagate data dependency changes" -- [Hoplon/Javelin](https://github.com/hoplon/hoplon/wiki/Hoplon-Overview)
 #### 2. transparent state management
 > "Instead of worrying about subscribing or “listening” to events and managing the order of callbacks, you just write rules to compute values." -- Python [Trellis](https://pypi.org/project/Trellis/)
 
