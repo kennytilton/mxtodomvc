@@ -1,22 +1,22 @@
 # mxTodoMVC
 #### An introduction by example to Matrix dataflow and mxWeb
 
-The `Matrix` dataflow library endows application state with causal power over other such state, freeing the developer from the burden of reliably propagating unpredictable change across highly interdependent models. It does this by intervening at the fundamental level of reading and writing properties, and by providing a precise mechanism by which application models can operate on the world, if only to update a computer screen.
+The `Matrix` dataflow library endows application state with causal power over other such state, freeing the developer from the burden of propagating unpredictable change across highly interdependent models. It does so working at the fundamental level of reading and writing properties, and by providing a precise mechanism by which applications can operate on the world, if only to update a computer screen.
 
 More grandly, Matrix brings our application models to life, animating them in response to streams of external inputs. Hence the name.
 
 > ma·trix ˈmātriks *noun* an environment in which something else takes form. *Origin:* Latin, female animal used for breeding, parent plant, from *matr-*, *mater*
 
-The movies were fun, but that matrix existed to suck energy from humans to feed machines. Mr. Hickey, a careful man with the dictionary, might disapprove the misconstruction.
+The movies were fun, but their matrix existed to suck energy from humans to feed machines. Mr. Hickey, a careful man with the dictionary, might disapprove the misconstruction.
 
 #### You say "reactive", we say "dataflow"
-Most folks today call this _reactive programming_. That describes well the programmer mindset in the small, but we find _dataflow_ more descriptive of the emergent systems.
+Most today call this _reactive programming_. That describes well the programmer mindset in the small, but we find _dataflow_ more descriptive of the emergent systems.
 
 #### Prior and concurrent art
 Matrix enjoys much good company in this field. We believe Matrix offers more simplicity, transparency, granularity, expressiveness, efficiency, and functional coverage, but in each dimension differs in degree, not spirit. Other recommended CLJS libraries are Reagent, Hoplon/Javelin, and re-frame. Beyond CLJS, we admire MobX (JS), binding.Scala, and Python Trellis.
 
 #### mxWeb, "poster" application
-`mxWeb` is a thin web un-framework built atop Matrix. We introduce Matrix in the context of mxWeb, because nothing challenges a developer more than keeping application state consistent while an intelligent user does their best to use a rich interface correctly. Then marketing wants the U/X redone.
+`mxWeb` is a thin web un-framework built atop Matrix. We introduce Matrix in the context of mxWeb because nothing challenges a developer more than keeping application state straight while an intelligent user does their best to use a rich interface correctly. Then marketing wants the U/X redone.
 
 We say "un-framework" because mxWeb exists only to wire the DOM for dataflow. The API design imperative is that the MDN reference be the mxWeb reference; mxWeb itself introduces no new architecture.
 
@@ -56,7 +56,9 @@ And here is the mxWeb HTML work-aike, look-alike code:
                 (h1 "todos")
                 (mxtodo-credits)))))
 ````
-The "tags" such as `header` and `h` are CLJS macros. It's all CLJS. Each tag macro takes an optional map of DOM attributes as the first arg, an optional map of custom application properties, and then any number of child elements.
+The "tags" such as `header` and `h` are CLJS macros. (It's *all* CLJS.)
+
+Each tag macro takes an optional map of DOM attributes as the first arg, an optional map of custom application properties as the second, and then any number of child elements.
 
 The sharp-eyed reader has spotted an unlikely HTML tag, `mxtodo-credits`. Here is the code for that:
 ````clojure
@@ -69,14 +71,14 @@ The sharp-eyed reader has spotted an unlikely HTML tag, `mxtodo-credits`. Here i
 ````
 One nice win is that we now effectively have [Web Components](https://developer.mozilla.org/en-US/docs/Web/Web_Components). `mxtodo-credits` is rather simple, but another function could take as many parameters as necessary to be reusable.
 
-Note also that, yes, we can mix standard CLJS with our "HTML" because it is all CLJS.
+Note also that, yes, we can mix standard CLJS with our "HTML" because, again, it is all CLJS.
 ### tag: wall-clock
 Reminder:
 ````bash
 git checkout wall-clock
 ````
-The TodoMVC spec does not include a time or date display, but adding now a "wall clock" we will need later for extensions to the spec lets us learn more about Matrix faster. The wall clock component demonstrates:
-1. automatic state management: our first dataflow;
+The TodoMVC spec does not include a time or date display, but adding now a "wall clock" needed later for extensions to the spec lets us learn more about Matrix faster. The wall clock component demonstrates:
+1. automatic, transparent state management: our first dataflow;
 2. DOM efficiency without VDOM complexity;
 3. the mxWeb approach to Web Components;
 4. all dataflow all the time: "lifting" components into the Matrix;
