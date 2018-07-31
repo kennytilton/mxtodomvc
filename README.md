@@ -1,7 +1,7 @@
 # TodoMVC, with Matrix Inside&trade;
 *An introduction by example to Matrix dataflow and mxWeb*
 
-The `Matrix` dataflow library endows application state with causal power over other such state, freeing the developer from the burden of propagating unpredictable change across highly interdependent models. It does so working at the fundamental level of reading and writing properties, and by providing a precise mechanism for applications to act on the world, if only to update a computer screen.
+The `Matrix` dataflow library endows application state with causal power over other such state, freeing the developer from the burden of propagating unpredictable change across highly interdependent models. It does so simply, working at the fundamental level of reading and writing properties.
 
 > ma·trix ˈmātriks *noun* an environment in which something else takes form. *Origin:* Latin, female animal used for breeding, parent plant, from *matr-*, *mater*
 
@@ -9,7 +9,7 @@ More grandly, Matrix brings our application models to life, animating them in re
 
 > "Derived Values, Flowing" -- [re-frame](https://github.com/Day8/re-frame/blob/master/README.md) tag-line
 
-Most today call this _reactive programming_. That describes well the programmer mindset in the small, but we find _dataflow_ more descriptive of the emergent systems.
+Most today call this _reactive programming_. That describes well the programmer mindset in the small. We find _dataflow_ more descriptive of the emergent systems.
 
 *Prior and concurrent art*
 
@@ -71,7 +71,7 @@ The sharp-eyed reader has spotted an unlikely HTML tag, `mxtodo-credits`. Here i
                   "Inspired by <a href=\"https://github.com/tastejs/todomvc/blob/master/app-spec.md\">TodoMVC</a>."]]
       (p credit))))
 ````
-Above we see the potential for custom HTML tags wrapping arbitrarily complex, reusable native DOM clusters, aka [Web Components](https://developer.mozilla.org/en-US/docs/Web/Web_Components). `mxtodo-credits` is rather simple, but next up is function taking as many parameters as needed to be reusable.
+Above we see the potential for custom HTML tags wrapping arbitrarily complex, reusable native DOM clusters, aka [Web Components](https://developer.mozilla.org/en-US/docs/Web/Web_Components). `mxtodo-credits` is rather simple, but next up is a function/component taking four parameters to support reuse.
 
 Note also that, yes, we can mix standard CLJS with our "HTML" because, again, it is all CLJS.
 ### checkout tag: wall-clock
