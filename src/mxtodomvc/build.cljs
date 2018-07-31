@@ -51,11 +51,17 @@
     ;; will; model and view can be one. Our state ends up distributed across
     ;; the page architecture, naturally organized by same.
     ;;
+    ;; The 'ticker' and 'clock' should be noted for a grander reason, viz., their
+    ;; exemplification of object re-use through ad hoc authoring of
+    ;; custom properties; not every DIV needs a clock time or ticker, but
+    ;; we need not define a new tag to get new properties. With Matrix, classes
+    ;; do not dictate everything, so classes become more re-usable.
+    ;;
     ;; We also introduce one of the pillars of Matrix: "lifting" an
     ;; existing component that knows nothing about the Matrix, in this
     ;; case the system clock, into the Matrix with whatever glue it takes.
     ;;
-    ;; The system clock lift here is superficial and requires just a few lines
+    ;; The system clock "lift" is superficial and requires just a few lines
     ;; of code, but the essence is achieved: the view now enjoys dataflow
     ;; from the system clock.
     ;;
@@ -110,3 +116,4 @@
               (header {:class "header"}
                 (h1 "todos?")
                 (mxtodo-credits)))))
+
