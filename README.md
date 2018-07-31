@@ -5,15 +5,18 @@ The `Matrix` dataflow library endows application state with causal power over ot
 
 > ma·trix ˈmātriks *noun* an environment in which something else takes form. *Origin:* Latin, female animal used for breeding, parent plant, from *matr-*, *mater*
 
-More grandly, Matrix brings our application models to life, animating them in response to streams of external inputs. Hence the name. The movies were fun, but that Matrix sucked energy from humans to feed machines. Mr. Hickey, a careful man with the dictionary, might disapprove the misconstruction.
+More grandly, Matrix brings our application models to life, animating them in response to streams of external inputs. The movies were fun, but that Matrix sucked energy from humans to feed machines. Mr. Hickey, a careful man with the dictionary, might disapprove the misconstruction.
 
-#### You say "reactive", we say "dataflow"
+*You say "reactive", we say "dataflow"*
+
 Most today call this _reactive programming_. That describes well the programmer mindset in the small, but we find _dataflow_ more descriptive of the emergent systems.
 
-#### Prior and concurrent art
+*Prior and concurrent art*
+
 Matrix enjoys much good company in this field. We believe Matrix offers more simplicity, transparency, granularity, expressiveness, efficiency, and functional coverage, but in each dimension differs in degree, not spirit. Other recommended CLJS libraries are Reagent, Hoplon/Javelin, and re-frame. Beyond CLJS, we admire MobX (JS), binding.Scala, and Python Trellis.
 
-#### mxWeb, "poster" application
+*mxWeb, "poster" application*
+
 `mxWeb` is a thin web un-framework built atop Matrix. We introduce Matrix in the context of mxWeb because nothing challenges a developer more than keeping application state straight while an intelligent user does their best to use a rich interface correctly. Then marketing wants the U/X redone.
 
 We say "un-framework" because mxWeb exists only to wire the DOM for dataflow. The API design imperative is that the MDN reference be the mxWeb reference; mxWeb itself introduces no new architecture.
@@ -85,9 +88,9 @@ The TodoMVC spec does not include a time or date display, but adding now a "wall
 3. the mxWeb approach to Web Components;
 4. all dataflow all the time: "lifting" components into the Matrix;
 5. a single source of behavior: co-location of model and view; and
-6. the Grail of object re-use.
+6. the Grail of object reuse.
 
-And now the code. First, the big picture illustrating the code re-use of the mxWeb solution to "Web Components":
+And now the code. First, the big picture illustrating mxWeb's approach to "Web Components":
 ````clojure
 (defn matrix-build []
   (md/make
@@ -119,12 +122,11 @@ If you prefer, check out the actual source. It is heavily commented with everyth
 #### 1. automatic state management: our first dataflow  
 On every interval, the imperative `mset!>` feeds the browser clock epoch into the application Matrix `clock` property. The child string content of the DIV gets regenerated because `clock` changed. In code we will learn about later, mxWeb knows to reset the innerHTML of the DOM element corresponding to our proxy DIV. Hello, dataflow.
 #### 2. transparent state management
-There is no explicit publish or subscribe. We simply read with `mget` and assign with `mset!>`. When we get to mangaing Todo items, we will hide mget/mset!> behind functions. Dependency tracking sees into function calls.
+There is no explicit publish or subscribe. We simply read with `mget` and assign with `mset!>`. When we get to managing Todo items, we will hide mget/mset!> behind functions. (Dependency tracking sees into function calls.)
 #### 3. DOM efficiency without VDOM cost and complexity . 
-The preceding explains why mxWeb is faster than VDOM; property-to-property dataflow means the system knows with fine granularity when and what DOM needs updating when new inputs hit the Matrix. The actual code includes strategically placed print statements that illustrate in the console that the DIV is created once but its content on each interval. This is a small win, in examples to come significant changes in behavior will be achieved with no more than `classlist/set`.
-VDOM introduces more than the run-time cost of VDOM generation and diffing. It also isolates us from the DOM, which React engineers now concede impedes development. We have not seen the evidence yet, but mxWeb proxy DOM elements know their actual DOM counterparts.
+The preceding explains why mxWeb is faster than VDOM; property-to-property dataflow means the system knows with fine granularity when and what DOM needs updating when new inputs hit the Matrix. The actual code includes strategically placed print statements that illustrate in the console that the DIV is created once but its content on each interval. This is a small win, but in examples to come we achieve significant changes with no more than `classlist/set`.
 #### 4. the mxWeb approach to Web Components . 
-Above we see the function `wall-clock` has four parameters, `[mode interval start end]`. Achieving component re-use with mxWeb differs not at all from parameterizing any Clojure function for maximum utility.
+Above we see the function `wall-clock` has four parameters, `[mode interval start end]`. Achieving component reuse with mxWeb differs not at all from parameterizing any Clojure function for maximum utility.
 #### 5. all dataflow all the time: "lifting" components into the Matrix  
 Browsers do not know about the Matrix dataflow library, so we have to write more or less glue code to bring them into the datafow.  
 ````clojure
@@ -132,12 +134,12 @@ Browsers do not know about the Matrix dataflow library, so we have to write more
     #(mset!> me :clock (util/now))
     interval)
 ````  
-We call this gluing process "lifting". Lifting the system clock required just a few lines of code. We hinted earlier that mxWeb exemplifies "lifting". That took almost two thousand lines.
+We call this gluing process "lifting". Lifting the system clock required just a few lines of code. We hinted earlier that mxWeb exemplifies "lifting". That took almost two thousand lines. Because dataflow.
 #### 6. a single source of behavior: co-location of model and view  
 This may be an anti-feature to many. Our wall clock widget needs application state, and it generates and relays that state itself. The `clock` property holds the JS epoch, and the 'ticker' property holds a timer driving `clock`. Nearby in the code, a child element consumes the stream of `clock` values. Everything resides together in the source for quick authoring, debugging, revision, and understanding.
 > The current trend in web library architecture involves decomposing monolithic apps into small elements combined usefully at run-time by the library to form the desired application. With mxWeb, the elements shaping an application behavior are found together in the source. Bucking trends makes us nervous, so we were happy to see Facebook engineers bragging on their "co-location" of GraphQL snippets alongside the components that consumed them.  
-#### 7. the Grail of object re-use  
-In classic OOP, objects have rigid definitions making generality hence re-use unlikely. DIV elements do not generally need a stream of clock values, so normally we would need to sub-class DIV to arrange for one, or wire up some access to a stream maintained somewhere else. Matrix works like the prototype model of OOP; we can code up a new dataflow-capable clock property on the fly.
+#### 7. the Grail of object reuse  
+In classic OOP, objects have rigid definitions making generality unlikely. DIV elements do not generally need a stream of clock values, so normally we would need to sub-class DIV to arrange for one, or wire up access to a stream maintained elsewhere. Matrix works like the prototype model of OOP; we can code up a new dataflow-capable clock property on the fly.
 
 ## License
 
