@@ -1,11 +1,24 @@
 # TodoMVC, with Matrix Inside&trade;
 *An introduction by example to Matrix dataflow and mxWeb*
 
-The `Matrix` dataflow library endows application state with causal power over other such state, freeing the developer from the burden of propagating unpredictable change across highly interdependent models. It does so simply, working at the fundamental level of reading and writing properties.
+The `Matrix` dataflow library endows application state with causal power over other such state, freeing the developer from the burden of propagating unpredictable change across highly interdependent models. It does so simply by altering what happens when we read and write individual properties.
+
+* when A reads B, B remembers
+* when we write to B, B tells A
+
+What does it mean for A to read B, ie., for one property to read another?
+````clojure
+(make-cell-formulaic :A
+  :rule (fn [me] (+ 42 (<mget me :B)))))
+````
+
+What happens when B tells A? A computes a new value. 
+
+This value might be a new set of child nodes for some parent node, so the very population of our application can change in response to run-time events. We call this population a *matrix*.
 
 > ma·trix ˈmātriks *noun* an environment in which something else takes form. *Origin:* Latin, female animal used for breeding, parent plant, from *matr-*, *mater*
 
-More grandly, Matrix brings our application models to life, animating them in response to streams of external inputs. The movies were fun, but that Matrix sucked energy from humans to feed machines. Mr. Hickey, a careful man with the dictionary, might disapprove the misconstruction.
+The Matrix library brings our application models to life, animating them in response to streams of external inputs. The movies were fun, but that Matrix sucked energy from humans to feed machines. Mr. Hickey, a careful man with the dictionary, might disapprove the misconstruction.
 
 > "Derived Values, Flowing" -- [re-frame](https://github.com/Day8/re-frame/blob/master/README.md) tag-line
 
