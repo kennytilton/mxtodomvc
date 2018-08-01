@@ -74,8 +74,8 @@ The sharp-eyed reader has spotted an unlikely HTML tag, `mxtodo-credits`. Here i
 Above we see the potential for custom HTML tags wrapping arbitrarily complex, reusable native DOM clusters, aka [Web Components](https://developer.mozilla.org/en-US/docs/Web/Web_Components). `mxtodo-credits` is rather simple, but next up is a function/component taking four parameters to support reuse.
 
 Note also that, yes, we can mix standard CLJS with our "HTML" because, again, it is all CLJS.
-### checkout tag: wall-clock
-Reminder:
+### git checkout wall-clock
+Reminder!
 ````bash
 git checkout wall-clock
 ````
@@ -119,7 +119,7 @@ The first `wall-clock` shows the date and updates every hour (no, this makes no 
 #### 1. automatic state management: our first dataflow  
 > "Any component that uses an atom is automagically re-rendered when its value changes." -- [Reagent](https://reagent-project.github.io/)
 
-> "Anything that can be derived from the application state, should be derived. Automatically." -- the MobX philosophy
+> "Anything that can be derived from the application state, should be derived. Automatically." -- the [MobX](https://github.com/mobxjs/mobx) philosophy
 
 On every interval, the imperative `mset!>` feeds the browser clock epoch into the application Matrix `clock` property. The child string content of the DIV gets regenerated because `clock` changed. In code we will learn about later, mxWeb knows to reset the innerHTML of the DOM element corresponding to our proxy DIV. Hello, dataflow.
 
@@ -141,12 +141,98 @@ Browsers do not know about the Matrix dataflow library, so we have to write more
     #(mset!> me :clock (util/now))
     interval)
 ````  
-We call this gluing process "lifting". Lifting the system clock required just a few lines of code. We hinted earlier that mxWeb exemplifies "lifting". That took almost two thousand lines. Because dataflow.
+We call this gluing process "lifting". Lifting the system clock required just a few lines of code. We hinted earlier that mxWeb exemplifies "lifting". That took almost two thousand lines. We like dataflow that much.
 #### 6. a single source of behavior: co-location of model and view  
 This may be an anti-feature to many. Our wall clock widget needs application state, and it generates and relays that state itself. The `clock` property holds the JS epoch, and the 'ticker' property holds a timer driving `clock`. Nearby in the code, a child element consumes the stream of `clock` values. Everything resides together in the source for quick authoring, debugging, revision, and understanding.
 > The current trend in web library architecture involves decomposing monolithic apps into small elements combined usefully at run-time by the library to form the desired application. With mxWeb, the elements shaping an application behavior are found together in the source. Bucking trends makes us nervous, so we were happy to see Facebook engineers bragging on their "co-location" of GraphQL snippets alongside the components that consumed them.  
 #### 7. the Grail of object reuse  
 In classic OOP, objects have rigid definitions making generality unlikely. DIV elements do not generally need a stream of clock values, so normally we would need to sub-class DIV to arrange for one, or wire up access to a stream maintained elsewhere. Matrix works like the prototype model of OOP; we can code up a new dataflow-capable clock property on the fly.
+
+### git checkout enter-todos
+As promised, that was a deep first dive. This tag will be much simpler, merely introducing to-dos, unstored, unedited, and un-entered, even:
+* we load a few fixed-todos at start-up;
+* we show them in a list;
+* one control lets us toggle a to-do between completed or not; and
+* another control deletes a to-do, logically but irrevocably.
+
+Here is how we make a to-do. Recall that `cI` is shorthand for making an "input cell", one to which we can assign new values from imperative code in an event handler.
+````clojure
+(defn make-todo
+  "Make a matrix incarnation of a todo item"
+  [title]
+
+  (md/make
+    :id (util/uuidv4)
+    :created (util/now)
+    :title (cI title)
+    :completed (cI nil)
+    :deleted (cI nil)))
+````
+The only slots demanded by the spec are "title" and a boolean "completed", but as experienced CRUD developers we went further in ways not important to this exercise. Note that apparent booleans will in fact be nil or timestamps, so no "?" suffixes.
+
+Here is the to-do-list container model, set up to take a list of hard-coded initial to-dos to get us rolling:
+````clojure
+(defn todo-list [seed-todos]
+  (md/make ::todo-list
+    :items-raw (cFn (for [to-do seed-todos]
+                      (make-todo to-do})))
+    :items (cF (doall (remove td-deleted (<mget me :items-raw))))))
+````
+The bulk of the to-do app does not care about deleted to-dos, so we use a clumsy name "items-raw" for the true list of items ever created, and save the name "items" for the ones actually used.
+
+We can now start our demo matrix off with a few preset to-dos. Some things to note:
+* the optional first "type" parameter ::todoApp is supplied
+* building the matrix DOM is now wrapped in `(cFonce (with-par me ...)`;
+  * `cFonce` effectively defers the enclosed form until the right lifecycle point in the matrix's initial construction.
+  * `with-par me` is how the matrix DOM knows where it is in the matrix tree. All matrix nodes know their parents so they can navigate the tree freely to gather information.
+* the app credits are now provided by a new "web component", and that along with the "wall-clock" reusable are off in their own namespace.
+* most interesting is `(mxu-find-type me ::todoApp)`, a bit of exposed wiring that demonstrates how Matrix elements pull information from elsewhere in the Matrix using various "mx-find-\*" selector-like utilities we will discuss below. 
+
+````clojure
+(md/make ::todoApp
+      :todos (todo/todo-list ["Wash car" "Walk dog" "Do laundry" "Mow lawn"])
+      :mx-dom (cFonce
+                (with-par me
+                  (section {:class "todoapp" :style "padding:24px"}
+                    (webco/wall-clock :date 60000 0 15)
+                    (webco/wall-clock :time 1000 0 8)
+                    (header {:class "header"}
+                      (h1 "todos")
+                      (section {:class "main"}
+                        (ul {:class "todo-list"}
+                          (let [matrix (mxu-find-type me ::todoApp)
+                                todo-list (<mget matrix :todos)]
+                            (doall (for [todo (<mget todo-list :items)]
+                                      (todo-list-item todo))))))
+                      (webco/app-credits mxtodo-credits))))))
+````
+And now the to-do item view itself, the structure and nice CSS authored by the developers of the TodoMVC exercise.
+````clojure
+(defn todo-list-item [todo]
+  (li
+    {:class (cF (when (td-completed todo)
+                  "completed"))}
+    {:todo todo}
+    (div {:class "view"}
+      (input {:class       "toggle"
+              ::mxweb/type "checkbox"
+              :checked     (cF (not (nil? (td-completed todo))))
+              :onclick     #(td-toggle-completed! todo)})
+
+      (label (td-title todo))
+
+      (button {:class   "destroy"
+               :onclick #(td-delete! todo)}))))
+````
+Elsewhere we find the "change" dataflow initiators:
+````clojure
+(defn td-delete! [td]
+  (mset!> td :deleted (util/now)))
+
+(defn td-toggle-completed! [td]
+  (mset!> td :completed
+    (when-not (td-completed td) (util/now))))
+````
 
 ## License
 
