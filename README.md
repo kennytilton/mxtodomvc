@@ -3,10 +3,9 @@
 
 The *Matrix* dataflow library endows application state with causal power over other such state, freeing the developer from the burden of propagating unpredictable change across highly interdependent models. 
 
-It does so simply by altering what happens when we read and write individual properties.
-
-* when A reads B, B remembers
-* when we write to B, B tells A
+It does so simply by altering what happens when we read and write individual properties:
+* when A reads B, B remembers;
+* when we write to B, B tells A.
 
 What does it mean for A to read B, ie., for one property to read another?
 ````clojure
