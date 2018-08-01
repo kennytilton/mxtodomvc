@@ -14,9 +14,13 @@ What does it mean for A to read B, ie., for one property to read another?
   :rule (fn [me] (+ 42 (<mget me :B)))))
 ````
 
-What happens when B tells A? A computes a new value. The newly computed value might be a new set of child nodes for some parent; the very population of our application can change in response to run-time events. We call this population of connected, communicating nodes a *matrix*.
+What happens when B tells A? A computes a new value. 
 
-What happens when `A` recomputes a new value? `A` might have others to tell, or `A` might want to tell the world outside the matrix. If `A` is the `cloaked` property for a Clojure map incarnation of a warship, we will link its changes to the presence of the "hidden" attribute on the DOM element displaying the warship.
+What happens when `A` recomputes a new value? `A` might have others to tell, or `A` might want to tell the world outside the matrix. If `A` is the `cloaked` property for a Clojure map incarnation of a warship, we can link its changes to the presence of the "hidden" attribute on the DOM element displaying the warship.
+
+The newly computed value for `A` might be a new set of child nodes for some parent, so the very population of our application can change in response to run-time events. 
+
+We call this dynamic population of communicating nodes a *matrix*.
 
 > ma·trix ˈmātriks *noun* an environment in which something else takes form. *Origin:* Latin, female animal used for breeding, parent plant, from *matr-*, *mater*
 
