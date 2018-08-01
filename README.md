@@ -1,7 +1,9 @@
 # TodoMVC, with Matrix Inside&trade;
 *An introduction by example to Matrix dataflow and mxWeb*
 
-The `Matrix` dataflow library endows application state with causal power over other such state, freeing the developer from the burden of propagating unpredictable change across highly interdependent models. It does so simply by altering what happens when we read and write individual properties.
+The *Matrix* dataflow library endows application state with causal power over other such state, freeing the developer from the burden of propagating unpredictable change across highly interdependent models. 
+
+It does so simply by altering what happens when we read and write individual properties.
 
 * when A reads B, B remembers
 * when we write to B, B tells A
@@ -12,25 +14,22 @@ What does it mean for A to read B, ie., for one property to read another?
   :rule (fn [me] (+ 42 (<mget me :B)))))
 ````
 
-What happens when B tells A? A computes a new value. 
+What happens when B tells A? A computes a new value. The newly computed value might be a new set of child nodes for some parent; the very population of our application can change in response to run-time events. We call this population of connected, communicating nodes a *matrix*.
 
-This value might be a new set of child nodes for some parent node, so the very population of our application can change in response to run-time events. We call this population a *matrix*.
+What happens when `A` recomputes a new value? `A` might have others to tell, or `A` might want to tell the world outside the matrix. If `A` is the `cloaked` property for a Clojure map incarnation of a warship, we will link its changes to the presence of the "hidden" attribute on the DOM element displaying the warship.
 
 > ma·trix ˈmātriks *noun* an environment in which something else takes form. *Origin:* Latin, female animal used for breeding, parent plant, from *matr-*, *mater*
 
-The Matrix library brings our application models to life, animating them in response to streams of external inputs. The movies were fun, but that Matrix sucked energy from humans to feed machines. Mr. Hickey, a careful man with the dictionary, might disapprove the misconstruction.
+The Matrix library brings our application models to life, animating them in response to streams of external inputs. The movies were fun, but that Matrix bled energy from humans to feed machines. Mr. Hickey, a careful man with the dictionary, might disapprove the misconstruction.
+
+### Related work
+Most today call this _reactive programming_. That describes well the programmer mindset in the small. We find _dataflow_ more descriptive of the emergent systems.
 
 > "Derived Values, Flowing" -- [re-frame](https://github.com/Day8/re-frame/blob/master/README.md) tag-line
 
-Most today call this _reactive programming_. That describes well the programmer mindset in the small. We find _dataflow_ more descriptive of the emergent systems.
+Matrix enjoys much good company in this field. We believe Matrix offers more simplicity, transparency, granularity, expressiveness, efficiency, and functional coverage, but in each dimension differs only in degree, not spirit. Other recommended CLJS libraries are [Reagent](https://reagent-project.github.io/), [Hoplon/Javelin](https://github.com/hoplon/javelin), and [re-frame](https://github.com/Day8/re-frame). Beyond CLJS, we admire [MobX](https://github.com/mobxjs/mobx/blob/master/README.md) (JS), [binding.Scala](https://github.com/ThoughtWorksInc/Binding.scala/blob/11.0.x/README.md), and Python [Trellis](https://pypi.org/project/Trellis/).
 
-*Prior and concurrent art*
-
-Matrix enjoys much good company in this field. We believe Matrix offers more simplicity, transparency, granularity, expressiveness, efficiency, and functional coverage, but in each dimension differs in degree, not spirit. Other recommended CLJS libraries are [Reagent](https://reagent-project.github.io/), [Hoplon/Javelin](https://github.com/hoplon/javelin), and [re-frame](https://github.com/Day8/re-frame). Beyond CLJS, we admire [MobX](https://github.com/mobxjs/mobx/blob/master/README.md) (JS), [binding.Scala](https://github.com/ThoughtWorksInc/Binding.scala/blob/11.0.x/README.md), and Python [Trellis](https://pypi.org/project/Trellis/).
-
-*mxWeb, "poster" application*
-
-`mxWeb` is a thin web un-framework built atop Matrix. We introduce Matrix in the context of mxWeb because nothing challenges a developer more than keeping application state straight while an intelligent user does their best to use a rich interface correctly. Then marketing wants the U/X redone.
+*mxWeb, "poster" application* *mxWeb* is a thin web un-framework built atop Matrix. We introduce Matrix in the context of mxWeb because nothing challenges a developer more than keeping application state straight while an intelligent user does their best to use a rich interface correctly. Then marketing wants the U/X redone.
 
 We say "un-framework" because mxWeb exists only to wire the DOM for dataflow. The API design imperative is that the MDN reference be the mxWeb reference; mxWeb itself introduces no new architecture.
 
