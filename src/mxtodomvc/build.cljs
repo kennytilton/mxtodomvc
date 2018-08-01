@@ -122,7 +122,7 @@
                                "Mow lawn"])
       :mx-dom (cFonce
                 (with-par me
-                  (section {:class "todoapp"}
+                  (section {:class "todoapp" :style "padding:24px"}
                     (wall-clock :date 60000 0 15)
                     (wall-clock :time 1000 0 8)
                     (header {:class "header"}
@@ -131,7 +131,6 @@
                         (ul {:class "todo-list"}
                           (let [matrix (mxu-find-type me ::todoApp)
                                 todo-list (<mget matrix :todos)]
-                            (prn :items (count (<mget todo-list :items-raw)))
-                            (doall (for [todo (<mget todo-list :items-raw)]
+                            (doall (for [todo (<mget todo-list :items)]
                                       (todo-list-item todo))))))
                       (mxtodo-credits))))))))

@@ -12,17 +12,7 @@
   (md/make ::todo-list
     :items-raw (cFn (for [td seed-todos]
                       (make-todo {:title td})))
-    ;:items (cF (doall (remove td-deleted (<mget me :items-raw))))
-    ;
-    ;;; the TodoMVC challenge has a requirement that routes "go thru the
-    ;;; the model". (Some of us just toggled the hidden attribute appropriately
-    ;;; and avoided the DOM add/removal.) An exemplar they provided had the view
-    ;;; examine the route and ask the model for different subsets using different
-    ;;; functions for each subset. For fun we used dedicated cells:
-    ;
-    ;:items-completed (cF (doall (filter td-completed (<mget me :items))))
-    ;:items-active (cF (doall (remove td-completed (<mget me :items))))
-    ;
+    :items (cF (doall (remove td-deleted (<mget me :items-raw))))
     ;;; two DIVs want to hide if there are no to-dos, so in the spirit
     ;;; of DRY we dedicate a cell to that semantic.
     ;:empty? (cF (empty? (<mget me :items)))
