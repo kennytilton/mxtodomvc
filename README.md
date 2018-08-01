@@ -4,26 +4,27 @@
 The *Matrix* dataflow library endows application state with causal power over other such state, freeing the developer from the burden of propagating unpredictable change across highly interdependent models. 
 
 It does so simply by altering what happens when we read and write individual properties:
-* when A reads B, B remembers;
-* when we write to B, B tells A.
+* when `A` reads `B`, `B` remembers;
+* when we write to `B`, `B` tells `A`.
 
-What does it mean for A to read B, ie., for one property to read another?
+What does it mean for `A` to read `B`, ie., for one property to read another?
 ````clojure
 (make-cell-formulaic :A
   :rule (fn [me] (+ 42 (<mget me :B)))))
 ````
+`A` is an arbitrary function of `B`, possibly others.
 
-What happens when B tells A? A computes a new value. 
+What happens when `B` tells `A`? `A` computes a new value. 
 
 What happens when `A` recomputes a new value? `A` might have others to tell, or `A` might want to tell the world outside the matrix. If `A` is the `cloaked` property for a Clojure map incarnation of a warship, we can link its changes to the presence of the "hidden" attribute on the DOM element displaying the warship.
 
-The newly computed value for `A` might be a new set of child nodes for some parent, so the very population of our application can change in response to run-time events. 
-
-We call this dynamic population of communicating nodes a *matrix*.
+The newly computed value for `A` might be a new set of child nodes for some parent, so the very population of our application can change in response to run-time events. We call this dynamic population of communicating nodes a *matrix*.
 
 > ma·trix ˈmātriks *noun* an environment in which something else takes form. *Origin:* Latin, female animal used for breeding, parent plant, from *matr-*, *mater*
 
 The Matrix library brings our application models to life, animating them in response to streams of external inputs. The movies were fun, but that Matrix bled energy from humans to feed machines. Mr. Hickey, a careful man with the dictionary, might disapprove the misconstruction.
+
+Can we really program this way? This [Algebra](https://tiltonsalgebra.com/#) application matrix consists of about twelve hundred `A`s and `B`s, and extends into a Postgres database. Everything runs under matrix control.
 
 ### Related work
 Most today call this _reactive programming_. That describes well the programmer mindset in the small. We find _dataflow_ more descriptive of the emergent systems.
