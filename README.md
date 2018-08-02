@@ -249,7 +249,35 @@ Elsewhere we find the "change" dataflow initiators:
   (mset!> td :completed
     (when-not (td-completed td) (util/now))))
 ````
+We may as well get what we call the dashboard out of the way (without the selectors if you know your TodoMVC) because it adds a lot of behavior without any more Matrix complexity:
+````clojure
+(defn todo-items-dashboard []
+  (footer {:class  "footer"
+           :hidden (cF (<mget (mx-todos me) :empty?))}
+    (span {:class   "todo-count"
+           :content (cF (pp/cl-format nil "<strong>~a</strong>  item~:P remaining"
+                          (count (remove td-completed (mx-todo-items me)))))})
+    (button {:class   "clear-completed"
+             :hidden  (cF (empty? (<mget (mx-todos me) :items-completed)))
+             :onclick #(doseq [td (filter td-completed (mx-todo-items))]
+                         (td-delete! td))}
+      "Clear completed")))
+````
+In support of the above we extend the model of the to-do list with more dataflow properties:
+````clojure
+(defn todo-list [seed-todos]
+  (md/make ::todo-list
+    :items-raw (cFn (for [td seed-todos]
+                      (make-todo td)))
+    :items (cF (doall (remove td-deleted (<mget me :items-raw))))
+    :items-completed (cF (doall (filter td-completed (<mget me :items))))
+    :empty? (cF (empty? (<mget me :items)))))
+````
+Other things the reader might notice:
+* `mx-todos` and `mx-todo-items` wrap the complexity of navigating the Matrix to find desired data;
+* `doall` in various formulas may soon be baked in to Matrix, because lazy evaluation breaks dependency tracking, whihc relies on the depending property being bound to a "depender" var when dependent values are read.
 
+WE can now play with toggling the completion state of to-dos, deleting them directly, or deleting them with the "clear completed" button, keeping an eye on "items remaining".
 ## License
 
 Copyright © 2018 Kenneth Tilton
