@@ -17,7 +17,14 @@
     ;; to-dos (a) in memory (b) created only at start-up.
     :items-raw (cFn (for [td seed-todos]
                       (make-todo td)))
-    :items (cF (doall (remove td-deleted (<mget me :items-raw))))))
+    ;; doall is needed so formula actually runs when asked, necessary
+    ;; so read of any dependencies happens while dependent property
+    ;; is bound as necessary. Look for this to get baked into the
+    ;; Matrix internals.
+    ;;
+    :items (cF (doall (remove td-deleted (<mget me :items-raw))))
+    :items-completed (cF (doall (filter td-completed (<mget me :items))))
+    :empty? (cF (empty? (<mget me :items)))))
 
 (defn make-todo
   "Make a matrix incarnation of a todo item"

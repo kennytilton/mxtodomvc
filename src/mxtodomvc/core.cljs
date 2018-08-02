@@ -7,7 +7,7 @@
     [tiltontec.model.core :refer [<mget] :as md]
     [mxweb.gen :refer-macros [h1 div]]
     [mxweb.html :refer [tag-dom-create]]
-    [mxtodomvc.build :refer [matrix-build]]))
+    [mxtodomvc.matrix :refer [matrix-build]]))
 
 (enable-console-print!)
 (tufte/add-basic-println-handler! {})
