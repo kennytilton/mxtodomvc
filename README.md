@@ -275,9 +275,10 @@ In support of the above we extend the model of the to-do list with more dataflow
 ````
 Other things the reader might notice:
 * `mx-todos` and `mx-todo-items` wrap the complexity of navigating the Matrix to find desired data;
-* `doall` in various formulas may soon be baked in to Matrix, because lazy evaluation breaks dependency tracking, whihc relies on the depending property being bound to a "depender" var when dependent values are read.
+* `doall` in various formulas may soon be baked in to Matrix, because lazy evaluation breaks dependency tracking.  
+Recall that Matrix works by changing what happens when we read properties. The internal mechanism is to bind a formula to `*depender*` when kicking off its rule. With lazy evaluation, that binding is gone by the time the read occurs.
 
-WE can now play with toggling the completion state of to-dos, deleting them directly, or deleting them with the "clear completed" button, keeping an eye on "items remaining".
+We can now play with toggling the completion state of to-dos, deleting them directly, or deleting them with the "clear completed" button, keeping an eye on "items remaining".
 ## License
 
 Copyright © 2018 Kenneth Tilton
