@@ -205,7 +205,7 @@ We can now start our demo matrix off with a few preset to-dos. Some things to no
 * most interesting is `(mxu-find-type me ::todoApp)`, a bit of exposed wiring that demonstrates how Matrix elements pull information from elsewhere in the Matrix using various "mx-find-\*" selector-like utilities we will discuss below. 
 
 ````clojure
-(md/make ::todoApp
+(md/make ::md/todoApp
       :todos (todo/todo-list ["Wash car" "Walk dog" "Do laundry" "Mow lawn"])
       :mx-dom (cFonce
                 (with-par me
@@ -213,14 +213,10 @@ We can now start our demo matrix off with a few preset to-dos. Some things to no
                     (webco/wall-clock :date 60000 0 15)
                     (webco/wall-clock :time 1000 0 8)
                     (header {:class "header"}
-                      (h1 "todos")
-                      (section {:class "main"}
-                        (ul {:class "todo-list"}
-                          (let [matrix (mxu-find-type me ::todoApp)
-                                todo-list (<mget matrix :todos)]
-                            (doall (for [todo (<mget todo-list :items)]
-                                      (todo-list-item todo))))))
-                      (webco/app-credits mxtodo-credits))))))
+                      (h1 "todos"))
+                    (todo-items-list)
+                    (todo-items-dashboard)
+                    (webco/app-credits mxtodo-credits)))))
 ````
 And now the to-do item view itself, the structure and nice CSS authored by the developers of the TodoMVC exercise.
 ````clojure
