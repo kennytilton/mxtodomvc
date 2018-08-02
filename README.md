@@ -1,39 +1,42 @@
 # TodoMVC, with Matrix Inside&trade;
 *An introduction by example to Matrix dataflow and mxWeb*
 
-The *Matrix* dataflow library endows application state with causal power over other such state, freeing the developer from the burden of propagating unpredictable change across highly interdependent models. 
+The *Matrix* dataflow library endows application state with causal power over other such state, freeing the developer from the burden of propagating unpredictable change across highly interdependent models. More grandly, it brings our application models to life, animating them in response to streams of external inputs.
 
-It does so simply by altering what happens when we read and write individual properties:
-* when `A` reads `B`, `B` remembers;
+Matrix does this simply by altering what happens when we read and write individual properties:
+* when property `A` reads `B`, `B` remembers `A`;
 * when we write to `B`, `B` tells `A`.
 
-What does it mean for `A` to read `B`, ie., for one property to read another?
+What does it mean for one property to read another, for `A` to read `B`?
 ````clojure
-(make-cell-formulaic :A
-  :rule (fn [me] (+ 42 (<mget me :B)))))
+(def A (make-cell-formulaic
+        :rule (fn [me] (+ 42 (<mget me :B) (<mget me :C)))))
 ````
-`A` is an arbitrary function of `B`, possibly others.
+`A` is an arbitrary function of `B` and possibly others.
 
-What happens when `B` tells `A`? `A` computes a new value. 
+What does it mean for `B` to tell `A`? `B` makes `A` compute a new value. 
 
-What happens when `A` recomputes a new value? `A` might have others to tell, or `A` might want to tell the world outside the matrix. If `A` is the `cloaked` property for a Clojure map incarnation of a warship, we can link its changes to the presence of the "hidden" attribute on the DOM element displaying the warship.
+What happens when `A` computes a new value? `A` itself might have its own dependent properties to tell, or `A` might want to tell the world outside the matrix about its new value. If `A` is the `cloaked` property for a Clojure map proxy of a Romulan warship, the "hidden" attribute on the DOM element displaying the warship needs to track `A`s current value. To this end, Matrix lets us define "on-change" *observers* of `A`.
 
-The newly computed value for `A` might be a new set of child nodes for some parent, so the very population of our application can change in response to run-time events. We call this dynamic population of communicating nodes a *matrix*.
+> Usage alert: we use the term differently than most reactive libraries. When `A` is a function of `B`, many reactive libraries refer to it as an "observer" of `B`. The Matrix library conforms to the meaning of the word: observers are monitors, not participants. As for `A`, we call it a *dependent* of `B`.
+
+The newly computed value for `A` might be a new set of child nodes for some parent, so the very population of our application can change with events. We call this dynamic population of communicating nodes a *matrix*.
 
 > ma·trix ˈmātriks *noun* an environment in which something else takes form. *Origin:* Latin, female animal used for breeding, parent plant, from *matr-*, *mater*
 
 The Matrix library brings our application models to life, animating them in response to streams of external inputs. The movies were fun, but that Matrix bled energy from humans to feed machines. Mr. Hickey, a careful man with the dictionary, might disapprove the misconstruction.
 
-Can we really program this way? This [Algebra](https://tiltonsalgebra.com/#) application matrix consists of about twelve hundred `A`s and `B`s, and extends into a Postgres database. Everything runs under matrix control.
+Can we really program this way? This [Algebra](https://tiltonsalgebra.com/#) application matrix consists of about twelve hundred `A`s and `B`s, and extends into a Postgres database. Everything runs under matrix control. The average number of dependencies for one value is a little more than one, and the deepest dependency chain is about a dozen. On complex dispays of many math problems, a little over a thousand values are dependent on other values. So, yes.
 
 ### Related work
 Most today call this _reactive programming_. That describes well the programmer mindset in the small. We find _dataflow_ more descriptive of the emergent systems.
 
 > "Derived Values, Flowing" -- [re-frame](https://github.com/Day8/re-frame/blob/master/README.md) tag-line
 
-Matrix enjoys much good company in this field. We believe Matrix offers more simplicity, transparency, granularity, expressiveness, efficiency, and functional coverage, but in each dimension differs only in degree, not spirit. Other recommended CLJS libraries are [Reagent](https://reagent-project.github.io/), [Hoplon/Javelin](https://github.com/hoplon/javelin), and [re-frame](https://github.com/Day8/re-frame). Beyond CLJS, we admire [MobX](https://github.com/mobxjs/mobx/blob/master/README.md) (JS), [binding.Scala](https://github.com/ThoughtWorksInc/Binding.scala/blob/11.0.x/README.md), and Python [Trellis](https://pypi.org/project/Trellis/).
+Matrix enjoys much good company in this field. We believe Matrix offers more simplicity, transparency, granularity, expressiveness, efficiency, and functional coverage, but in each dimension differs only in degree, not spirit. Other recommended CLJS libraries are [Reagent](https://reagent-project.github.io/), [Hoplon/Javelin](https://github.com/hoplon/javelin), and [re-frame](https://github.com/Day8/re-frame). Beyond CLJS, we admire [MobX](https://github.com/mobxjs/mobx/blob/master/README.md) (JS), [binding.Scala](https://github.com/ThoughtWorksInc/Binding.scala/blob/11.0.x/README.md), and Python [Trellis](https://pypi.org/project/Trellis/). Let us know about any we missed.
 
-*mxWeb, "poster" application* *mxWeb* is a thin web un-framework built atop Matrix. We introduce Matrix in the context of mxWeb because nothing challenges a developer more than keeping application state straight while an intelligent user does their best to use a rich interface correctly. Then marketing wants the U/X redone.
+#### mxWeb, "poster" application
+*mxWeb* is a thin web un-framework built atop Matrix. We introduce Matrix in the context of mxWeb because nothing challenges a developer more than keeping application state straight while an intelligent user does their best to use a rich interface correctly. Then marketing wants the U/X redone.
 
 We say "un-framework" because mxWeb exists only to wire the DOM for dataflow. The API design imperative is that the MDN reference be the mxWeb reference; mxWeb itself introduces no new architecture.
 
@@ -61,7 +64,7 @@ When starting on a TodoMVC implementation, we execute first just the title and f
 git checkout title-and-credits
 ````
 From now on, our cue to check out a new tag will be these headers:
-#### checkout tag: title-and-credits
+#### checkout hello-todomx
 And here is the mxWeb HTML work-aike, look-alike code:
 ````clojure
 (defn matrix-build []
@@ -151,21 +154,21 @@ The preceding explains why mxWeb is faster than VDOM; property-to-property dataf
 #### 4. the mxWeb approach to Web Components
 Above we see the function `wall-clock` has four parameters, `[mode interval start end]`. Achieving component reuse with mxWeb differs not at all from parameterizing any Clojure function for maximum utility.
 #### 5. all dataflow all the time: "lifting" components into the Matrix  
-Browsers do not know about the Matrix dataflow library, so we have to write more or less glue code to bring them into the datafow.  
+We want to program with it as much as possible but, as just one example, browsers do not know about Matrix dataflow. If the component will not come to the Matrix, the Matrix will wrap the component: we write more or less "glue" code to bring it into the datafow.  
 ````clojure
 (js/setInterval
     #(mset!> me :clock (util/now))
     interval)
 ````  
-We call this gluing process "lifting". Lifting the system clock required just a few lines of code. We hinted earlier that mxWeb exemplifies "lifting". That took almost two thousand lines. We like dataflow that much.
+We call this gluing process "lifting". Lifting the system clock required just a few lines of code. We hinted earlier that mxWeb exemplifies "lifting". That took almost two thousand lines.
 #### 6. a single source of behavior: co-location of model and view  
-This may be an anti-feature to many. Our wall clock widget needs application state, and it generates and relays that state itself. The `clock` property holds the JS epoch, and the 'ticker' property holds a timer driving `clock`. Nearby in the code, a child element consumes the stream of `clock` values. Everything resides together in the source for quick authoring, debugging, revision, and understanding.
+This will be an anti-feature to many. Our wall clock widget needs application state, and it generates and relays that state itself. The `clock` property holds the JS epoch, and the 'ticker' property holds a timer driving `clock`. Nearby in the code, a child element consumes the stream of `clock` values. Everything resides together in the source for quick authoring, debugging, revision, and understanding.
 > The current trend in web library architecture involves decomposing monolithic apps into small elements combined usefully at run-time by the library to form the desired application. With mxWeb, the elements shaping an application behavior are found together in the source. Bucking trends makes us nervous, so we were happy to see Facebook engineers bragging on their "co-location" of GraphQL snippets alongside the components that consumed them.  
 #### 7. the Grail of object reuse  
-In classic OOP, objects have rigid definitions making generality unlikely. DIV elements do not generally need a stream of clock values, so normally we would need to sub-class DIV to arrange for one, or wire up access to a stream maintained elsewhere. Matrix works like the prototype model of OOP; we can code up a new dataflow-capable clock property on the fly.
+In classic OOP, objects have rigid definitions making generality unlikely. Few DIV elements need a stream of clock values, so normally we would need to sub-class DIV to arrange for one. Matrix, like the prototype model of OOP, lets us code up a new dataflow-capable clock property on the fly.
 
 ### git checkout enter-todos
-As promised, that was a deep first dive. This tag will be much simpler, merely introducing to-dos, unstored, unedited, and un-entered, even:
+As promised, that was a deep first dive. This tag will be much simpler, merely introducing to-dos, unstored, unedited, and not even enterable:
 * we load a few fixed-todos at start-up;
 * we show them in a list;
 * one control lets us toggle a to-do between completed or not; and
