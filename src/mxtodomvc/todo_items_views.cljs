@@ -83,6 +83,6 @@
 
     (button {:class   "clear-completed"
              :hidden  (cF (empty? (<mget (mx-todos me) :items-completed)))
-             :onclick #(doseq [td (filter td-completed (mx-todo-items))]
+             :onclick #(doseq [td (<mget (mx-todos me) :items-completed)]
                          (td-delete! td))}
       "Clear completed")))
