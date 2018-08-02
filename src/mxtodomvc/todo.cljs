@@ -1,7 +1,6 @@
 (ns mxtodomvc.todo
   (:require
-    [clojure.string :as str]
-    [tiltontec.util.core :as util :refer [pln now map-to-json json-to-map uuidv4]]
+    [tiltontec.util.core :as util]
     [tiltontec.cell.core
      :refer-macros [cF cFn] :refer [cI]]
     [tiltontec.model.core :as md :refer [make <mget mset!>]]))
@@ -10,26 +9,35 @@
 
 (defn todo-list [seed-todos]
   (md/make ::todo-list
+    ;; the bulk of the to-do app does not care about deleted to-dos,
+    ;; so we use a clumsy name "items-raw" for the true list of items
+    ;; ever created, and save "items" for the ones actually used.
+    ;;
+    ;; we will skip peristence for a while and play a while with
+    ;; to-dos (a) in memory (b) created only at start-up.
     :items-raw (cFn (for [td seed-todos]
-                      (make-todo {:title td})))
-    :items (cF (doall (remove td-deleted (<mget me :items-raw))))
-    ;;; two DIVs want to hide if there are no to-dos, so in the spirit
-    ;;; of DRY we dedicate a cell to that semantic.
-    ;:empty? (cF (empty? (<mget me :items)))
-    ))
+                      (make-todo td)))
+    :items (cF (doall (remove td-deleted (<mget me :items-raw))))))
 
 (defn make-todo
-  "Make a matrix incarnation of a todo on initial entry"
-  [islots]
+  "Make a matrix incarnation of a todo item"
+  [title]
+  ;; yes, we go further than the spec requires, but these
+  ;; are the attributes a real-world CRUD app tracks and there
+  ;; is little cost to including them.
+  ;;
+  ;; So we key off a UUID for when we get to persistence, record a
+  ;; fixed creation time, use a timestamp to denote "completed", and
+  ;; use another timestamp for logical deletion.
+  ;;
+  (md/make
+    :id (util/uuidv4)
+    :created (util/now)
 
-  (let [net-slots (merge
-                    {:id        (uuidv4)
-                     ;; we wrap mutable slots as Cells...
-                     :title     (cI (:title islots))
-                     :completed (cI nil)
-                     :deleted   (cI nil)})
-        todo (apply md/make (flatten (into [] net-slots)))]
-    todo))
+    ;; we wrap mutable slots as Cells...
+    :title (cI title)
+    :completed (cI nil)
+    :deleted (cI nil)))
 
 ;;; --------------------------------------------------------
 ;;; --- handy accessors to hide <mget etc ------------------
@@ -58,8 +66,8 @@
 ;;; --- dataflow triggering setters to hide mset!
 
 (defn td-delete! [td]
-  (assert td)
-  (mset!> td :deleted (now)))
+  (mset!> td :deleted (util/now)))
 
 (defn td-toggle-completed! [td]
-  (mset!> td :completed (when-not (td-completed td) (now))))
+  (mset!> td :completed
+    (when-not (td-completed td) (util/now))))
