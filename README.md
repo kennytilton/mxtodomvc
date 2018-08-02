@@ -13,11 +13,11 @@ A <= (fn [] (+ 42 B C))))
 ````
 What does it mean for `B` to tell `A`? `B` makes `A` compute a new value. 
 
-What happens when `A` computes a new value? `A` itself might have its own dependent properties to tell, or `A` might want to tell the world outside the matrix about its new value. If `A` is the `cloaked` property for a Clojure map proxy of a Romulan warship, the "hidden" attribute on the DOM element displaying the warship needs to track `A`s current value. To this end, Matrix lets us define "on-change" *observers* of `A`.
+What happens when `A` computes a new value? `A` itself might have its own dependent properties to tell, or `A` might want to tell the outside world. If a Web game app uses a map to represent a Romulan warship, there will also be a DOM element to render the ship. If `A` is the `cloaked` property of the mao, the "hidden" attribute of the DOM element needs to track `A`s current value. To this end, Matrix lets us define an "on-change" *observer* of `A` to update the DOM.
 
 > [observer](https://dictionary.cambridge.org/dictionary/english/observer): noun. UK: /əbˈzɜː.vər/, US: /əbˈzɝː.vɚ/  A person who watches what happens but has no active part in it.
 
-Usage alert: when `A` is a function of `B`, many reactive libraries refer to it as an "observer" of `B`. The Matrix library conforms to the meaning of the word: observers are monitors, not participants. As for `A`, we call it a *dependent* of `B`.
+Many reactive libraries use the term observer differently. Wwhen `A` is a function of `B`, they refer to `A` as an "observer" of `B`. The Matrix library conforms to the dictionary meaning of the word: observers are monitors, not participants. As for `A`, we call it a *dependent* of `B`.
 
 `A` might not be a simple property like "cloaked". `A` might be `K` for "kids" and hold the child nodes of some parent. The very population of our application can change with events. We call this dynamic population of communicating nodes a *matrix*.
 
