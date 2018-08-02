@@ -38,17 +38,14 @@
 
     (dashboard-footer))
 
-(defn matrix-build []
+(defn matrix-build! []
   (reset! md/matrix
     ;; now we provide an optional "type" to support Matrix node space search
     (md/make ::md/todoApp
       ;;
       ;; HTML tag syntax is (<tag> [dom-attribute-map [custom-property map] children*]
       ;;
-      :todos (todo/todo-list ["Wash car"
-                              "Walk dog"
-                              "Do laundry"
-                              "Mow lawn"])
+      :todos (todo/todo-list ["Wash car" "Walk dog" "Do laundry" "Mow lawn"])
       :mx-dom (cFonce
                 (with-par me
                   (section {:class "todoapp" :style "padding:24px"}

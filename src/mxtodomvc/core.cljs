@@ -7,13 +7,13 @@
     [tiltontec.model.core :refer [<mget] :as md]
     [mxweb.gen :refer-macros [h1 div]]
     [mxweb.html :refer [tag-dom-create]]
-    [mxtodomvc.matrix :refer [matrix-build]]))
+    [mxtodomvc.matrix :refer [matrix-build!]]))
 
 (enable-console-print!)
 (tufte/add-basic-println-handler! {})
 
 (let [root (dom/getElement "tagroot")
-      app-matrix (matrix-build)]
+      app-matrix (matrix-build!)]
   (set! (.-innerHTML root) nil)
   (dom/appendChild root
     (tag-dom-create
