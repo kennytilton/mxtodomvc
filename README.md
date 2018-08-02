@@ -7,10 +7,9 @@ Matrix does this simply by altering what happens when we read and write individu
 * when property `A` reads `B`, `B` remembers `A`;
 * when we write to `B`, `B` tells `A`.
 
-What does it mean for one property to read another, for `A` to read `B`? `A` is an arbitrary function of `B` and possibly others:
+What does it mean for one property to read another, for `A` to read `B`? `A` is an arbitrary function of `B` and possibly others. In spirit:
 ````clojure
-(def A (make-cell-formulaic
-        :rule (fn [me] (+ 42 (<mget me :B) (<mget me :C)))))
+A <= (fn [] (+ 42 B C))))
 ````
 What does it mean for `B` to tell `A`? `B` makes `A` compute a new value. 
 
@@ -20,7 +19,7 @@ What happens when `A` computes a new value? `A` itself might have its own depend
 
 Usage alert: when `A` is a function of `B`, many reactive libraries refer to it as an "observer" of `B`. The Matrix library conforms to the meaning of the word: observers are monitors, not participants. As for `A`, we call it a *dependent* of `B`.
 
-The newly computed value for `A` might be a new set of child nodes for some parent, so the very population of our application can change with events. We call this dynamic population of communicating nodes a *matrix*.
+`A` might not be a simple property like "cloaked". `A` might be `K` for "kids" and hold the child nodes of some parent. The very population of our application can change with events. We call this dynamic population of communicating nodes a *matrix*.
 
 > ma·trix ˈmātriks *noun* an environment in which something else takes form. *Origin:* Latin, female animal used for breeding, parent plant, from *matr-*, *mater*
 
