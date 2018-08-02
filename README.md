@@ -3,17 +3,17 @@
 
 The *Matrix* dataflow library endows application state with causal power over other such state, freeing the developer from the burden of propagating unpredictable change across highly interdependent models. More grandly, it brings our application models to life, animating them in response to streams of external inputs.
 
-Matrix does this simply by altering what happens when we read and write individual properties:
+Matrix does this simply by enhancing what happens when we read and write individual properties:
 * when property `A` reads `B`, `B` remembers `A`;
 * when we write to `B`, `B` tells `A`.
 
-What does it mean for one property to read another, for `A` to read `B`? `A` is an arbitrary function of `B` and possibly others. In spirit:
+What does it mean for one property to read another, for `A` to read `B`? It means declaring `A` as an arbitrary function of `B` and possibly others. In spirit:
 ````clojure
 A <= (fn [] (+ 42 B C))))
 ````
 What does it mean for `B` to tell `A`? `B` makes `A` compute a new value. 
 
-What happens when `A` computes a new value? `A` itself might have its own dependent properties to tell, or `A` might want to tell the outside world. If a Web game app uses a map to represent a Romulan warship, there will also be a DOM element to render the ship. If `A` is the `cloaked` property of the mao, the "hidden" attribute of the DOM element needs to track `A`s current value. To this end, Matrix lets us define an "on-change" *observer* of `A` to update the DOM.
+What happens when `A` computes a new value? `A` itself might have its own dependent properties to tell, or `A` might want to tell the outside world. Where a Web game app uses a map to represent a Romulan warship, a paired DOM element will render the ship. If `A` is the `cloaked` property of the map warship, the "hidden" attribute of the DOM warship needs to track it. To this end, Matrix lets us define an "on-change" *observer* of `A` to update the DOM.
 
 > [observer](https://dictionary.cambridge.org/dictionary/english/observer): noun. UK: /əbˈzɜː.vər/, US: /əbˈzɝː.vɚ/  A person who watches what happens but has no active part in it.
 
