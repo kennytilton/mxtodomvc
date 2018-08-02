@@ -17,4 +17,7 @@
   (set! (.-innerHTML root) nil)
   (dom/appendChild root
     (tag-dom-create
-      (<mget app-matrix :mx-dom))))
+      (<mget app-matrix :mx-dom)))
+
+  (when-let [route-starter (md/<mget app-matrix :router-starter)]
+    (route-starter)))

@@ -24,6 +24,8 @@
     ;;
     :items (cF (doall (remove td-deleted (<mget me :items-raw))))
     :items-completed (cF (doall (filter td-completed (<mget me :items))))
+    :items-active (cF (doall (remove td-completed (<mget me :items))))
+
     :empty? (cF (empty? (<mget me :items)))))
 
 (defn make-todo

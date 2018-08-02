@@ -17,7 +17,9 @@
      :refer [todo-items-list
              todo-items-dashboard]]
     [mxtodomvc.todo-view
-     :refer [todo-list-item]]))
+     :refer [todo-list-item]]
+
+    [bide.core :as r]))
 
 ;; New for this tag, we have moved the wall-clock to a reusable
 ;; "web-components" namespace and converted the hard-coded credits
@@ -35,7 +37,18 @@
       ;;
       ;; HTML tag syntax is (<tag> [dom-attribute-map [custom-property map] children*]
       ;;
-      :todos (todo/todo-list ["Wash car" "Walk dog" "Do laundry" "Mow lawn"])
+      :route (cI "All")
+      :route-starter (r/start! (r/router [["/" :All]
+                                          ["/active" :Active]
+                                          ["/completed" :Completed]])
+                       {:default     :ignore
+                        :on-navigate (fn [route params query]
+                                       (when-let [mtx @md/matrix]
+                                         (mset!> mtx :route (name route))))})
+
+      :todos (todo/todo-list ["Wash car" "Walk dog" "Do laundry" "Mow lawn"
+                              "Wash dog" "Tennis lesson" "Groceries"])
+
       :mx-dom (cFonce
                 (with-par me
                   (section {:class "todoapp" :style "padding:24px"}

@@ -10,9 +10,9 @@
      :refer [matrix mx-par <mget mset!> mswap!> mxu-find-type] :as md]
 
     [mxweb.gen
-     :refer-macros [div section header h1 footer p ul li span button]]
+     :refer-macros [div section header h1 footer p ul li a span button]]
     [mxtodomvc.todo
-     :refer [td-completed td-delete!] :as todo]
+     :refer [td-created td-completed td-delete!] :as todo]
     [mxtodomvc.todo-view
      :refer [todo-list-item]]
     [cljs.pprint :as pp]))
@@ -63,23 +63,44 @@
   ([mx]
    (<mget (mx-todos mx) :items)))
 
+(defn mx-route [mx]
+  (<mget (mx-find-matrix mx) :route))
+
 ;;; --- views --------------------------------------------------------
 
 (defn todo-items-list []
   (section {:class "main"}
     (ul {:class "todo-list"}
-      (for [todo (<mget (mx-todos me) :items)]
+      (for [todo (sort-by td-created
+                   (<mget (mx-todos me)
+                     (case (mx-route me)
+                       "All" :items
+                       "Completed" :items-completed
+                       "Active" :items-active
+                       :items)))]
         (todo-list-item todo)))))
 
 (defn todo-items-dashboard []
   (footer {:class  "footer"
            :hidden (cF (<mget (mx-todos me) :empty?))}
 
+    ;; Items remaing
+
     (span {:class   "todo-count"
            :content (cF (pp/cl-format nil "<strong>~a</strong>  item~:P remaining"
-                          (count (remove td-completed (mx-todo-items me)))))})
+                          (count (<mget (mx-todos me) :items-active))))})
 
-    ;;; selector routing coming in the next tag
+    ;; Item filters
+
+    (ul {:class "filters"}
+      (for [[label route] [["All", "#/"]
+                           ["Active", "#/active"]
+                           ["Completed", "#/completed"]]]
+        (li {} (a {:href     route
+                   :selector label
+                   :class    (cF (when (= (:selector @me) (mx-route me))
+                                   "selected"))}
+                 label))))
 
     (button {:class   "clear-completed"
              :hidden  (cF (empty? (<mget (mx-todos me) :items-completed)))
