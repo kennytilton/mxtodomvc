@@ -58,10 +58,10 @@ For issues, questions, or comments, ping us at kentilton on gmail, or DM @hisken
 ## Building TodoMVC from Scratch
 When starting on a TodoMVC implementation, we execute first just the title and footer as our own little "hello, world". Let us jump now to the commit of that milestone:
 ````bash
-git checkout title-and-credits
+git checkout hello-todomx
 ````
 From now on, our cue to check out a new tag will be these headers:
-#### checkout hello-todomx
+#### git checkout hello-todomx
 And here is the mxWeb HTML work-aike, look-alike code:
 ````clojure
 (defn matrix-build []
@@ -274,7 +274,20 @@ Other things the reader might notice:
 * `doall` in various formulas may soon be baked in to Matrix, because lazy evaluation breaks dependency tracking.  
 Recall that Matrix works by changing what happens when we read properties. The internal mechanism is to bind a formula to `*depender*` when kicking off its rule. With lazy evaluation, that binding is gone by the time the read occurs.
 
-We can now play with toggling the completion state of to-dos, deleting them directly, or deleting them with the "clear completed" button, keeping an eye on "items remaining".
+We can now play with toggling the completion state of to-dos, deleting them directly, or deleting them with the "clear completed" button, keeping an eye on "items remaining". Consider now what happens when we click the completion toggle on an uncompleted todo:
+* the completed property gets set to the current JS epoch;
+* the class of the todo list item view changes to "completed";
+* the LI DOM element classList gets set by an mxWeb observer to "completed";
+* the content property formula of the "Items remaining" span recounts the list of todos and comes up with one less;
+* thanks to an mxWeb observer, the span innerHTML gets updated;
+* the :items-completed property on the todos list model container gets re-calculated because it reads the :completed property of *all* todo item models, and grows by one;
+* the :hidden property of the "Clear completed" button/map gets recalculated because it reads the :items-completed property of the list of todos. If the length changes either way between zero and one, the :class property gains or loses the "hidden" value and...
+* an mxWeb observer updates the classList of the DOM element corresponding to the "Clear completed" button.
+All that happens when this code executes:
+````clojure
+(mset!> td :deleted (now))
+````
+
 ## License
 
 Copyright © 2018 Kenneth Tilton
