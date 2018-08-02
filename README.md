@@ -283,6 +283,7 @@ We can now play with toggling the completion state of to-dos, deleting them dire
 * the :items-completed property on the todos list model container gets recalculated because it reads the :completed property of *all* todo item models. It grows by one;
 * the :hidden property of the "Clear completed" button/map gets recalculated because it reads the :items-completed property of the list of todos. If the length changes either way between zero and one, the :class property gains or loses the "hidden" value and...
 * an mxWeb observer updates the classList of the DOM element corresponding to the "Clear completed" button.
+
 All that happens when this code executes:
 ````clojure
 (mset!> td :deleted (now))
@@ -292,8 +293,6 @@ We will spare that detailed analysis of what happens when we click the "delete" 
 * if the item was incomplete when deleted, the "Items remaining" drops by one;
 * if the item was the only completed item, "Clear completed" disappears;
 * if the item was the last of any kind, the dashboard disappears.
-
-
 
 ## License
 
