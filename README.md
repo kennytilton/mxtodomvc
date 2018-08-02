@@ -18,7 +18,9 @@ What does it mean for `B` to tell `A`? `B` makes `A` compute a new value.
 
 What happens when `A` computes a new value? `A` itself might have its own dependent properties to tell, or `A` might want to tell the world outside the matrix about its new value. If `A` is the `cloaked` property for a Clojure map proxy of a Romulan warship, the "hidden" attribute on the DOM element displaying the warship needs to track `A`s current value. To this end, Matrix lets us define "on-change" *observers* of `A`.
 
-> Usage alert: we use the term differently than most reactive libraries. When `A` is a function of `B`, many reactive libraries refer to it as an "observer" of `B`. The Matrix library conforms to the meaning of the word: observers are monitors, not participants. As for `A`, we call it a *dependent* of `B`.
+> [observer](https://dictionary.cambridge.org/dictionary/english/observer): noun. UK: /əbˈzɜː.vər/, US: /əbˈzɝː.vɚ/  A person who watches what happens but has no active part in it.
+
+Usage alert: when `A` is a function of `B`, many reactive libraries refer to it as an "observer" of `B`. The Matrix library conforms to the meaning of the word: observers are monitors, not participants. As for `A`, we call it a *dependent* of `B`.
 
 The newly computed value for `A` might be a new set of child nodes for some parent, so the very population of our application can change with events. We call this dynamic population of communicating nodes a *matrix*.
 
