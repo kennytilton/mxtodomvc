@@ -28,16 +28,6 @@
    "Created by <a href=\"https://github.com/kennytilton\">Kenneth Tilton</a>."
    "Inspired by <a href=\"https://github.com/tastejs/todomvc/blob/master/app-spec.md\">TodoMVC</a>."])
 
-#_(section {:class "todoapp"}
-    (std-clock)
-    (header {:class "header"}
-      (h1 "todos")
-      (todo-entry-field))
-
-    (todo-list-items)
-
-    (dashboard-footer))
-
 (defn matrix-build! []
   (reset! md/matrix
     ;; now we provide an optional "type" to support Matrix node space search
