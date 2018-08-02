@@ -7,13 +7,11 @@ Matrix does this simply by altering what happens when we read and write individu
 * when property `A` reads `B`, `B` remembers `A`;
 * when we write to `B`, `B` tells `A`.
 
-What does it mean for one property to read another, for `A` to read `B`?
+What does it mean for one property to read another, for `A` to read `B`? `A` is an arbitrary function of `B` and possibly others:
 ````clojure
 (def A (make-cell-formulaic
         :rule (fn [me] (+ 42 (<mget me :B) (<mget me :C)))))
 ````
-`A` is an arbitrary function of `B` and possibly others.
-
 What does it mean for `B` to tell `A`? `B` makes `A` compute a new value. 
 
 What happens when `A` computes a new value? `A` itself might have its own dependent properties to tell, or `A` might want to tell the world outside the matrix about its new value. If `A` is the `cloaked` property for a Clojure map proxy of a Romulan warship, the "hidden" attribute on the DOM element displaying the warship needs to track `A`s current value. To this end, Matrix lets us define "on-change" *observers* of `A`.
