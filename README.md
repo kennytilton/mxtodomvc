@@ -8,24 +8,24 @@ Matrix does this by enhancing what happens when we read and write individual pro
 * when we write to `B`, `B` tells `A`; and
 * 'A' and 'B' can have "on change" callbacks.
 
-What does it mean for one property to read another, for `A` to read `B`? It means declaring `A` as an arbitrary function of `B` and possibly others. In spirit:
+What does it mean for one property to read another, for `A` to read `B`? It means declaring `A` as an arbitrary HLL function of `B` and possibly others. In spirit:
 ````clojure
 A <= (fn [] (+ 42 B C))))
 ````
 What does it mean for `B` to tell `A`? `B` has `A` compute a new value. 
 
-What happens when `A` computes a new value? `A` itself might have its own dependent properties to tell, or `A` might want to tell the outside world. Where a Web game app uses a map to represent a Romulan warship, a paired DOM element will be rendering the ship. If `A` is the `cloaked` property of the map warship, the "hidden" attribute of the DOM warship needs to track `cloaked`. To this end, Matrix lets us define an "on-change" *observer* of `A` to update the DOM.
+What happens when `A` computes a new value? `A` itself might have its own dependent properties to tell, or `A` might want to tell the world outside the connected graph of properties. Where a Web game app uses a CLJS map to represent a Romulan warship, a paired DOM element will exist to render ship. If `A` is the `cloaked` property of the map warship, the "hidden" attribute of the DOM warship needs to be added or removed. To this end, Matrix lets us define an "on-change" *observer* of `A` to update the DOM.
 
 > [observer](https://dictionary.cambridge.org/dictionary/english/observer): noun. UK: /əbˈzɜː.vər/, US: /əbˈzɝː.vɚ/  A person who watches what happens but has no active part in it.
 
-Many reactive libraries use the term observer differently; when `A` is a function of `B`, they refer to `A` as an "observer" of `B`. The Matrix library conforms to the dictionary meaning of the word: observers are monitors, not participants. We call `A` a *dependent* or function of `B`.
+Many reactive libraries use the term observer differently; when `A` is a function of `B`, many refer to `A` as an "observer" of `B`. Reagent uses the verb "watch". Indeed, the GoF pattern is called ["Observer"](https://en.wikipedia.org/wiki/Observer_pattern). Matrix usage conforms to the dictionary meaning: observers are *monitors* of the graph of properties, not participants. They act outside the graph. 
 
 #### matrix?
-`A` might not be a simple, descriptive property such as "cloaked". `A` might be `K` for "kids" and hold the child nodes of some parent; the very population of our application can change with events. We call this dynamic population of communicating nodes a *matrix*.
+`A` might not be a simple, descriptive property such as "cloaked". `A` might be `K` for "kids" and hold the child nodes of some parent; thus the very population of our application model can change with events. We call this dynamic population of communicating nodes a *matrix*.
 
 > ma·trix ˈmātriks *noun* an environment in which something else takes form. *Origin:* Latin, female animal used for breeding, parent plant, from *matr-*, *mater*
 
-The Matrix library brings our application models to life, animating them in response to streams of external inputs. The movies were fun, but that Matrix bled energy from humans to feed machines. Mr. Hickey, a careful man with the dictionary, might disapprove the misconstruction.
+Simply by propagating change between properties and to the outside world, the Matrix library animates the application models we declare. The movies were fun, but *that* Matrix bled energy from humans to feed machines. Mr. Hickey, a careful man with the dictionary, might disapprove the misconstruction.
 
 Can we really program this way? This [Algebra](https://tiltonsalgebra.com/#) application matrix consists of about twelve hundred `A`s and `B`s, and extends into a Postgres database. Everything runs under matrix control. The average number of dependencies for one value is a little more than one, and the deepest dependency chain is about a dozen. On complex dispays of many math problems, a little over a thousand values are dependent on other values. We do program this way.
 
