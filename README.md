@@ -17,18 +17,18 @@ What happens when `A` computes a new value? `A` itself might have its own depend
 
 > [observer](https://dictionary.cambridge.org/dictionary/english/observer): noun. UK: /əbˈzɜː.vər/, US: /əbˈzɝː.vɚ/  A person who watches what happens but has no active part in it.
 
-Many reactive libraries use the term observer differently. Wwhen `A` is a function of `B`, they refer to `A` as an "observer" of `B`. The Matrix library conforms to the dictionary meaning of the word: observers are monitors, not participants. As for `A`, we call it a *dependent* of `B`.
+Many reactive libraries use the term observer differently. When `A` is a function of `B`, they refer to `A` as an "observer" of `B`. The Matrix library conforms to the dictionary meaning of the word: observers are monitors, not participants. We call `A` a *dependent* or function of `B`.
 
-`A` might not be a simple property like "cloaked". `A` might be `K` for "kids" and hold the child nodes of some parent. The very population of our application can change with events. We call this dynamic population of communicating nodes a *matrix*.
+Something important: `A` might not be a simple, descriptive property such as "cloaked". `A` might be `K` for "kids" and hold the child nodes of some parent; the very population of our application can change with events. We call this dynamic population of communicating nodes a *matrix*.
 
 > ma·trix ˈmātriks *noun* an environment in which something else takes form. *Origin:* Latin, female animal used for breeding, parent plant, from *matr-*, *mater*
 
 The Matrix library brings our application models to life, animating them in response to streams of external inputs. The movies were fun, but that Matrix bled energy from humans to feed machines. Mr. Hickey, a careful man with the dictionary, might disapprove the misconstruction.
 
-Can we really program this way? This [Algebra](https://tiltonsalgebra.com/#) application matrix consists of about twelve hundred `A`s and `B`s, and extends into a Postgres database. Everything runs under matrix control. The average number of dependencies for one value is a little more than one, and the deepest dependency chain is about a dozen. On complex dispays of many math problems, a little over a thousand values are dependent on other values. So, yes.
+Can we really program this way? This [Algebra](https://tiltonsalgebra.com/#) application matrix consists of about twelve hundred `A`s and `B`s, and extends into a Postgres database. Everything runs under matrix control. The average number of dependencies for one value is a little more than one, and the deepest dependency chain is about a dozen. On complex dispays of many math problems, a little over a thousand values are dependent on other values. We do program this way.
 
-### Related work
-> "Derived Values, Flowing" -- [re-frame](https://github.com/Day8/re-frame/blob/master/README.md) tag-line
+#### Related work
+> "Derived Values, Flowing" -- the [re-frame](https://github.com/Day8/re-frame/blob/master/README.md) tag-line
 
 Matrix enjoys much good company in this field. We believe Matrix offers more simplicity, transparency, granularity, expressiveness, efficiency, and functional coverage, but in each dimension differs only in degree, not spirit. Other recommended CLJS libraries are [Reagent](https://reagent-project.github.io/), [Hoplon/Javelin](https://github.com/hoplon/javelin), and [re-frame](https://github.com/Day8/re-frame). Beyond CLJS, we admire [MobX](https://github.com/mobxjs/mobx/blob/master/README.md) (JS), [binding.Scala](https://github.com/ThoughtWorksInc/Binding.scala/blob/11.0.x/README.md), and Python [Trellis](https://pypi.org/project/Trellis/). Let us know about any we missed.
 
@@ -288,25 +288,25 @@ All that happens when this code executes:
 ````clojure
 (mset!> td :deleted (now))
 ````
-We will spare that detailed analysis of what happens when we click the "delete" button (the red "X" that appears on hover), but the reader might want to work out for themselves the dataflow from the :deleted property to these behaviors:
+We will spare the reader our detailed analysis of what happens when we click the "delete" button (the red "X" that appears on hover), but the reader might want to work out for themselves the dataflow from the :deleted property to these behaviors:
 * the item disappears;
 * if the item was incomplete when deleted, the "Items remaining" drops by one;
 * if the item was the only completed item, "Clear completed" disappears;
 * if the item was the last of any kind, the dashboard disappears.
 
-Now the spec requires a bit of routing.
+Next up: the spec requires a bit of routing.
 
 #### git checkout lift-routing
-The official TodoMVC spec requires a routing mechanism be used to let the user filter which to-dos are displayed, based on their completion status. The options are all, completed conly, and incomplete (active) only.
+The official TodoMVC spec requires a routing mechanism be used to implement the user filtering of which to-dos are displayed, based on their completion status. The options are all, completed only, and incomplete (active) only.
 
-The code we would like to write (and did) is this:
+The declarative code just reads the route, a property of the root node of the matrix:
 ````clojure
 (defn todo-items-list []
   (section {:class "main"}
     (ul {:class "todo-list"}
       (for [todo (sort-by td-created
                    (<mget (mx-todos me)
-                     (case (<mget (mx-find-matrix mx) :route) ;; <--- route property read
+                     (case (<mget (mx-find-matrix mx) :route) ;; <--- READ ROUTE PROPERTY
                        "All" :items
                        "Completed" :items-completed
                        "Active" :items-active
@@ -324,7 +324,7 @@ One popular CLJS routing library is [bide](https://github.com/funcool/bide). Bid
                        {:default     :ignore
                         :on-navigate (fn [route params query]
                                        (when-let [mtx @md/matrix]
-                                         ;;; ... and mset!> injects the user route into the matrix
+                                         ;;; ... WRITE ROUTE PROPERTY
                                          (mset!> mtx :route (name route))))}))
 ````
 Just two steps are required:
@@ -333,7 +333,28 @@ Just two steps are required:
 
 The routing change then causes the list view to recompute which items to display, and an observer on the `UL` children arranges for the DOM to be updated.
 
-[More RSN]
+#### git checkout todo-entry
+Earlier we emphasized that mxWeb is an "un-framework". With this tag we add support for user entry of new to-dos, and illustrate one advantage of not being a framework: mxWeb does not hide the DOM.
+````clojure
+(defn todo-entry-field []
+  (input {:class       "new-todo"
+          :autofocus   true
+          :placeholder "What needs doing?"
+          :onkeypress  #(when (= (.-key %) "Enter")
+                          (let [raw (form/getValue (.-target %))
+                                title (str/trim raw)]
+                            (when-not (str/blank? title)
+                              (mswap!> (<mget @matrix :todos) :items-raw conj
+                                (make-todo title)))
+                            (form/setValue (.-target %) "")))}))
+````
+The token `%` of course is the raw DOM event. In a different handler we will see manipulation of the DOM classlist. Not every library allows easy access to the DOM, especially those such as ReactJS where we declaratively author VDOM. With ReactJS, accessing the DOM is a [heavier lift](https://reactjs.org/docs/refs-and-the-dom.html#callback-refs).
+
+Speaking of raw DOM events, ReactJS hides those as well because ReactJS cannot handle their semantics. Example: `on-change` events fire on every keystroke on an input field. The MDN standard is that `on-change` fire only on blur or when the user hits enter, indicating they have completed their entry.
+
+<soapbox>
+ReactJS and every one of the [sixty-four submissions](http://todomvc.com/) to TodoMVC framework add a lot of value, but they also add their own baggage, and, like the Tower of Babel, segment the developer community, and limit library reuse. We need a front-end version of NoSQL.
+</soapbox>
 
 ## License: MIT
 
