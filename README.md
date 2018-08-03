@@ -18,7 +18,9 @@ What happens when `A` computes a new value? `A` itself might have its own depend
 
 > [observer](https://dictionary.cambridge.org/dictionary/english/observer): noun. UK: /əbˈzɜː.vər/, US: /əbˈzɝː.vɚ/  A person who watches what happens but has no active part in it.
 
-Many reactive libraries use the term observer differently; when `A` is a function of `B`, many refer to `A` as an "observer" of `B`. Reagent uses the verb "watch". Indeed, the GoF pattern is called ["Observer"](https://en.wikipedia.org/wiki/Observer_pattern). Matrix usage conforms to the dictionary meaning: observers are *monitors* of the graph of properties, not participants. They act outside the graph. 
+Many reactive libraries use the term observer differently; when `A` is a function of `B`, many refer to `A` as an "observer" of `B`. Reagent uses the verb "watch". Indeed, the GoF pattern is called ["Observer"](https://en.wikipedia.org/wiki/Observer_pattern).
+
+Matrix usage conforms to the dictionary meaning: observers are *monitors* of the graph of properties, not participants. They act outside the graph. 
 
 #### matrix?
 `A` might not be a simple, descriptive property such as "cloaked". `A` might be `K` for "kids" and hold the child nodes of some parent; thus the very population of our application model can change with events. We call this dynamic population of communicating nodes a *matrix*.
