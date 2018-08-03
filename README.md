@@ -330,8 +330,12 @@ One popular CLJS routing library is [bide](https://github.com/funcool/bide). Bid
 Just two steps are required:
 * wrap the `:route` property in an input Cell; and
 * have the routing library `:on-navigate` handler write to the `:route` property.
+
 The routing change then causes the list view to recompute which items to display, and an observer on the `UL` children arranges for the DOM to be updated.
-## License
+
+[More RSN]
+
+## License: MIT
 
 Copyright © 2018 Kenneth Tilton
 
