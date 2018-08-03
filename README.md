@@ -14,11 +14,11 @@ A <= (fn [] (+ 42 B C))))
 ````
 What does it mean for `B` to tell `A`? `B` has `A` compute a new value. 
 
-What happens when `A` computes a new value? `A` itself might have its own dependent properties to tell, or `A` might want to tell the world outside the connected graph of properties. Where a Web game app uses a CLJS map to represent a Romulan warship, a paired DOM element will exist to render ship. If `A` is the `cloaked` property of the map warship, the "hidden" attribute of the DOM warship needs to be added or removed. To this end, Matrix lets us define an "on-change" *observer* of `A` to update the DOM.
+What happens when `A` computes a new value? `A` itself might have its own dependent properties to tell, or `A` might want to tell the world outside the connected graph of properties. Where a Web game app uses a CLJS map to represent a Romulan warship, a paired DOM element will render the ship. If `A` is the `cloaked` property of the map warship, the "hidden" attribute of the DOM warship needs to be added or removed. To this end, Matrix lets us define an "on-change" *observer* of `A` to update the DOM.
 
 > [observer](https://dictionary.cambridge.org/dictionary/english/observer): noun. UK: /əbˈzɜː.vər/, US: /əbˈzɝː.vɚ/  A person who watches what happens but has no active part in it.
 
-Many reactive libraries use the term observer differently; when `A` is a function of `B`, many refer to `A` as an "observer" of `B`. Reagent uses the verb "watch". Indeed, the GoF pattern is called ["Observer"](https://en.wikipedia.org/wiki/Observer_pattern).
+Many reactive libraries use the term observer differently; when `A` is a function of `B`, they refer to `A` as an "observer" of `B`. Reagent uses the verb "watch". Indeed, the GoF pattern is called ["Observer"](https://en.wikipedia.org/wiki/Observer_pattern).
 
 Matrix usage conforms to the dictionary meaning: observers are *monitors* of the graph of properties, not participants. They act outside the graph. 
 
@@ -27,11 +27,11 @@ Matrix usage conforms to the dictionary meaning: observers are *monitors* of the
 
 > ma·trix ˈmātriks *noun* an environment in which something else takes form. *Origin:* Latin, female animal used for breeding, parent plant, from *matr-*, *mater*
 
-Simply by propagating change between properties and to the outside world, the Matrix library animates the application models we declare. The movies were fun, but *that* Matrix bled energy from humans to feed machines. Mr. Hickey, a careful man with the dictionary, might disapprove the misconstruction.
+Simply by propagating change between properties and to the outside world, the Matrix library brings to life declarative application models. The movies were fun, but *that* Matrix sapped energy from humans to feed the machines. Mr. Hickey, a careful man with the dictionary, might disapprove the misconstruction.
 
 What about X, Y, and Z? Properties from existing libraries that know nothing about Matrix? Because applications that run reliably by themselves are so much simpler to build and maintain, we write whatever "glue" code it takes to wire external systems with datadlow. We call this "lifting" libraries into the Matrix. mxWeb required about two thousand lines of code. 
 
-Can we really program this way? This [Algebra](https://tiltonsalgebra.com/#) application matrix consists of about twelve hundred `A`s and `B`s, and extends into a Postgres database. Everything runs under matrix control. It lifts Qooxdoo JS, MathJax, Postgres and more. The average number of dependencies for one value is a little more than one, and the deepest dependency chain is about a dozen. On complex dispays of many math problems, a little over a thousand values are dependent on other values. We do program this way.
+Can we really program this way? This [Algebra](https://tiltonsalgebra.com/#) application matrix consists of about twelve hundred `A`s and `B`s, and extends into a Postgres database. Everything runs under matrix control. It lifts Qooxdoo JS, MathJax, Postgres and more. The average number of dependencies for one value is a little more than one, and the deepest dependency chain is about a dozen. On complex dispays of many math problems, a little over a thousand values are dependent on other values.
 
 #### Related work
 > "Derived Values, Flowing" -- the [re-frame](https://github.com/Day8/re-frame/blob/master/README.md) tag-line
