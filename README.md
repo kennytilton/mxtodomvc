@@ -1,25 +1,27 @@
 # TodoMVC, with Matrix Inside&trade;
 *An introduction by example to Matrix dataflow and mxWeb*
 
-The *Matrix* dataflow library endows application state with causal power over other such state, freeing the developer from the burden of propagating unpredictable change across highly interdependent models. More grandly, it brings our application models to life, animating them in response to streams of external inputs.
+The *Matrix* dataflow library endows application state with causal power, freeing the developer from the burden of propagating unpredictable change across highly interdependent models. More grandly, it brings our application models to life, animating them in response to streams of external inputs.
 
-Matrix does this simply by enhancing what happens when we read and write individual properties:
+Matrix does this by enhancing what happens when we read and write individual properties:
 * when property `A` reads `B`, `B` remembers `A`;
-* when we write to `B`, `B` tells `A`.
+* when we write to `B`, `B` tells `A`; and
+* 'A' and 'B' can have "on change" callbacks.
 
 What does it mean for one property to read another, for `A` to read `B`? It means declaring `A` as an arbitrary function of `B` and possibly others. In spirit:
 ````clojure
 A <= (fn [] (+ 42 B C))))
 ````
-What does it mean for `B` to tell `A`? `B` makes `A` compute a new value. 
+What does it mean for `B` to tell `A`? `B` has `A` compute a new value. 
 
-What happens when `A` computes a new value? `A` itself might have its own dependent properties to tell, or `A` might want to tell the outside world. Where a Web game app uses a map to represent a Romulan warship, a paired DOM element will render the ship. If `A` is the `cloaked` property of the map warship, the "hidden" attribute of the DOM warship needs to track it. To this end, Matrix lets us define an "on-change" *observer* of `A` to update the DOM.
+What happens when `A` computes a new value? `A` itself might have its own dependent properties to tell, or `A` might want to tell the outside world. Where a Web game app uses a map to represent a Romulan warship, a paired DOM element will be rendering the ship. If `A` is the `cloaked` property of the map warship, the "hidden" attribute of the DOM warship needs to track `cloaked`. To this end, Matrix lets us define an "on-change" *observer* of `A` to update the DOM.
 
 > [observer](https://dictionary.cambridge.org/dictionary/english/observer): noun. UK: /əbˈzɜː.vər/, US: /əbˈzɝː.vɚ/  A person who watches what happens but has no active part in it.
 
-Many reactive libraries use the term observer differently. When `A` is a function of `B`, they refer to `A` as an "observer" of `B`. The Matrix library conforms to the dictionary meaning of the word: observers are monitors, not participants. We call `A` a *dependent* or function of `B`.
+Many reactive libraries use the term observer differently; when `A` is a function of `B`, they refer to `A` as an "observer" of `B`. The Matrix library conforms to the dictionary meaning of the word: observers are monitors, not participants. We call `A` a *dependent* or function of `B`.
 
-Something important: `A` might not be a simple, descriptive property such as "cloaked". `A` might be `K` for "kids" and hold the child nodes of some parent; the very population of our application can change with events. We call this dynamic population of communicating nodes a *matrix*.
+#### matrix?
+`A` might not be a simple, descriptive property such as "cloaked". `A` might be `K` for "kids" and hold the child nodes of some parent; the very population of our application can change with events. We call this dynamic population of communicating nodes a *matrix*.
 
 > ma·trix ˈmātriks *noun* an environment in which something else takes form. *Origin:* Latin, female animal used for breeding, parent plant, from *matr-*, *mater*
 
@@ -352,9 +354,9 @@ The token `%` of course is the raw DOM event. In a different handler we will see
 
 Speaking of raw DOM events, ReactJS hides those as well because ReactJS cannot handle their semantics. Example: `on-change` events fire on every keystroke on an input field. The MDN standard is that `on-change` fire only on blur or when the user hits enter, indicating they have completed their entry.
 
-<soapbox>
+\<soapbox\>
 ReactJS and every one of the [sixty-four submissions](http://todomvc.com/) to TodoMVC framework add a lot of value, but they also add their own baggage, and, like the Tower of Babel, segment the developer community, and limit library reuse. We need a front-end version of NoSQL.
-</soapbox>
+\</soapbox\>
 
 ## License: MIT
 
