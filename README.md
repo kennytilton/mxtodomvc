@@ -27,7 +27,9 @@ Many reactive libraries use the term observer differently; when `A` is a functio
 
 Simply by propagating change between properties and to the outside world, the Matrix library animates the application models we declare. The movies were fun, but *that* Matrix bled energy from humans to feed machines. Mr. Hickey, a careful man with the dictionary, might disapprove the misconstruction.
 
-Can we really program this way? This [Algebra](https://tiltonsalgebra.com/#) application matrix consists of about twelve hundred `A`s and `B`s, and extends into a Postgres database. Everything runs under matrix control. The average number of dependencies for one value is a little more than one, and the deepest dependency chain is about a dozen. On complex dispays of many math problems, a little over a thousand values are dependent on other values. We do program this way.
+What about X, Y, and Z? Properties from existing libraries that know nothing about Matrix? Because applications that run reliably by themselves are so much simpler to build and maintain, we write whatever "glue" code it takes to wire external systems with datadlow. We call this "lifting" libraries into the Matrix. mxWeb required about two thousand lines of code. 
+
+Can we really program this way? This [Algebra](https://tiltonsalgebra.com/#) application matrix consists of about twelve hundred `A`s and `B`s, and extends into a Postgres database. Everything runs under matrix control. It lifts Qooxdoo JS, MathJax, Postgres and more. The average number of dependencies for one value is a little more than one, and the deepest dependency chain is about a dozen. On complex dispays of many math problems, a little over a thousand values are dependent on other values. We do program this way.
 
 #### Related work
 > "Derived Values, Flowing" -- the [re-frame](https://github.com/Day8/re-frame/blob/master/README.md) tag-line
@@ -35,7 +37,9 @@ Can we really program this way? This [Algebra](https://tiltonsalgebra.com/#) app
 Matrix enjoys much good company in this field. We believe Matrix offers more simplicity, transparency, granularity, expressiveness, efficiency, and functional coverage, but in each dimension differs only in degree, not spirit. Other recommended CLJS libraries are [Reagent](https://reagent-project.github.io/), [Hoplon/Javelin](https://github.com/hoplon/javelin), and [re-frame](https://github.com/Day8/re-frame). Beyond CLJS, we admire [MobX](https://github.com/mobxjs/mobx/blob/master/README.md) (JS), [binding.Scala](https://github.com/ThoughtWorksInc/Binding.scala/blob/11.0.x/README.md), and Python [Trellis](https://pypi.org/project/Trellis/). Let us know about any we missed.
 
 #### mxWeb, "poster" application
-*mxWeb* is a thin web un-framework built atop Matrix. We introduce Matrix in the context of mxWeb because nothing challenges a developer more than keeping application state straight while an intelligent user does their best to use a rich interface correctly. Then marketing wants the U/X redone.
+*mxWeb* is a thin web un-framework built atop Matrix. We introduce Matrix with mxWeb because nothing challenges a developer more than keeping application state straight while an intelligent user does their best to use a rich interface correctly. 
+
+Then marketing wants a U/X overhaul.
 
 We say "un-framework" because mxWeb exists only to wire the DOM for dataflow. The API design imperative is that the MDN reference be the mxWeb reference; mxWeb itself introduces no new architecture.
 
