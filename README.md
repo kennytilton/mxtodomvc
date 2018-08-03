@@ -3,12 +3,12 @@
 
 The *Matrix* dataflow library endows application state with causal power, freeing the developer from the burden of propagating unpredictable change across highly interdependent models. More grandly, it brings our application models to life, animating them in response to streams of external inputs.
 
-Matrix does this by enhancing what happens when we read and write individual properties:
+Matrix does this simply by enhancing what happens when we read and write individual properties:
 * when property `A` reads `B`, `B` remembers `A`;
 * when we write to `B`, `B` tells `A`; and
 * 'A' and 'B' can have "on change" callbacks.
 
-What does it mean for one property to read another, for `A` to read `B`? It means declaring `A` as an arbitrary HLL function of `B` and possibly others. In spirit:
+What does it mean for one property to read another, for `A` to read `B`? It means declaring `A` as an arbitrary HLL function of `B` and possibly others:
 ````clojure
 A <= (fn [] (+ 42 B C))))
 ````
