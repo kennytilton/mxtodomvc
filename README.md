@@ -8,13 +8,15 @@ Matrix does this simply by enhancing what happens when we read and write individ
 * when we write to `B`, `B` tells `A`; and
 * 'A' and 'B' can have "on change" callbacks.
 
-What does it mean for one property to read another, for `A` to read `B`? It means declaring `A` as an arbitrary HLL function of `B` and possibly others:
+What does it mean for one property to read another, for `A` to read `B`? It means declaring `A` as an arbitrary HLL function of `B` and possibly others. In pseudo code:
 ````clojure
 A <= (fn [] (+ 42 B C))))
 ````
 What does it mean for `B` to tell `A`? `B` has `A` compute a new value. 
 
-What happens when `A` computes a new value? `A` itself might have its own dependent properties to tell, or `A` might want to tell the world outside the connected graph of properties. Where a Web game app uses a CLJS map to represent a Romulan warship, a paired DOM element will render the ship. If `A` is the `cloaked` property of the map warship, the "hidden" attribute of the DOM warship needs to be added or removed. To this end, Matrix lets us define an "on-change" *observer* of `A` to update the DOM.
+What happens when `A` computes a new value? `A` itself might have its own dependent properties to tell, or `A` might want to tell the world outside the connected graph of properties. To this end, Matrix lets us define "on-change" *observers*.
+
+> A Web game app may use a CLJS map to model a Romulan warship and a paired DOM element to render it. If `A` is the `:cloaked` property of the map warship, the "hidden" attribute of the DOM warship needs to be added or removed. An observer updates the DOM.
 
 > [observer](https://dictionary.cambridge.org/dictionary/english/observer): noun. UK: /əbˈzɜː.vər/, US: /əbˈzɝː.vɚ/  A person who watches what happens but has no active part in it.
 
