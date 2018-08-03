@@ -288,12 +288,49 @@ All that happens when this code executes:
 ````clojure
 (mset!> td :deleted (now))
 ````
-We will spare that detailed analysis of what happens when we click the "delete" button (the red "X" that appears on hover), but the reader might want to work out for themselves how these things happen:
+We will spare that detailed analysis of what happens when we click the "delete" button (the red "X" that appears on hover), but the reader might want to work out for themselves the dataflow from the :deleted property to these behaviors:
 * the item disappears;
 * if the item was incomplete when deleted, the "Items remaining" drops by one;
 * if the item was the only completed item, "Clear completed" disappears;
 * if the item was the last of any kind, the dashboard disappears.
 
+Now the spec requires a bit of routing.
+
+#### git checkout lift-routing
+The official TodoMVC spec requires a routing mechanism be used to let the user filter which to-dos are displayed, based on their completion status. The options are all, completed conly, and incomplete (active) only.
+
+The code we would like to write (and did) is this:
+````clojure
+(defn todo-items-list []
+  (section {:class "main"}
+    (ul {:class "todo-list"}
+      (for [todo (sort-by td-created
+                   (<mget (mx-todos me)
+                     (case (<mget (mx-find-matrix mx) :route) ;; <--- route property read
+                       "All" :items
+                       "Completed" :items-completed
+                       "Active" :items-active
+                       :items)))]
+        (todo-list-item todo)))))
+````
+One popular CLJS routing library is [bide](https://github.com/funcool/bide). Bide knows nothing about Matrix dataflow, so we have a bit of glue to write to make the `:route` property dataflow-ready.
+````clojure
+(md/make ::md/todoApp
+      .....
+      :route (cI "All") ;; <--- cI makes :route an input cell, initialized to "All"
+      :route-starter (r/start! (r/router [["/" :All]
+                                          ["/active" :Active]
+                                          ["/completed" :Completed]])
+                       {:default     :ignore
+                        :on-navigate (fn [route params query]
+                                       (when-let [mtx @md/matrix]
+                                         ;;; ... and mset!> injects the user route into the matrix
+                                         (mset!> mtx :route (name route))))}))
+````
+Just two steps are required:
+* wrap the `:route` property in an input Cell; and
+* have the routing library `:on-navigate` handler write to the `:route` property.
+The routing change then causes the list view to recompute which items to display, and an observer on the `UL` children arranges for the DOM to be updated.
 ## License
 
 Copyright © 2018 Kenneth Tilton
