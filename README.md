@@ -1,7 +1,7 @@
 # TodoMVC, with Matrix Inside&trade;
 *An introduction by example to Matrix dataflow and mxWeb*
 
-The *Matrix* dataflow library endows application state with causal power, freeing the developer from the burden of propagating unpredictable change across highly interdependent models. More grandly, it brings our application models to life, animating them in response to streams of external inputs.
+The *Matrix* dataflow library endows application state with causal power, freeing us of the burden of propagating state change across highly interdependent models. More grandly, it brings our application models to life, animating them in response to streams of external inputs.
 
 Matrix does this simply by enhancing how we initialize, read, and write individual properties:
 * properties can be initialized as a literal value or as a function;
