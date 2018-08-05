@@ -3,8 +3,10 @@
 
 The *Matrix* dataflow library endows application state with causal power, freeing the developer from the burden of propagating unpredictable change across highly interdependent models. More grandly, it brings our application models to life, animating them in response to streams of external inputs.
 
-Matrix does this simply by enhancing what happens when we read and write individual properties:
-* when property `A` reads `B`, `B` remembers `A`;
+Matrix does this simply by enhancing how we initialize, read, and write individual properties:
+* property `A` can be initialized as a literal value or as a function;
+* should some property `B` be initialized with a literal, we can write to it;
+* when a functional `A` reads `B`, `B` remembers `A`;
 * when we write to `B`, `B` tells `A`; and
 * 'A' and 'B' can have "on change" callbacks.
 
