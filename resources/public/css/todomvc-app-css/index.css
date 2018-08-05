@@ -163,7 +163,17 @@ body {
 	padding: 0;
 }
 
-
+.todo-list li .aes {
+    position: absolute;
+    top: 20px;
+    right: 60px;
+    bottom: 0;
+    width: 40px;
+    /*color: #00f;*/
+    height: 40px;
+    margin: auto 0;
+    font-size: 10px;
+}
 
 .todo-list li.editing .edit {
 	display: block;

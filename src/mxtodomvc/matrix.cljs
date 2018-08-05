@@ -61,8 +61,7 @@
                                        (when-let [mtx @md/matrix]
                                          (mset!> mtx :route (name route))))})
 
-      :todos (todo/todo-list ["Wash car" "Walk dog" "Do laundry" "Mow lawn"
-                              "Wash dog" "Tennis lesson" "Groceries"])
+      :todos (todo/todo-list ["Yankees" "Buy ibuprofen"])
 
       :mx-dom (cFonce
                 (with-par me

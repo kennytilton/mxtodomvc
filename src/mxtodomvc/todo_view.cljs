@@ -14,7 +14,7 @@
      :refer [make-xhr xhr-response]]
 
     [mxweb.gen
-     :refer-macros [label li div input button span]]
+     :refer-macros [label li div input button span i]]
     [mxweb.html :as mxweb]
 
     [mxtodomvc.todo
@@ -54,6 +54,68 @@
     (span {:style "font-size:0.7em;margin:2px;margin-top:0;vertical-align:top"}
       "View Adverse Events")))
 
+(defn ae-brand-uri [todo]
+  (pp/cl-format nil ae-by-brand
+    (js/encodeURIComponent (td-title todo))))
+
+;(defn ae-alert-gi [todo]
+;  (i {:class "aes material-icons md-36"
+;      :hidden (cF (nil? (<mget me :ae-info)))
+;      :style (cF {:display (if (<mget (mx-todos) :empty?) "none" "block")
+;                  :font_size "36px"
+;                  :color "red"
+;                  :background "white"})
+;      :onclick #(js/alert "soon mx.aeInfo")
+;      :lookup (cF (make-xhr (ae-brand-uri todo.title)
+;                    :send true,
+;      :delay (+ 500 + (* (rand-int 5) 1000))
+;aeInfo: cF( function (c) {
+;                                                      let xhr = c.md.lookup.xhr;
+;                                                      if ( xhr) {
+;                                                                 if (xhr.status === 200) {
+;                                                                                          let obj = xhr.response;
+;                                                                                          return obj.meta.results.total + " Adverse Events found on FDA.gov";
+;                                                                                          } else {
+;                                                                                                  return null;
+;                                                                                                  }
+;                                                                 } else {
+;                                                                         return null;
+;                                                                         }
+;                                                      })
+;                    },
+;                   "warning")
+;         }
+
+(defn xhr-scavenge [xhr]
+  (when-not (or (= xhr unbound) (nil? xhr))
+    (not-to-be xhr)))
+
+(defn adverse-event-checker [todo]
+  (i
+    {:class "aes material-icons"
+      :style (cF (str "font-size:36px"
+                   ";display:"
+                   (cond
+                     (<mget me :aes) "block"
+                     :default "none")
+                   ";color:"
+                   (cond
+                     (<mget me :aes)
+                     (do (prn :aes!!!!! (<mget me :aes))
+                         "red")
+                     (<mget me :loookup) "gray"
+                     :default "green")))}
+
+    {:lookup (cF+ [:obs (fn-obs (xhr-scavenge old))]
+               (make-xhr (pp/cl-format nil ae-by-brand
+                           (js/encodeURIComponent (td-title todo)))
+                 {:name name :send? true :fake-delay 3000}))
+     :response (cF (when-let [xhr (<mget me :lookup)]
+                     (xhr-response xhr)))
+     :aes (cF (when-let [r (<mget me :response)]
+                (prn :ae-response!!! (:status r))
+                (= 200 (:status r))))}
+    "warning"))
 
 (defn todo-list-item [todo]
   ;; the structure below, and importantly its CSS, was authored
@@ -68,7 +130,7 @@
 
     (div {:class "view"}
       (input {:class       "toggle"
-              ;; we use namespaced :type to sort out a few things in mxWeb
+              ;; namespaced :type is for HTML attribute
               ::mxweb/type "checkbox"
               :checked     (cF
                              ;; completed is not a boolean, it is
@@ -80,7 +142,7 @@
 
       (label (td-title todo))
 
-      (ae-explorer todo)
+      (adverse-event-checker todo)
 
       (button {:class   "destroy"
                ;; we actually have an td-delete! to hide the action, but
