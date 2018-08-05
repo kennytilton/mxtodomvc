@@ -16,24 +16,24 @@ B <= (fn [] (+ 42 A C))))
 ````
 What does it mean for `A to tell `B`? `A` makes `B` compute a new value, *causing* it to change. 
 
-What happens when `B` computes a new value? `B` might have its own dependent properties to tell. `B` might also want to affect the world outside the connected graph of properties. 
-> "On the other hand, effects are marvelous because they move the app forward." - [re-frame intro](https://github.com/Day8/re-frame)
+What happens when `B` computes a new value? `B` might have its own dependent properties to tell. `A` or `B` might also want to act on the world outside the graph of properties. 
+> "Nothing messes with functional purity quite like the need for side effects. On the other hand, effects are marvelous because they move the app forward." - [re-frame intro](https://github.com/Day8/re-frame)
 
-A Web game app may use a CLJS map to model a Romulan warship and a paired DOM element to render it. If `A` is the `:cloaked` property of the map warship, the "hidden" attribute of the DOM warship needs to be added or removed. An observer updates the DOM. To this end, Matrix lets us define "on-change" *observers*.
+A Web game app may use a CLJS map to model a Romulan warship and a paired DOM element to render it. If `A` is the `cloaked` property of the map warship and it changes, the "hidden" attribute of the DOM warship needs to be added or removed. To this end, Matrix lets us define "on-change" *observers*.
 
 > [observer](https://dictionary.cambridge.org/dictionary/english/observer): noun. UK: /əbˈzɜː.vər/, US: /əbˈzɝː.vɚ/  A person who watches what happens but has no active part in it.
 
 Observers are *monitors* of the dataflow between a graph of properties, not participants in that flow. They act, but they act outside the dataflow graph.
 
 #### lifting
-What about X, Y, and Z? i.e., Properties from existing libraries that know nothing about Matrix? We like the dataflow paradigm, so we write whatever "glue" code it takes to wire existing libraries with dataflow. We call this "lifting" libraries into the Matrix. Lifting mxWeb required about two thousand lines of code. We will see several examples below of lifting. 
+What about X, Y, and Z? i.e., Properties from existing libraries that know nothing about Matrix? We write whatever "glue" code it takes to wire existing libraries with dataflow. We call this "lifting" libraries into the Matrix. Lifting the DOM into mxWeb required about two thousand lines of code. We will see several examples below of lifting. 
 
 #### matrix?
-`A` might not be a simple, descriptive property such as "cloaked". `A` might be `K` for "kids" and hold the child nodes of some parent; thus the very population of our application model can change with events. We call this dynamic population of communicating nodes a *matrix*.
+`A` might not be a simple, descriptive property such as "cloaked". `A` might be `K` for "kids" and hold the child nodes of some parent; the very population of our application model can shrink or grow with events. We call this dynamic population of communicating nodes a *matrix*.
 
 > ma·trix ˈmātriks *noun* an environment in which something else takes form. *Origin:* Latin, female animal used for breeding, parent plant, from *matr-*, *mater*
 
-Simply by propagating change between properties and to the outside world, the Matrix library brings to life declaratively coded application models.
+Simply by propagating change between functional properties, with strictly segregated dataflow to and from the outside world, the Matrix library brings applications to life.
 
 #### Really?
 Can we really program this way? This [Algebra](https://tiltonsalgebra.com/#) app consists of about twelve hundred `A`s and `B`s, and extends into a Postgres database. Everything runs under matrix control. It lifts Qooxdoo JS, MathJax, Postgres and more. The average number of dependencies for one value is a little more than one, and the deepest dependency chain is about a dozen. On complex dispays of many math problems, a little over a thousand values are dependent on other values.
@@ -44,9 +44,7 @@ Can we really program this way? This [Algebra](https://tiltonsalgebra.com/#) app
 Matrix enjoys much good company in this field. We believe Matrix offers more simplicity, transparency, granularity, expressiveness, efficiency, and functional coverage, but in each dimension differs only in degree, not spirit. Other recommended CLJS libraries are [Reagent](https://reagent-project.github.io/), [Hoplon/Javelin](https://github.com/hoplon/javelin), and [re-frame](https://github.com/Day8/re-frame). Beyond CLJS, we admire [MobX](https://github.com/mobxjs/mobx/blob/master/README.md) (JS), [binding.Scala](https://github.com/ThoughtWorksInc/Binding.scala/blob/11.0.x/README.md), and Python [Trellis](https://pypi.org/project/Trellis/). Let us know about any we missed.
 
 #### mxWeb, "poster" application
-*mxWeb* is a thin web un-framework built atop Matrix. We introduce Matrix with mxWeb because nothing challenges a developer more than keeping application state straight while an intelligent user does their best to use a rich interface correctly. 
-
-Then marketing wants a U/X overhaul.
+*mxWeb* is a thin web un-framework built atop Matrix. We introduce Matrix with mxWeb because nothing challenges a developer more than keeping application state straight while an intelligent user does their best to use a rich interface correctly. Then marketing wants a U/X overhaul.
 
 We say "un-framework" because mxWeb exists only to wire the DOM for dataflow. The API design imperative is that the MDN reference be the mxWeb reference; mxWeb itself introduces no new architecture.
 
@@ -368,6 +366,65 @@ Speaking of raw DOM events, ReactJS hides those as well because ReactJS cannot h
 \<soapbox\>
 ReactJS and every one of the [sixty-four submissions](http://todomvc.com/) to TodoMVC framework add a lot of value, but they also add their own baggage, and, like the Tower of Babel, segment the developer community, and limit library reuse. We need a front-end version of NoSQL.
 \</soapbox\>
+#### lifting-xhr
+Before concluding, we look at an especially interesting example of lifting: XHR, affectionately known as Callback Hell. We do so exceeding the official TodoMVC spec to alert our user of any to-do item that returns results from a search of of the FDA [Adverse Events database](https://open.fda.gov/data/faers/).
+
+Our treatment to date of [the XHR lift](https://github.com/kennytilton/matrix/tree/master/cljs/mxxhr) is technically minimal but the test suite includes clean dataflow solutions to several Hellish use cases. Our use case here is trivial, just a simple XHR query to the FDA API and one response, 200 indicating results found, 404 not. Notes follow the code.
+````clojure
+(defn ae-checker-style-formula []
+  (cF (str "font-size:36px"
+  
+        ";display:"
+        (if (<mget me :lookup) "block" "none")
+
+        ";color:"
+        (cond
+          (<mget me :aes?) "red"
+          (<mget me :loookup) "gray"
+          :default "green"))))
+          
+(defn adverse-event-checker [todo]
+  (i {:class "aes material-icons"
+      :style (ae-checker-style-formula)}
+
+    {:lookup   (cF+ [:obs (fn-obs (xhr-scavenge old))]
+                 (make-xhr (pp/cl-format nil ae-by-brand
+                             (js/encodeURIComponent (td-title todo)))
+                   {:name name :send? true
+                    :fake-delay (+ 500 (rand-int 2000))}))
+     :response (cF (when-let [lookup (<mget me :lookup)]
+                     (<mget lookup :response)))
+     :aes?      (cF (if-let [r (<mget me :response)]
+                     (= 200 (:status r))))}
+    "warning"))````
+That is the application code. The mxXHR libary internals show the datalow integration. (look for the `mset!>`; `with-cc` we touch on below):
+````clojure
+(defn xhr-send [xhr]
+  (go
+    (let [response (<! (client/get (<mget xhr :uri) {:with-credentials? false}))]
+       (with-cc :xhr-handler-sets-responded
+          (mset!> xhr :response
+            {:status (:status response)
+             :body   (if (:success response)
+                       ((:body-parser @xhr) (:body response))
+                       [(:error-code response)
+                        (:error-text response)])}))))))
+````
+Notes:
+* `ae-checker-style-formula` manifests a nice code win: complex `cF`s can be broken out into their own functions;
+* Google's Material Design icon fonts integrate smoothly;
+* We fake variable response latency;
+* For pedagogic reasons, we break up the lookup into several `cFs`:
+* `lookup` funtionally returns an mxXHR incarnation of an actual XHR, but...
+* ...we specify that the XHR be *sent* immediately! This is where `with-cc` comes in...
+* ...getting into the weeds, `with-cc` enqueues its body for execution at the right time in the datafow lifecycle;
+* `response` runs immediately, sees the lookup and returns nil;
+* the `aes?` predicate runs immediately and does not see a `response`, so it returns `:undecided`;
+* when the actual XHR gets a response, good or bad, it is `<mset!` *with dataflow integrity* into the `response` property of the mxXHR;
+* our AE checker `response` formula runs and captures the response;
+* `aes?` runs, sees the response, and decides on :yes :or :no;
+* the color and display style properties decide on new values.
+
 
 ## License: MIT
 
