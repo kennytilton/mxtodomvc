@@ -396,7 +396,9 @@ Our treatment to date of [the XHR lift](https://github.com/kennytilton/matrix/tr
                      (<mget lookup :response)))
      :aes?      (cF (if-let [r (<mget me :response)]
                      (= 200 (:status r))))}
-    "warning"))````
+    "warning"))
+````
+    
 That is the application code. The mxXHR libary internals show the datalow integration. (look for the `mset!>`; `with-cc` we touch on below):
 ````clojure
 (defn xhr-send [xhr]
@@ -410,20 +412,39 @@ That is the application code. The mxXHR libary internals show the datalow integr
                        [(:error-code response)
                         (:error-text response)])}))))))
 ````
+
 Notes:
 * `ae-checker-style-formula` manifests a nice code win: complex `cF`s can be broken out into their own functions;
 * Google's Material Design icon fonts integrate smoothly;
 * We fake variable response latency;
 * For pedagogic reasons, we break up the lookup into several `cFs`:
-* `lookup` funtionally returns an mxXHR incarnation of an actual XHR, but...
+* `lookup` functionally returns an mxXHR incarnation of an actual XHR, but...
 * ...we specify that the XHR be *sent* immediately! This is where `with-cc` comes in...
-* ...getting into the weeds, `with-cc` enqueues its body for execution at the right time in the datafow lifecycle;
-* `response` runs immediately, sees the lookup and returns nil;
+* ...getting into the weeds, `with-cc` enqueues its body for execution at the right time in the datafow lifecycle...
+* ...and should the user change the title and kick off a new lookup, an observer will GC the old one;
+* `response` runs immediately, reads the nil lookup `response` but establishing the dependency, and returns nil;
 * the `aes?` predicate runs immediately and does not see a `response`, so it returns `:undecided`;
+* the color and display style properties decide on "gray" and "block";
+* an mxWeb observer updates the DOM so we see a gray "warning" icon;
 * when the actual XHR gets a response, good or bad, it is `<mset!` *with dataflow integrity* into the `response` property of the mxXHR;
 * our AE checker `response` formula runs and captures the response;
 * `aes?` runs, sees the response, and decides on :yes :or :no;
-* the color and display style properties decide on new values.
+* the color and display style properties decide on new values;
+* mxWeb does its thing and the warning disappears or turns red.
+
+If you play with new to-dos, do *not* be alarmed by red warnings: all drugs have adverse events, and the FDA search is aggressive. You will also note an inefficiency we address in the next section, viz. that each to-do gets looked up anew each time the list changes. But first...
+
+Matrix dataflow neutralizes the Hell of asynchronous callbacks because Matrix exists to handle change gracefully. The `mset!>` of an asynchronously received response into the Matrix graph differs not at all from a user deciding to click their mouse or press a key. In either case, Matrix guarantees smooth, consistent propagation of the change throughout the graph of connected properties. We call this *datafow integrity*.
+
+#### dataflow integrity
+From the [Cells Manifesto](http://smuglispweeny.blogspot.com/2008/02/cells-manifesto.html), when application code assigns to some input cell X, the Cells engine guarantees:
+* recomputation exactly once of all and only state affected by the change to X, directly or indirectly through some intermediate datapoint. note that if A depends on B, and B depends on X, when B gets recalculated it may come up with the same value as before. In this case A is not considered to have been affected by the change to X and will not be recomputed.
+* recomputations, when they read other datapoints, must see only values current with the new value of X. Example: if A depends on B and X, and B depends on X, when X changes and A reads B and X to compute a new value, B must return a value recomputed from the new value of X.
+* similarly, client observer callbacks must see only values current with the new value of X; and
+* a corollary: should a client observer SETF a datapoint Y, all the above must happen with values current with not just X, but also with the value of Y /prior/ to the change to Y.
+* deferred "client" code must see only values current with X and not any values current with some subsequent change to Y queued by an observer.
+
+The astute reader will be surprised that observers, so carefully defined earlier *not* to be participants in the dataflow, are free to *initiate* dataflow. But they are allowed to do only as outsiders; the changes they initiate must be enqueued for execution *after* the change they are observing.
 
 
 ## License: MIT
