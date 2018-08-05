@@ -6,7 +6,7 @@
     [tiltontec.cell.core :refer-macros [cF cF+]]
     [tiltontec.cell.evaluate :refer [not-to-be]]
 
-    [tiltontec.model.core :refer [matrix mx-par <mget ;; mset!> mswap!>
+    [tiltontec.model.core :refer [matrix mx-par <mget       ;; mset!> mswap!>
                                   ;;fget mxi-find mxu-find-type
                                   ] :as md]
 
@@ -27,94 +27,55 @@
 ;;; -----------------------------------------------------------
 ;;; --- adverse events ----------------------------------------
 
-(defn de-whitespace [s]
-  (str/replace s #"\s" ""))
 
 (def ae-by-brand "https://api.fda.gov/drug/event.json?search=patient.drug.openfda.brand_name:~(~a~)&limit=3")
-
-(defn ae-explorer [todo]
-  (button {:class   "li-show"
-           :style   (cF (str "display:"
-                          (or (when-let [xhr (<mget me :ae)]
-                                (let [aes (xhr-response xhr)]
-                                  (when (= 200 (:status aes))
-                                    "block")))
-                            "none")))
-           :onclick #(js/alert "Feature not yet implemented.")}
-
-    {:ae (cF+ [:obs (fn-obs
-                      ;; we use an observer to GC old XHRs
-                      (when-not (or (= old unbound) (nil? old))
-                        (not-to-be old)))]
-           (when true ;; (<mget (mxweb/mxu-find-class me "ae-autocheck") :on?)
-             (make-xhr (pp/cl-format nil ae-by-brand
-                         (js/encodeURIComponent (td-title todo)))
-               {:name name :send? true})))}
-
-    (span {:style "font-size:0.7em;margin:2px;margin-top:0;vertical-align:top"}
-      "View Adverse Events")))
 
 (defn ae-brand-uri [todo]
   (pp/cl-format nil ae-by-brand
     (js/encodeURIComponent (td-title todo))))
 
-;(defn ae-alert-gi [todo]
-;  (i {:class "aes material-icons md-36"
-;      :hidden (cF (nil? (<mget me :ae-info)))
-;      :style (cF {:display (if (<mget (mx-todos) :empty?) "none" "block")
-;                  :font_size "36px"
-;                  :color "red"
-;                  :background "white"})
-;      :onclick #(js/alert "soon mx.aeInfo")
-;      :lookup (cF (make-xhr (ae-brand-uri todo.title)
-;                    :send true,
-;      :delay (+ 500 + (* (rand-int 5) 1000))
-;aeInfo: cF( function (c) {
-;                                                      let xhr = c.md.lookup.xhr;
-;                                                      if ( xhr) {
-;                                                                 if (xhr.status === 200) {
-;                                                                                          let obj = xhr.response;
-;                                                                                          return obj.meta.results.total + " Adverse Events found on FDA.gov";
-;                                                                                          } else {
-;                                                                                                  return null;
-;                                                                                                  }
-;                                                                 } else {
-;                                                                         return null;
-;                                                                         }
-;                                                      })
-;                    },
-;                   "warning")
-;         }
-
 (defn xhr-scavenge [xhr]
   (when-not (or (= xhr unbound) (nil? xhr))
     (not-to-be xhr)))
 
+(defn de-whitespace [s]
+  (str/replace s #"\s" ""))
+
+(defn ae-checker-style-formula
+  "Just breaking out the code, illustrating an incidental coding convenience"
+  []
+  (cF (str "font-size:36px"
+
+        ";display:"
+        (case (<mget me :aes?)
+          :no "none"
+          "block")
+
+        ";color:"
+        (case (<mget me :aes?)
+          :undecided "gray"
+          :yes "red"
+          :no "green"
+          "white"))))
+
 (defn adverse-event-checker [todo]
   (i
     {:class "aes material-icons"
-      :style (cF (str "font-size:36px"
-                   ";display:"
-                   (cond
-                     (<mget me :aes) "block"
-                     :default "none")
-                   ";color:"
-                   (cond
-                     (<mget me :aes)
-                     (do (prn :aes!!!!! (<mget me :aes))
-                         "red")
-                     (<mget me :loookup) "gray"
-                     :default "green")))}
+     ;;:title "Click to see some AE counts"
+     :style (ae-checker-style-formula)
+     :onclick #(js/alert "Feature to display AEs not yet implemented")}
 
-    {:lookup (cF+ [:obs (fn-obs (xhr-scavenge old))]
-               (make-xhr (pp/cl-format nil ae-by-brand
-                           (js/encodeURIComponent (td-title todo)))
-                 {:name name :send? true :fake-delay 3000}))
+    {:lookup   (cF+ [:obs (fn-obs (xhr-scavenge old))]
+                 (make-xhr (pp/cl-format nil ae-by-brand
+                             (js/encodeURIComponent
+                               (de-whitespace (td-title todo))))
+                   {:name name :send? true
+                    :fake-delay (+ 1500 (rand-int 2000))}))
      :response (cF (when-let [xhr (<mget me :lookup)]
                      (xhr-response xhr)))
-     :aes (cF (when-let [r (<mget me :response)]
-                (prn :ae-response!!! (:status r))
-                (= 200 (:status r))))}
+     :aes?      (cF (if-let [r (<mget me :response)]
+                      (if (= 200 (:status r)) :yes :no)
+                      :undecided))}
     "warning"))
 
 (defn todo-list-item [todo]

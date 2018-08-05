@@ -61,7 +61,7 @@
                                        (when-let [mtx @md/matrix]
                                          (mset!> mtx :route (name route))))})
 
-      :todos (todo/todo-list ["Yankees" "Buy ibuprofen"])
+      :todos (todo/todo-list ["Yankees"])
 
       :mx-dom (cFonce
                 (with-par me
