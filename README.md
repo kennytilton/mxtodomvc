@@ -4,19 +4,19 @@
 The *Matrix* dataflow library endows application state with causal power, freeing the developer from the burden of propagating unpredictable change across highly interdependent models. More grandly, it brings our application models to life, animating them in response to streams of external inputs.
 
 Matrix does this simply by enhancing how we initialize, read, and write individual properties:
-* property `A` can be initialized as a literal value or as a function;
-* should some property `B` be initialized with a literal, we can write to it;
-* when a functional `A` reads `B`, `B` remembers `A`;
-* when we write to `B`, `B` tells `A`; and
-* 'A' and 'B' can have "on change" callbacks.
+* properties can be initialized as a literal value or as a function;
+* should some property `A` be initialized with a literal, we can write to it;
+* should a functional `B` read `A`, `A` remembers `B`;
+* when we write to `A`, `A` tells `B`; and
+* we can supply "on change" callbacks for properties.
 
-What does it mean for one property to read another, for `A` to read `B`? It means declaring `A` as an arbitrary HLL function of `B` and possibly others. In pseudo code:
+What does it mean for one property to read another, for `B` to read `A`? It means declaring `B` as an arbitrary HLL function of `A` and possibly others. In pseudo code:
 ````clojure
-A <= (fn [] (+ 42 B C))))
+B <= (fn [] (+ 42 A C))))
 ````
-What does it mean for `B` to tell `A`? `B` makes `A` compute a new value, *causing* it to change. 
+What does it mean for `A to tell `B`? `A` makes `B` compute a new value, *causing* it to change. 
 
-What happens when `A` computes a new value? `A` might have its own dependent properties to tell. `A` might also want to affect the world outside the connected graph of properties. 
+What happens when `B` computes a new value? `B` might have its own dependent properties to tell. `B` might also want to affect the world outside the connected graph of properties. 
 > "On the other hand, effects are marvelous because they move the app forward." - [re-frame intro](https://github.com/Day8/re-frame)
 
 A Web game app may use a CLJS map to model a Romulan warship and a paired DOM element to render it. If `A` is the `:cloaked` property of the map warship, the "hidden" attribute of the DOM warship needs to be added or removed. An observer updates the DOM. To this end, Matrix lets us define "on-change" *observers*.
