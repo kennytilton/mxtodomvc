@@ -14,7 +14,7 @@ What does it mean for one property to read another, for `B` to read `A`? It mean
 ````clojure
 B <= (fn [] (+ 42 A C))))
 ````
-What does it mean for `A to tell `B`? `A` makes `B` compute a new value. 
+What does it mean for `A` to tell `B`? `A` makes `B` compute a new value. 
 
 What happens when `B` computes a new value?
 * `B` might have its own dependent properties to tell; and
