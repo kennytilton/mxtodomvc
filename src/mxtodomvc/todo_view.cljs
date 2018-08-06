@@ -45,41 +45,32 @@
 (defn de-whitespace [s]
   (str/replace s #"\s" ""))
 
-(defn ae-checker-style-formula
-  "Just breaking out the code, illustrating an incidental coding convenience"
-  []
-  (cF (str "font-size:36px"
-
-        ";display:"
-        (case (<mget me :aes?)
-          :no "none"
-          "block")
-
-        ";color:"
-        (case (<mget me :aes?)
-          :undecided "gray"
-          :yes "red"
-          :no "green"
-          "white"))))
-
 (defn adverse-event-checker [todo]
   (i
-    {:class "aes material-icons"
-     ;;:title "Click to see some AE counts"
-     :style (ae-checker-style-formula)
-     :onclick #(js/alert "Feature to display AEs not yet implemented")}
+    {:class   "aes material-icons"
+     :title "Click to see some AE counts"
+     :onclick #(js/alert "Feature to display AEs not yet implemented")
+     :style   (cF (str "font-size:36px"
+                    ";display:" (case (<mget me :aes?)
+                                  :no "none"
+                                  "block")
+                    ";color:" (case (<mget me :aes?)
+                                :undecided "gray"
+                                :yes "red"
+                                ;; should not get here
+                                "white")))}
 
     {:lookup   (cF+ [:obs (fn-obs (xhr-scavenge old))]
                  (make-xhr (pp/cl-format nil ae-by-brand
                              (js/encodeURIComponent
                                (de-whitespace (td-title todo))))
-                   {:name name :send? true
+                   {:name       name :send? true
                     :fake-delay (+ 500 (rand-int 2000))}))
      :response (cF (when-let [xhr (<mget me :lookup)]
                      (xhr-response xhr)))
-     :aes?      (cF (if-let [r (<mget me :response)]
-                      (if (= 200 (:status r)) :yes :no)
-                      :undecided))}
+     :aes?     (cF (if-let [r (<mget me :response)]
+                     (if (= 200 (:status r)) :yes :no)
+                     :undecided))}
     "warning"))
 
 (defn todo-edit [e todo edit-commited?]
