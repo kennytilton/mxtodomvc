@@ -478,6 +478,39 @@ Our key value is the abstract to-do model. `cache` above is a variable available
 
 Now when you add or remove items, you will see AE lookups executed only for added items.
 
+#### git checkout ez-dom
+Above we promised more about having easy access to the DOM from front-end code, something one might take for granted but for the example of ReactJS where VDOM hides the DOM. We deliver on that promise with the last feature we will implement: the ability to edit a to-do after it has been entered. 
+
+First, we drop a new input field into each LI dedicated to a to-do item:
+````clojure
+(input {:class     "edit"
+            :onblur    #(todo-edit % todo true)
+            :onkeydown #(todo-edit % todo (= (.-key %) "Enter"))})
+````
+And now the handler, where DOM access is substantial:
+````clojure
+(defn todo-edit [e todo edit-commited?]
+  (let [edt-dom (.-target e)
+        li-dom (dom/getAncestorByTagNameAndClass edt-dom "li")]
+
+    (when (classlist/contains li-dom "editing")
+      (let [title (str/trim (form/getValue edt-dom))
+            stop-editing #(classlist/remove li-dom "editing")]
+        (cond
+          edit-commited?
+          (do
+            (stop-editing)                                  ;; has to go first cuz a blur event will sneak in
+            (if (= title "")
+              (td-delete! todo)
+              (mset!> todo :title title)))
+
+          (= (.-key e) "Escape")
+          ;; this could leave the input field with mid-edit garbage, but
+          ;; that gets initialized correctly when starting editing
+          (stop-editing))))))
+````
+While the above seems like there should be a better way, we see the same code in many TodoMVC solutions, probably for the reason documented in a comment above: an extraneous blur event when halting editing. We assure these are ignored by directly altering the DOM classlist instead of going through the mxWeb/Matrix lifecycle which would remove the "editing" class too late.
+
 
 ## License: MIT
 
