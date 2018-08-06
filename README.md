@@ -1,9 +1,9 @@
 # TodoMVC, with Matrix Inside&trade;
 *An introduction by example to Matrix dataflow and mxWeb*
 
-The *Matrix* dataflow library endows application state with causal power, freeing us of the burden of propagating state change across highly interdependent models. More grandly, it brings our application models to life, animating them in response to streams of external inputs.
+The *Matrix* dataflow library endows application state with causal power, freeing us of the burden of propagating change across highly interdependent models. More grandly, it brings our application models to life, animating them in response to streams of external inputs.
 
-Matrix does this simply by enhancing how we initialize, read, and write individual properties:
+Matrix does this by enhancing how we initialize, read, and write individual properties:
 * properties can be initialized as a literal value or as a function;
 * should some property `A` be initialized with a literal, we can write to it;
 * should a functional `B` read `A`, `A` remembers `B`;
@@ -16,20 +16,25 @@ B <= (fn [] (+ 42 A C))))
 ````
 What does it mean for `A to tell `B`? `A` makes `B` compute a new value, *causing* it to change. 
 
-What happens when `B` computes a new value? `B` might have its own dependent properties to tell. `A` or `B` might also want to act on the world outside the graph of properties. 
+What happens when `B` computes a new value?
+* `B` might have its own dependent properties to tell; and
+* `A` or `B` might also want to act on the world outside the graph of properties. 
+
 > "Nothing messes with functional purity quite like the need for side effects. On the other hand, effects are marvelous because they move the app forward." - [re-frame intro](https://github.com/Day8/re-frame)
 
-A Web game app may use a CLJS map to model a Romulan warship and a paired DOM element to render it. If `A` is the `cloaked` property of the map warship and it changes, the "hidden" attribute of the DOM warship needs to be added or removed. To this end, Matrix lets us define "on-change" *observers*.
+A Web game app might use a CLJS map to model a Romulan warship, and have a paired DOM element to render the ship. If `A` is the `cloaked` property of the map warship and it changes, the `hidden` attribute of the DOM warship needs to be added or removed. To this end, Matrix lets us define "on-change" *observers*.
 
 > [observer](https://dictionary.cambridge.org/dictionary/english/observer): noun. UK: /əbˈzɜː.vər/, US: /əbˈzɝː.vɚ/  A person who watches what happens but has no active part in it.
 
-Observers are *monitors* of the dataflow between a graph of properties, not participants in that flow. They act, but they act outside the dataflow graph.
+Observers are *monitors* of the dataflow between a graph of properties, not participants in that flow. They act, but they act outside the dataflow graph. *Caveat lector*: the reactive community generally uses "observer"...differently.
 
 #### lifting
-What about X, Y, and Z? i.e., Properties from existing libraries that know nothing about Matrix? We write whatever "glue" code it takes to wire existing libraries with dataflow. We call this "lifting" libraries into the Matrix. Lifting the DOM into mxWeb required about two thousand lines of code. We will see several examples below of lifting. 
+What about X, Y, and Z? i.e., Properties from existing libraries that know nothing about dataflow? We write whatever "glue" code it takes to wire existing libraries with dataflow. We call this "lifting" libraries into the dataflow. 
+
+> Lifting the DOM required about two thousand lines of code. Below we will explore several examples of lifting. 
 
 #### matrix?
-`A` might not be a simple, descriptive property such as "cloaked". `A` might be `K` for "kids" and hold the child nodes of some parent; the very population of our application model can shrink or grow with events. We call this dynamic population of communicating nodes a *matrix*.
+`A` might be more than a descriptive property such as "cloaked". `A` might be `K` for "kids" and hold the child nodes of some parent; i.e., the very population of our application model can shrink or grow with events. We call such a dynamic population of communicating nodes a *matrix*.
 
 > ma·trix ˈmātriks *noun* an environment in which something else takes form. *Origin:* Latin, female animal used for breeding, parent plant, from *matr-*, *mater*
 
@@ -49,7 +54,7 @@ Matrix enjoys much good company in this field. We believe Matrix offers more sim
 We say "un-framework" because mxWeb exists only to wire the DOM for dataflow. The API design imperative is that the MDN reference be the mxWeb reference; mxWeb itself introduces no new architecture.
 
 #### TodoMVC
-So far, so abstract. Ourselves, we think better in concrete. Let's get "hello, Matrix" running and then start building TodoMVC from scratch. 
+So far, so abstract. Ourselves, we think better in concrete. Let's get "hello, Matrix" running and then start building [TodoMVC](http://todomvc.com) from scratch. 
 
 The TodoMVC project specifies a trivial Web application as the basis for comparing Web frameworks. We will first satisfy the requirements, then extend the spec to include XHRs. Along the way we will tag milestones so the reader can conveniently visit any stage of development.
 
@@ -366,7 +371,7 @@ Speaking of raw DOM events, ReactJS hides those as well because ReactJS cannot h
 \<soapbox\>
 ReactJS and every one of the [sixty-four submissions](http://todomvc.com/) to TodoMVC framework add a lot of value, but they also add their own baggage, and, like the Tower of Babel, segment the developer community, and limit library reuse. We need a front-end version of NoSQL.
 \</soapbox\>
-#### lifting-xhr
+#### git checkout lifting-xhr
 Before concluding, we look at an especially interesting example of lifting: XHR, affectionately known as Callback Hell. We do so exceeding the official TodoMVC spec to alert our user of any to-do item that returns results from a search of of the FDA [Adverse Events database](https://open.fda.gov/data/faers/).
 
 Our treatment to date of [the XHR lift](https://github.com/kennytilton/matrix/tree/master/cljs/mxxhr) is technically minimal but the test suite includes clean dataflow solutions to several Hellish use cases. Our use case here is trivial, just a simple XHR query to the FDA API and one response, 200 indicating results found, 404 not. Notes follow the code.
@@ -412,6 +417,7 @@ That is the application code. The mxXHR libary internals show the datalow integr
                        [(:error-code response)
                         (:error-text response)])}))))))
 ````
+Hellish async XHR responses are now just ordinary Matrix inputs. 
 
 Notes:
 * `ae-checker-style-formula` manifests a nice code win: complex `cF`s can be broken out into their own functions;
@@ -434,7 +440,7 @@ Notes:
 
 If you play with new to-dos, do *not* be alarmed by red warnings: all drugs have adverse events, and the FDA search is aggressive. You will also note an inefficiency we address in the next section, viz. that each to-do gets looked up anew each time the list changes. But first...
 
-Matrix dataflow neutralizes the Hell of asynchronous callbacks because Matrix exists to handle change gracefully. The `mset!>` of an asynchronously received response into the Matrix graph differs not at all from a user deciding to click their mouse or press a key. In either case, Matrix guarantees smooth, consistent propagation of the change throughout the graph of connected properties. We call this *datafow integrity*.
+Matrix dataflow neutralizes the Hell of asynchronous callbacks because Matrix was created to propagate change gracefully. The `mset!>` of an asynchronously received response into the Matrix graph differs not at all from a user deciding to click their mouse or press a key. In either case, Matrix guarantees smooth, consistent propagation of the change throughout the graph of connected properties in accordance with what we call *datafow integrity*.
 
 #### dataflow integrity
 From the [Cells Manifesto](http://smuglispweeny.blogspot.com/2008/02/cells-manifesto.html), when application code assigns to some input cell X, the Cells engine guarantees:
@@ -447,7 +453,7 @@ From the [Cells Manifesto](http://smuglispweeny.blogspot.com/2008/02/cells-manif
 The astute reader will be surprised that observers, so carefully defined earlier *not* to be participants in the dataflow, are free to *initiate* dataflow. But they are allowed to do only as outsiders; the changes they initiate must be enqueued for execution *after* the change they are observing.
 
 Now as much fun as it was watching async responses flow into the Matrix, let us fix the excess.
-### git checkout family-values
+#### git checkout family-values
 A matrix is a simple tree formed of single parents with multiple so-called `kids`, a nice short name for children. Normally we just list the kids, but when the list changes incrementally and the children are mxWeb widgets, the mxWeb observer will be rebuilding those hefty widgets and rebuilding the DOM on each small change.
 
 To prevent this excess, Matrix has a small API we call "family values" after the [Charles Addams-inspired movie](https://www.youtube.com/watch?v=IHgfQ-0lYbg). The idea is to compute a collection of key values and then provide a factory function to be called with the key value to produce mxWeb instances only as needed after diffing the lists of key values.
