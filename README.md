@@ -1,7 +1,9 @@
 # TodoMVC, with Matrix Inside&trade;
-*An introduction by example to Matrix dataflow and mxWeb, building the TodoMVC classic*
+*An introduction by example to Matrix dataflow and mxWeb*
 
 The *Matrix* dataflow library endows application state with causal power, freeing us of the burden of propagating change across highly interdependent models. More grandly, it brings our application models to life, animating them in response to streams of external inputs.
+> "UIs...I am not going to go there. I don't do that part."  
+-- Rich Hickey on the high ratio of code to logic in UIs, *Clojure/Conj 2017*
 
 We choose mxWeb as the vehicle for introducing Matrix because nothing challenges a developer more than keeping application state straight while an intelligent user does their best to use a rich interface correctly. Then marketing wants a U/X overhaul.
 
@@ -516,6 +518,33 @@ And now the handler, where DOM access is substantial:
 ````
 While the above seems like there should be a better way, we see the same code in many TodoMVC solutions, probably for the reason documented in a comment above: an extraneous blur event when halting editing. We assure these are ignored by directly altering the DOM classlist instead of going through the mxWeb/Matrix lifecycle which would remove the "editing" class too late.
 
+Finally, we have dropped in one last feature from the TodoMVC spec that makes little U/X sense but does let us demonstrate how me hacked around some unhelpful browser behavior, viz., overriding our own manipulation of a checkbox's checked status.
+````clojure
+(defn toggle-all []
+  (div {} {;; 'action' is an ad hoc bit of intermediate state that will be used to decide the
+           ;; input HTML checked attribute and will also guide the label onclick handler.
+           :action (cF (if (every? td-completed (mx-todo-items me))
+                         :uncomplete :complete))}
+
+    (input {:id        "toggle-all"
+            :class     "toggle-all"
+            ::mxweb/type "checkbox"
+            :checked   (cF (= (<mget (mx-par me) :action) :uncomplete))})
+
+    (label {:for     "toggle-all"
+            :onclick #(let [action (<mget me :action)]
+
+                        ;; else browser messes with checked, which we handle
+                        (event/preventDefault %)
+
+                        (doseq [td (mx-todo-items)]
+                          (mset!> td :completed (when (= action :complete) (util/now)))))}
+      "Mark all as complete")))
+````
+#### The missing TodoMVC requirement
+Nothing will be added by implementing persistence, but if you are curious you can check out [mxLocalStorag](https://github.com/kennytilton/matrix/blob/master/js/matrix/js/Matrix/mxWeb.js) at the very end of the source from our Javascript implementation of mxWeb. 
+
+## Summary
 
 ## License: MIT
 
