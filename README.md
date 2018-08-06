@@ -1,6 +1,69 @@
 # TodoMVC, with Matrix Inside&trade;
 *An introduction by example to Matrix dataflow and mxWeb*
 
+mxWeb makes web pages easier to build, debug, refactor, and maintain, simply by changing what happens when we read and write properties:
+* when B reads A, A remembers; and
+* when A changes, A tells B.
+
+What does it mean for B to read A? It means B is expressed as an HLL function that reads A. An mxWeb "HTML" excerpt from the code below:
+````clojure
+(li
+    {:class (cF (when (<mget todo :completed)
+                  "completed"))}
+````
+Notes:
+* `todo` is a closed over reference to a todo model instance
+* `cF` and `<mget` are from the generic Matrix library
+* `cF`, or "cell formulaic", makes the `:class` property of the `LI` functional, using the body shown
+* `<mget`, "or model get", is the Matrix property reader that arranges for `:completed` to remember `:class`
+
+What does it mean for A to change and then tell B? We change A from imperative code with a special Matrix writer, then Matrix internals recalculate B:
+````cljs
+(input {:class       "toggle"
+        ::mxweb/type "checkbox"
+        :onclick     #(mswap!> todo :completed not)})
+````
+`mswap!> is a Matrix property writer that:
+* changes the `:compeleted` property of the model todo; and
+* before returning, recomputes B.
+
+One step is missing. How does the `li` DOM classlist change? We held something back:
+* when `A` changes, it can mutate properties outside the Matrix graph.
+
+````clojure
+(defmethod observe-by-type
+  [:mxweb.base/tag]
+  [slot me newv oldv _]
+  (when-let [dom (tag-dom me)]
+      (case slot
+        :class (classlist/set dom
+                 (if (sequential? newv)
+                   (str/join " " newv)
+                   newv))))))
+````
+Notes:
+* `observe-by-type` is one function from the overall "observer" mechanism;
+* we use "observer" in the strict dictionary sense of "monitor, not participant";
+* the name "tag" comes from the HTML usage;
+* `slot` is a Common Lisp holdover for property;
+* `me` is like `this` or `self`;
+* `tag-dom` returns the DOM element corresponding to an mxWeb proxy tag instance; and
+* `classlist/set` is from `goog.dom`
+
+That is the mxWeb framework. But here are some addenda:
+* We covered B reading A, but what if C reads B?  
+B will remember C, and when A changes and has B change, B will have C change
+* The typical application Matrix is a tree of so-called Models (objects)  
+A special property `:kids` manages bringing formulaically computed children models in and out of the Matrix smoothly;
+* Observer code is for side effects outside the Matrix dataflow, but  
+A mechanism exists for observers to enqueue a Matrix write for processing immediately after the observed write completes;
+
+
+
+ 
+
+
+
 The *Matrix* dataflow library endows application state with causal power, freeing us of the burden of propagating change across highly interdependent models. More grandly, it brings our application models to life, animating them in response to streams of external inputs.
 > "UIs...I am not going to go there. I don't do that part."  
 -- Rich Hickey on the high ratio of code to logic in UIs, *Clojure/Conj 2017*
