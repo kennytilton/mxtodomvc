@@ -1,12 +1,16 @@
 # TodoMVC, with Matrix Inside&trade;
-*An introduction by example to Matrix dataflow and mxWeb*
+*An introduction by example to Matrix dataflow and mxWeb, building the TodoMVC classic*
 
 The *Matrix* dataflow library endows application state with causal power, freeing us of the burden of propagating change across highly interdependent models. More grandly, it brings our application models to life, animating them in response to streams of external inputs.
 
-Matrix does this by enhancing how we initialize, read, and write individual properties:
+We choose mxWeb as the vehicle for introducing Matrix because nothing challenges a developer more than keeping application state straight while an intelligent user does their best to use a rich interface correctly. Then marketing wants a U/X overhaul.
+
+*mxWeb* is a thin web un-framework built atop Matrix. We say "un-framework" because mxWeb exists only to wire the DOM for dataflow. The API design imperative is that the MDN reference be the mxWeb reference; mxWeb itself introduces no new architecture.
+
+Matrix does this simply by enhancing how we initialize, read, and write individual properties:
 * properties can be initialized as a literal value or as a function;
 * should some property `A` be initialized with a literal, we can write to it;
-* should a functional `B` read `A`, `A` remembers `B`;
+* should a functional property `B` read `A`, `A` remembers `B`;
 * when we write to `A`, `A` tells `B`; and
 * we can supply "on change" callbacks for properties.
 
@@ -47,11 +51,6 @@ Can we really program this way? This [Algebra](https://tiltonsalgebra.com/#) app
 > "Derived Values, Flowing" -- the [re-frame](https://github.com/Day8/re-frame/blob/master/README.md) tag-line
 
 Matrix enjoys much good company in this field. We believe Matrix offers more simplicity, transparency, granularity, expressiveness, efficiency, and functional coverage, but in each dimension differs only in degree, not spirit. Other recommended CLJS libraries are [Reagent](https://reagent-project.github.io/), [Hoplon/Javelin](https://github.com/hoplon/javelin), and [re-frame](https://github.com/Day8/re-frame). Beyond CLJS, we admire [MobX](https://github.com/mobxjs/mobx/blob/master/README.md) (JS), [binding.Scala](https://github.com/ThoughtWorksInc/Binding.scala/blob/11.0.x/README.md), and Python [Trellis](https://pypi.org/project/Trellis/). Let us know about any we missed.
-
-#### mxWeb, "poster" application
-*mxWeb* is a thin web un-framework built atop Matrix. We introduce Matrix with mxWeb because nothing challenges a developer more than keeping application state straight while an intelligent user does their best to use a rich interface correctly. Then marketing wants a U/X overhaul.
-
-We say "un-framework" because mxWeb exists only to wire the DOM for dataflow. The API design imperative is that the MDN reference be the mxWeb reference; mxWeb itself introduces no new architecture.
 
 #### TodoMVC
 So far, so abstract. Ourselves, we think better in concrete. Let's get "hello, Matrix" running and then start building [TodoMVC](http://todomvc.com) from scratch. 
@@ -103,11 +102,11 @@ The sharp-eyed reader has spotted an unlikely HTML tag, `mxtodo-credits`. Here i
                   "Inspired by <a href=\"https://github.com/tastejs/todomvc/blob/master/app-spec.md\">TodoMVC</a>."]]
       (p credit))))
 ````
-Above we see the potential for custom HTML tags wrapping arbitrarily complex, reusable native DOM clusters, aka [Web Components](https://developer.mozilla.org/en-US/docs/Web/Web_Components). `mxtodo-credits` is rather simple, but next up is a function/component taking four parameters to support reuse.
+The above illustrates that, by supporting arbitrary functions as generators of HTML, with mxWeb we can develop custom HTML tags wrapping arbitrarily complex, reusable native DOM clusters, aka [Web Components](https://developer.mozilla.org/en-US/docs/Web/Web_Components). `mxtodo-credits` is rather simple, but next up is a function/component taking four parameters to support reuse.
 
 Note also that, yes, we can mix standard CLJS with our "HTML" because, again, it is all CLJS.
 ### git checkout wall-clock
-Reminder!
+Reminder:
 ````bash
 git checkout wall-clock
 ````
@@ -376,35 +375,36 @@ Before concluding, we look at an especially interesting example of lifting: XHR,
 
 Our treatment to date of [the XHR lift](https://github.com/kennytilton/matrix/tree/master/cljs/mxxhr) is technically minimal but the test suite includes clean dataflow solutions to several Hellish use cases. Our use case here is trivial, just a simple XHR query to the FDA API and one response, 200 indicating results found, 404 not. Notes follow the code.
 ````clojure
-(defn ae-checker-style-formula []
-  (cF (str "font-size:36px"
-  
-        ";display:"
-        (if (<mget me :lookup) "block" "none")
-
-        ";color:"
-        (cond
-          (<mget me :aes?) "red"
-          (<mget me :loookup) "gray"
-          :default "green"))))
-          
 (defn adverse-event-checker [todo]
-  (i {:class "aes material-icons"
-      :style (ae-checker-style-formula)}
+  (i
+    {:class   "aes material-icons"
+     :title "Click to see some AE counts"
+     :onclick #(js/alert "Feature to display AEs not yet implemented")
+     :style   (cF (str "font-size:36px"
+                    ";display:" (case (<mget me :aes?)
+                                  :no "none"
+                                  "block")
+                    ";color:" (case (<mget me :aes?)
+                                :undecided "gray"
+                                :yes "red"
+                                ;; should not get here
+                                "white")))}
 
     {:lookup   (cF+ [:obs (fn-obs (xhr-scavenge old))]
                  (make-xhr (pp/cl-format nil ae-by-brand
-                             (js/encodeURIComponent (td-title todo)))
-                   {:name name :send? true
+                             (js/encodeURIComponent
+                               (de-whitespace (td-title todo))))
+                   {:name       name :send? true
                     :fake-delay (+ 500 (rand-int 2000))}))
-     :response (cF (when-let [lookup (<mget me :lookup)]
-                     (<mget lookup :response)))
-     :aes?      (cF (if-let [r (<mget me :response)]
-                     (= 200 (:status r))))}
+     :response (cF (when-let [xhr (<mget me :lookup)]
+                     (xhr-response xhr)))
+     :aes?     (cF (if-let [r (<mget me :response)]
+                     (if (= 200 (:status r)) :yes :no)
+                     :undecided))}
     "warning"))
 ````
     
-That is the application code. The mxXHR libary internals show the datalow integration. (look for the `mset!>`; `with-cc` we touch on below):
+That is the application code we can easily review in this project. To see where the response dataflow starts we must look at  mxXHR libary internals. (look for the `mset!>`; as for `with-cc`, we touch on that below):
 ````clojure
 (defn xhr-send [xhr]
   (go
@@ -442,17 +442,22 @@ If you play with new to-dos, do *not* be alarmed by red warnings: all drugs have
 
 Matrix dataflow neutralizes the Hell of asynchronous callbacks because Matrix was created to propagate change gracefully. The `mset!>` of an asynchronously received response into the Matrix graph differs not at all from a user deciding to click their mouse or press a key. In either case, Matrix guarantees smooth, consistent propagation of the change throughout the graph of connected properties in accordance with what we call *datafow integrity*.
 
+#### single source of behaviour
+The XHR example is a great example of a quality we have barely touched on. When programming wuth mxWeb we benefit from having what we call a *single source of behavior* (SSB), with "source" as an unintended but welcome pun. The component `adverse-event-checker` is almost perfectly self-sufficient. It specifies the HTML, the semantics, the dynamic styling, and the XHR handling. It connects to the dataflow through the to-do `title` property and by generating style changes to reflect the FDA lookup response.
+
+We find SSB a natural way to build applications. Authoring, debugging, and refactoring all go faster when related things are found together, or *co-located*, in the source
+
 #### dataflow integrity
 From the [Cells Manifesto](http://smuglispweeny.blogspot.com/2008/02/cells-manifesto.html), when application code assigns to some input cell X, the Cells engine guarantees:
-* recomputation exactly once of all and only state affected by the change to X, directly or indirectly through some intermediate datapoint. note that if A depends on B, and B depends on X, when B gets recalculated it may come up with the same value as before. In this case A is not considered to have been affected by the change to X and will not be recomputed.
-* recomputations, when they read other datapoints, must see only values current with the new value of X. Example: if A depends on B and X, and B depends on X, when X changes and A reads B and X to compute a new value, B must return a value recomputed from the new value of X.
-* similarly, client observer callbacks must see only values current with the new value of X; and
-* a corollary: should a client observer SETF a datapoint Y, all the above must happen with values current with not just X, but also with the value of Y /prior/ to the change to Y.
+* recomputation exactly once of all and only state affected by the change to X, directly or indirectly through some intermediate datapoint. Note that if A depends on B, and B depends on X, when B gets recalculated it may come up with the same value as before. In this case A is not considered to have been affected by the change to X and will not be recomputed;
+* recomputations, when they read other datapoints, must see only values current with the new value of X. Example: if A depends on B and X, and B depends on X, when X changes and A reads B and X to compute a new value, B must return a value recomputed from the new value of X;
+* similarly, client observer callbacks must see only values current with the new value of X; and...
+* ...a corollary: should a client observer write to a datapoint Y, all the above must happen with values current with not just X, but also with the value of Y *prior* to the change to Y.
 * deferred "client" code must see only values current with X and not any values current with some subsequent change to Y queued by an observer.
 
-The astute reader will be surprised that observers, so carefully defined earlier *not* to be participants in the dataflow, are free to *initiate* dataflow. But they are allowed to do only as outsiders; the changes they initiate must be enqueued for execution *after* the change they are observing.
+The astute reader will be surprised that observers, so carefully defined earlier *not* to be participants in the dataflow, are free to *initiate* dataflow. We make a careful distinction: they are allowed to do only as outsiders. The changes they initiate must be enqueued for execution *after* the change they are observing, as if they were event handlers initiating change.
 
-Now as much fun as it was watching async responses flow into the Matrix, let us fix the excess.
+As much fun as it was watching multiple async responses flow into the Matrix because we rebuilt all LIs to add or remove one, let us now fix that excess.
 #### git checkout family-values
 A matrix is a simple tree formed of single parents with multiple so-called `kids`, a nice short name for children. Normally we just list the kids, but when the list changes incrementally and the children are mxWeb widgets, the mxWeb observer will be rebuilding those hefty widgets and rebuilding the DOM on each small change.
 
