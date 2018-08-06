@@ -70,7 +70,7 @@
                              (js/encodeURIComponent
                                (de-whitespace (td-title todo))))
                    {:name name :send? true
-                    :fake-delay (+ 1500 (rand-int 2000))}))
+                    :fake-delay (+ 500 (rand-int 2000))}))
      :response (cF (when-let [xhr (<mget me :lookup)]
                      (xhr-response xhr)))
      :aes?      (cF (if-let [r (<mget me :response)]

@@ -7,7 +7,8 @@
     [tiltontec.model.core
      ; todo trim
      :refer-macros [with-par]
-     :refer [matrix mx-par <mget mset!> mswap!> mxu-find-type] :as md]
+     :refer [matrix mx-par <mget mset!> mswap!>
+             kid-values-kids mxu-find-type] :as md]
 
     [mxweb.gen
      :refer-macros [div section header h1 footer p ul li a span button]]
@@ -71,14 +72,18 @@
 (defn todo-items-list []
   (section {:class "main"}
     (ul {:class "todo-list"}
-      (for [todo (sort-by td-created
-                   (<mget (mx-todos me)
-                     (case (mx-route me)
-                       "All" :items
-                       "Completed" :items-completed
-                       "Active" :items-active
-                       :items)))]
-        (todo-list-item todo)))))
+      {:kid-values (cF (when-let [rte (mx-route me)]
+                         (sort-by td-created
+                           (<mget (mx-todos me)
+                             (case rte
+                               "All" :items
+                               "Completed" :items-completed
+                               "Active" :items-active)))))
+       :kid-key #(<mget % :todo)
+       :kid-factory (fn [me todo]
+                      (todo-list-item todo))}
+      ;; cache is prior value for this implicit 'kids' slot; k-v-k uses it for diffing
+      (kid-values-kids me cache))))
 
 (defn todo-items-dashboard []
   (footer {:class  "footer"
