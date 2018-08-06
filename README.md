@@ -446,6 +446,32 @@ From the [Cells Manifesto](http://smuglispweeny.blogspot.com/2008/02/cells-manif
 
 The astute reader will be surprised that observers, so carefully defined earlier *not* to be participants in the dataflow, are free to *initiate* dataflow. But they are allowed to do only as outsiders; the changes they initiate must be enqueued for execution *after* the change they are observing.
 
+Now as much fun as it was watching async responses flow into the Matrix, let us fix the excess.
+### git checkout family-values
+A matrix is a simple tree formed of single parents with multiple so-called `kids`, a nice short name for children. Normally we just list the kids, but when the list changes incrementally and the children are mxWeb widgets, the mxWeb observer will be rebuilding those hefty widgets and rebuilding the DOM on each small change.
+
+To prevent this excess, Matrix has a small API we call "family values" after the [Charles Addams-inspired movie](https://www.youtube.com/watch?v=IHgfQ-0lYbg). The idea is to compute a collection of key values and then provide a factory function to be called with the key value to produce mxWeb instances only as needed after diffing the lists of key values.
+````clojure
+(defn todo-items-list []
+  (section {:class "main"}
+    (ul {:class "todo-list"}
+      {:kid-values (cF (when-let [rte (mx-route me)]
+                         (sort-by td-created
+                           (<mget (mx-todos me)
+                             (case rte
+                               "All" :items
+                               "Completed" :items-completed
+                               "Active" :items-active)))))
+       :kid-key #(<mget % :todo)
+       :kid-factory (fn [me todo]
+                      (todo-list-item todo))}
+      ;; cache is prior value for this implicit 'kids' slot; k-v-k uses it for diffing
+      (kid-values-kids me cache))))
+````
+Our key value is the abstract to-do model. `cache` above is a variable available to any property formula for the rare case when it wants to consider the prior computation when producing the next.
+
+Now when you add or remove items, you will see AE lookups executed only for added items.
+
 
 ## License: MIT
 
