@@ -1,5 +1,7 @@
 (ns mxtodomvc.todo-items-views
   (:require
+    [goog.events.Event :as event]
+
     [tiltontec.util.core :as util]
 
     [tiltontec.cell.core :refer-macros [cF cF+ cFn cF+n cFonce] :refer [cI]]
@@ -11,7 +13,10 @@
              kid-values-kids mxu-find-type] :as md]
 
     [mxweb.gen
-     :refer-macros [div section header h1 footer p ul li a span button]]
+     :refer-macros [div section header h1 footer p ul li a
+                    input label span button]]
+    [mxweb.html :as mxweb]
+
     [mxtodomvc.todo
      :refer [td-created td-completed td-delete!] :as todo]
     [mxtodomvc.todo-view
@@ -67,10 +72,34 @@
 (defn mx-route [mx]
   (<mget (mx-find-matrix mx) :route))
 
+;;; --- toggle all component -----------------------------------------
+
+(defn toggle-all []
+  (div {} {;; 'action' is an ad hoc bit of intermediate state that will be used to decide the
+           ;; input HTML checked attribute and will also guide the label onclick handler.
+           :action (cF (if (every? td-completed (mx-todo-items me))
+                         :uncomplete :complete))}
+
+    (input {:id        "toggle-all"
+            :class     "toggle-all"
+            ::mxweb/type "checkbox"
+            :checked   (cF (= (<mget (mx-par me) :action) :uncomplete))})
+
+    (label {:for     "toggle-all"
+            :onclick #(let [action (<mget me :action)]
+
+                        ;; else browser messes with checked, which we handle
+                        (event/preventDefault %)
+
+                        (doseq [td (mx-todo-items)]
+                          (mset!> td :completed (when (= action :complete) (util/now)))))}
+      "Mark all as complete")))
+
 ;;; --- views --------------------------------------------------------
 
 (defn todo-items-list []
   (section {:class "main"}
+    (toggle-all)
     (ul {:class "todo-list"}
       {:kid-values (cF (when-let [rte (mx-route me)]
                          (sort-by td-created

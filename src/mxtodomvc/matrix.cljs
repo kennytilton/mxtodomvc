@@ -9,12 +9,15 @@
      :refer-macros [with-par]
      :refer [matrix mx-par <mget mset!> mswap!> mxu-find-type] :as md]
     [mxweb.gen
-     :refer-macros [div section header h1 footer p ul li span input]]
+     :refer-macros [div section header h1 footer p ul
+                    li span input label]]
+
     [mxtodomvc.todo
-     :refer [make-todo td-title] :as todo]
+     :refer [make-todo td-title td-completed] :as todo]
     [mxtodomvc.web-components :as webco]
     [mxtodomvc.todo-items-views
-     :refer [todo-items-list
+     :refer [mx-todo-items
+             todo-items-list
              todo-items-dashboard]]
     [mxtodomvc.todo-view
      :refer [todo-list-item]]
@@ -66,8 +69,8 @@
       :mx-dom (cFonce
                 (with-par me
                   (section {:class "todoapp" :style "padding:24px"}
-                    (webco/wall-clock :date 60000 0 15)
-                    (webco/wall-clock :time 1000 0 8)
+                    ;(webco/wall-clock :date 60000 0 15)
+                    ;(webco/wall-clock :time 1000 0 8)
                     (header {:class "header"}
                       (h1 "todos")
                       (todo-entry-field))
