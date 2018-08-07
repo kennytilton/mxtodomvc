@@ -2,23 +2,24 @@
 *An introduction by example to Matrix dataflow and mxWeb*
 
 ## tl;dr
-mxWeb makes web pages easier to build, debug, refactor, and maintain simply by changing what happens when we read and write properties:
+mxWeb&trade; makes web pages easier to build, debug, refactor, and maintain simply by changing what happens when we read and write properties:
 * when B reads A, A remembers B; and
 * when A changes, A tells B.
 
-From that we get:
-* declarative/functional code everywhere (not just the component);
-* more efficiency than is possible with VDOM; and
-* there is no framework to learn, just HTML and CSS.
+From that fundamental wiring emerges:
+* declarative/functional code everywhere (not just the view);
+* more efficiency than is possible with VDOM;
+* a Web "un-framework" involving just HTML and CSS.
 
-What does it mean for B to read A? It means B is expressed as an HLL function that reads A. An mxWeb "HTML" excerpt from the code below:
+#### B reads A
+What does it mean for B to read A? It means B is expressed as an HLL function that reads A. An mxWeb "HTML" excerpt from the code below, where `cF` makes `:class` functional and `<mget` is the Matrix property reader:
 ````clojure
 (li
     {:class (cF (when (<mget todo :completed)
                   "completed"))}
     ...)
 ````
-...and another:
+...and another, applying Matrix to the model. `cI` is where imperative code pushes new "to-dos":
 ````clojure
 (md/make ::todo-list
     :items-raw (cI nil)
@@ -27,12 +28,8 @@ What does it mean for B to read A? It means B is expressed as an HLL function th
     :items-active (cF (doall (remove td-completed (<mget me :items))))
     :empty? (cF (empty? (<mget me :items))))
 ````
-Glossary for close readers:
-* `cI`, or "input Cell", can be written to by imeprative code;
-* `cF`, or "cell formulaic", makes the `:class` property of the `LI` functional, using the body shown; and
-* `<mget`, "or model get", is the Matrix property reader that arranges for `:completed` to remember `:class`.
-
-What does it mean for A to change and then tell B? It means we imperatively change A using a special Matrix writer, and then Matrix internals recalculate B:
+#### A tells B
+What does it mean for A to tell B? When we imperatively change, Matrix internals automatically recalculate B:
 ````cljs
 (input {:class       "toggle"
         ::mxweb/type "checkbox"
@@ -41,32 +38,24 @@ What does it mean for A to change and then tell B? It means we imperatively chan
 ````
 `mswap!>` is a Matrix property writer that:
 * changes the `:completed` property of the model todo; and
-* before returning, recomputes the :class property.
-
-One step is missing. How does the `li` DOM classlist change? We held something back:
+* before returning, recomputes the :class property of the proxy `input`.
+#### observers
+ We held something back. How does the `input` DOM classlist change?:
 * when `A` changes, it can:
     * mutate properties outside the Matrix graph; or
     * enqueue Matrix writes to other properties for execution immediately after the current write
-* 
 ````clojure
 (defmethod observe-by-type
   [:mxweb.base/tag]
-  [slot me newv oldv _]
-  (when-let [dom (tag-dom me)]
-      (case slot
-        :class (classlist/set dom
-                 (if (sequential? newv)
-                   (str/join " " newv)
-                   newv))))))
+  [property model new-value _ _]
+  (when-let [dom (tag-dom model)]
+      (case property
+        ...others...
+        :class (classlist/set dom new-value))))
 ````
-Glossary for close readers:
+Notes for close readers:
 * `observe-by-type` is one function from the overall "observer" mechanism dispatched when a property changes;
-    * we use "observer" in the strict dictionary sense of "monitor, not participant";
-* `tag-dom` returns the DOM element corresponding to an mxWeb proxy tag instance; and
-    * the name "tag" comes from the HTML usage;
-* `slot` is a Common Lisp holdover for property;
-* `me` is like `this` or `self`;
-* `classlist/set` is from `goog.dom`
+* we use "observer" in the strict dictionary sense: "monitor, not participant".
 
 That is the mxWeb framework. But here are some addenda (for close readers):
 * We covered B reading A, but what if C reads B?  
