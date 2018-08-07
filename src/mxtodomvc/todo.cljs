@@ -78,5 +78,5 @@
   (mset!> td :deleted (util/now)))
 
 (defn td-toggle-completed! [td]
-  (mset!> td :completed
-    (when-not (td-completed td) (util/now))))
+  (mswapt!> td :completed
+    #(when-not % (util/now))))
