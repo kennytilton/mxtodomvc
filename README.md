@@ -74,19 +74,27 @@ On the other hand...
 
 > "Nothing messes with functional purity quite like the need for side effects. On the other hand, effects are marvelous because they move the app forward." - [re-frame intro](https://github.com/Day8/re-frame)
 
-Matrix and other glitch-free reactive libraries make state change coherent and reliable:
+<img height="350px" align="right" src="/image/tododag400.png?raw=true">
+
+One-way derived graphs are examples of *directed acyclic graphs* or *DAGs*. To the right we see a diagram of perhaps half of the TodoMVC DAG. And TodoMVC is a trivial dataflow problem, with few derived states and drastically few input states. Real-world applications have real-world DAGs that defy accurate hand implementations.  
+
+Matrix, re-frame, MobX (JS) and other glitch-free reactive libraries make state change coherent and reliable:
 * derived state is functionally declared;
+* the "one-way flow" rule you may know from [Flux](https://facebook.github.io/flux/docs/in-depth-overview.html) is honored;
 * by recording reads property by property, a detailed dependency graph emerges so...
 * ...when mutations move the app forward, efficiency and consistency are guaranteed. 
 
 From the [Cells Manifesto](http://smuglispweeny.blogspot.com/2008/02/cells-manifesto.html):
-
-"when application code assigns to some input cell X, the Cells engine guarantees:
-* recomputation exactly once of all and only state affected by the change to X, directly or indirectly through some intermediate datapoint. Note that if A depends on B, and B depends on X, when B gets recalculated it may come up with the same value as before. In this case A is not considered to have been affected by the change to X and will not be recomputed;
-* recomputations, when they read other datapoints, must see only values current with the new value of X. Example: if A depends on B and X, and B depends on X, when X changes and A reads B and X to compute a new value, B must return a value recomputed from the new value of X;
-* similarly, client observer callbacks must see only values current with the new value of X; and...
-* ...a corollary: should a client observer write to a datapoint Y, all the above must happen with values current with not just X, but also with the value of Y *prior* to the change to Y.
-* deferred "client" code must see only values current with X and not any values current with some subsequent change to Y queued by an observer."
+<blockquote>
+When application code assigns to some input cell X, the Cells engine guarantees:
+<ul>
+    <li>recomputation exactly once of all and only state affected by the change to X, directly or indirectly through some intermediate datapoint. Note that if A depends on B, and B depends on X, when B gets recalculated it may come up with the same value as before. In this case A is not considered to have been affected by the change to X and will not be recomputed;</li>
+    <li>recomputations, when they read other datapoints, must see only values current with the new value of X. Example: if A depends on B and X, and B depends on X, when X changes and A reads B and X to compute a new value, B must return a value recomputed from the new value of X;
+    </li>
+    <li> similarly, client observer callbacks must see only values current with the new value of X; and...</li>
+    <li>...a corollary: should a client observer write to a datapoint Y, all the above must happen with values current with not just X, but also with the value of Y *prior* to the change to Y.</li>
+    <li> deferred "client" code must see only values current with X and not any values current with some subsequent change to Y queued by an observer.</li>
+</blockquote>
 
 ## The Full Story
 The *Matrix* dataflow library endows application state with causal power, freeing us of the burden of propagating change across highly interdependent models. More grandly, it brings our application models to life, animating them in response to streams of external inputs.
