@@ -9,7 +9,7 @@ mxWeb makes web pages easier to build, debug, refactor, and maintain simply by c
 From that we get:
 * declarative/functional code everywhere (not just the component);
 * more efficiency than is possible with VDOM; and
-* no other framework to learn.
+* there is no framework to learn, just HTML and CSS.
 
 What does it mean for B to read A? It means B is expressed as an HLL function that reads A. An mxWeb "HTML" excerpt from the code below:
 ````clojure
@@ -73,6 +73,28 @@ That is the mxWeb framework. But here are some addenda (for close readers):
 B will remember C, and when A changes and has B change, B will have C change.
 * The typical application Matrix is a tree of so-called *models* (objects)  
 A Matrix observer on the special property `:kids` brings dynamically computed models into and out of the Matrix smoothly.
+
+#### About A->B->C: mutation
+Clojurians worry about change. One respected correspondent referred to `Hoplon/Javelin` formulas Cells as "unchecked mutation", and via the `re-frame` doc we have:
+<div style="width:400px">
+  <blockquote class="twitter-tweet" lang="en"><p>Well-formed Data at rest is as close to perfection in programming as it gets. All the crap that had to happen to put it there however...</p>&mdash; Fogus (@fogus) <a href="https://twitter.com/fogus/status/454582953067438080">April 11, 2014</a></blockquote>
+</div>
+On the other hand...
+> "Nothing messes with functional purity quite like the need for side effects. On the other hand, effects are marvelous because they move the app forward." - [re-frame intro](https://github.com/Day8/re-frame)
+
+Matrix and other glitch-free reactive libraries make state change coherent and reliable:
+* derived state is not mutation, it is functional programming with an automatic cache;
+* by recording reads property by property, a detailed dependency graph emerges so...
+* ...when effects move the app forward, we can guarantee efficiency and consistency. 
+
+From the [Cells Manifesto](http://smuglispweeny.blogspot.com/2008/02/cells-manifesto.html):
+
+"when application code assigns to some input cell X, the Cells engine guarantees:
+* recomputation exactly once of all and only state affected by the change to X, directly or indirectly through some intermediate datapoint. Note that if A depends on B, and B depends on X, when B gets recalculated it may come up with the same value as before. In this case A is not considered to have been affected by the change to X and will not be recomputed;
+* recomputations, when they read other datapoints, must see only values current with the new value of X. Example: if A depends on B and X, and B depends on X, when X changes and A reads B and X to compute a new value, B must return a value recomputed from the new value of X;
+* similarly, client observer callbacks must see only values current with the new value of X; and...
+* ...a corollary: should a client observer write to a datapoint Y, all the above must happen with values current with not just X, but also with the value of Y *prior* to the change to Y.
+* deferred "client" code must see only values current with X and not any values current with some subsequent change to Y queued by an observer."
 
 ## The Full Story
 The *Matrix* dataflow library endows application state with causal power, freeing us of the burden of propagating change across highly interdependent models. More grandly, it brings our application models to life, animating them in response to streams of external inputs.
