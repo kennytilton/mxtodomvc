@@ -9,17 +9,17 @@ mxWeb&trade; makes web pages easier to build, debug, refactor, and maintain simp
 From that fundamental wiring emerges:
 * declarative/functional code everywhere (not just the view);
 * more efficiency than is possible with VDOM;
-* a Web "un-framework" involving just HTML and CSS.
+* a scalable Web "un-framework" involving just HTML and CSS.
 
 #### B reads A
-What does it mean for B to read A? It means B is expressed as an HLL function that reads A. An mxWeb "HTML" excerpt from the code below, where `cF` makes `:class` functional and `<mget` is the Matrix property reader:
+What does it mean for B to read A? It means B is expressed as an HLL function that reads A. An mxWeb "HTML" excerpt from the code below, where `cF` makes `:class` functional and `<mget` is the Matrix property reader that remembers which property is asking:
 ````clojure
 (li
     {:class (cF (when (<mget todo :completed)
                   "completed"))}
     ...)
 ````
-...and another, applying Matrix to the model. `cI` is where imperative code pushes new "to-dos":
+...and another, applying Matrix to state beyond the view. `cI` sets up a proerty to tell functional client properties when imperative code pushes new "to-dos" to `items-raw`:
 ````clojure
 (md/make ::todo-list
     :items-raw (cI nil)
@@ -40,10 +40,10 @@ What does it mean for A to tell B? When we imperatively change, Matrix internals
 * changes the `:completed` property of the model todo; and
 * before returning, recomputes the :class property of the proxy `input`.
 #### observers
- We held something back. How does the `input` DOM classlist change?:
+We held something back. How does the `input` DOM classlist change?:
 * when `A` changes, it can:
     * mutate properties outside the Matrix graph; or
-    * enqueue Matrix writes to other properties for execution immediately after the current write
+    * enqueue Matrix writes to other properties for execution immediately after the current write.
 ````clojure
 (defmethod observe-by-type
   [:mxweb.base/tag]
@@ -53,13 +53,15 @@ What does it mean for A to tell B? When we imperatively change, Matrix internals
         ...others...
         :class (classlist/set dom new-value))))
 ````
-Notes for close readers:
+We do not offer an example of a deferred write at this time. We find those come up only when applications have grown quite large.
+Notess:
 * `observe-by-type` is one function from the overall "observer" mechanism dispatched when a property changes;
-* we use "observer" in the strict dictionary sense: "monitor, not participant".
+* we use "observer" in the strict dictionary sense: "monitor, not participant". Other libraries use it differently.
+
+#### scalable
+This [Algebra](https://tiltonsalgebra.com/#) app consists of about twelve hundred `A`s and `B`s, and extends into a Postgres database. Everything runs under matrix control. It lifts Qooxdoo JS, MathJax, Postgres and more. The average number of dependencies for one value is a little more than one, and the deepest dependency chain is about a dozen. On complex dispays of many math problems, a little over a thousand values are dependent on other values.
 
 That is the mxWeb framework. But here are some addenda (for close readers):
-* We covered B reading A, but what if C reads B?  
-B will remember C, and when A changes and has B change, B will have C change.
 * The typical application Matrix is a tree of so-called *models* (objects)  
 A Matrix observer on the special property `:kids` brings dynamically computed models into and out of the Matrix smoothly.
 
