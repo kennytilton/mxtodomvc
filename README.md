@@ -64,17 +64,18 @@ B will remember C, and when A changes and has B change, B will have C change.
 A Matrix observer on the special property `:kids` brings dynamically computed models into and out of the Matrix smoothly.
 
 #### About A->B->C: mutation
-Clojurians worry about change. One respected correspondent referred to `Hoplon/Javelin` formulas Cells as "unchecked mutation", and via the `re-frame` doc we have:
+Clojurians understand well the danger of mutation. Via the `re-frame` doc we have:
 <div style="width:400px">
   <blockquote class="twitter-tweet" lang="en"><p>Well-formed Data at rest is as close to perfection in programming as it gets. All the crap that had to happen to put it there however...</p>&mdash; Fogus (@fogus) <a href="https://twitter.com/fogus/status/454582953067438080">April 11, 2014</a></blockquote>
 </div>
 On the other hand...
+
 > "Nothing messes with functional purity quite like the need for side effects. On the other hand, effects are marvelous because they move the app forward." - [re-frame intro](https://github.com/Day8/re-frame)
 
 Matrix and other glitch-free reactive libraries make state change coherent and reliable:
-* derived state is not mutation, it is functional programming with an automatic cache;
+* derived state is functionally declared;
 * by recording reads property by property, a detailed dependency graph emerges so...
-* ...when effects move the app forward, we can guarantee efficiency and consistency. 
+* ...when mutations move the app forward, efficiency and consistency are guaranteed. 
 
 From the [Cells Manifesto](http://smuglispweeny.blogspot.com/2008/02/cells-manifesto.html):
 
