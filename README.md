@@ -1,44 +1,149 @@
 # TodoMVC, with Matrix Inside&trade;
 *An introduction by example to Matrix dataflow and mxWeb*
 
-The *Matrix* dataflow library endows application state with causal power over other such state, freeing the developer from the burden of propagating unpredictable change across highly interdependent models. More grandly, it brings our application models to life, animating them in response to streams of external inputs.
+## tl;dr
+mxWeb&trade; makes web pages easier to build, debug, refactor, and maintain simply by changing what happens when we read and write properties:
+* when B reads A, A remembers B; and
+* when A changes, A tells B.
 
-Matrix does this simply by enhancing what happens when we read and write individual properties:
-* when property `A` reads `B`, `B` remembers `A`;
-* when we write to `B`, `B` tells `A`.
+From that fundamental wiring emerges:
+* declarative/functional code everywhere (not just the view);
+* more efficiency than is possible with VDOM;
+* a scalable Web "un-framework" involving just HTML and CSS.
 
-What does it mean for one property to read another, for `A` to read `B`? It means declaring `A` as an arbitrary function of `B` and possibly others. In spirit:
+#### B reads A
+What does it mean for B to read A? It means B is expressed as an HLL function that reads A. An mxWeb "HTML" excerpt from the code below, where `cF` makes `:class` functional and `<mget` is the Matrix property reader that remembers which property is asking:
 ````clojure
-A <= (fn [] (+ 42 B C))))
+(li
+    {:class (cF (when (<mget todo :completed)
+                  "completed"))}
+    ...)
 ````
-What does it mean for `B` to tell `A`? `B` makes `A` compute a new value. 
+...and another, applying Matrix to state beyond the view. `cI` sets up a proerty to tell functional client properties when imperative code pushes new "to-dos" to `items-raw`:
+````clojure
+(md/make ::todo-list
+    :items-raw (cI nil)
+    :items (cF (doall (remove td-deleted (<mget me :items-raw))))
+    :items-completed (cF (doall (filter td-completed (<mget me :items))))
+    :items-active (cF (doall (remove td-completed (<mget me :items))))
+    :empty? (cF (empty? (<mget me :items))))
+````
+#### A tells B
+What does it mean for A to tell B? When we imperatively change, Matrix internals automatically recalculate B:
+````cljs
+(input {:class       "toggle"
+        ::mxweb/type "checkbox"
+        :onclick     #(mswap!> todo :completed
+                         #(when-not [%] (util/now)})
+````
+`mswap!>` is a Matrix property writer that:
+* changes the `:completed` property of the model todo; and
+* before returning, recomputes the :class property of the proxy `input`.
+#### observers
+We held something back. How does the `input` DOM classlist change?:
+* when `A` changes, it can:
+    * mutate properties outside the Matrix graph; or
+    * enqueue Matrix writes to other properties for execution immediately after the current write.
+````clojure
+(defmethod observe-by-type
+  [:mxweb.base/tag]
+  [property model new-value _ _]
+  (when-let [dom (tag-dom model)]
+      (case property
+        ...others...
+        :class (classlist/set dom new-value))))
+````
+We do not offer an example of a deferred write at this time. We find those come up only when applications have grown quite large.
+Notess:
+* `observe-by-type` is one function from the overall "observer" mechanism dispatched when a property changes;
+* we use "observer" in the strict dictionary sense: "monitor, not participant". Other libraries use it differently.
 
-What happens when `A` computes a new value? `A` itself might have its own dependent properties to tell, or `A` might want to tell the outside world. Where a Web game app uses a map to represent a Romulan warship, a paired DOM element will render the ship. If `A` is the `cloaked` property of the map warship, the "hidden" attribute of the DOM warship needs to track it. To this end, Matrix lets us define an "on-change" *observer* of `A` to update the DOM.
+#### scalable
+This [Algebra](https://tiltonsalgebra.com/#) app consists of about twelve hundred `A`s and `B`s, and extends into a Postgres database. Everything runs under matrix control. It lifts Qooxdoo JS, MathJax, Postgres and more. The average number of dependencies for one value is a little more than one, and the deepest dependency chain is about a dozen. On complex dispays of many math problems, a little over a thousand values are dependent on other values.
+
+That is the mxWeb framework. But here are some addenda (for close readers):
+* The typical application Matrix is a tree of so-called *models* (objects)  
+A Matrix observer on the special property `:kids` brings dynamically computed models into and out of the Matrix smoothly.
+
+#### About A->B->C: mutation
+Clojurians understand well the danger of mutation. Via the `re-frame` doc we have:
+<div style="width:400px">
+  <blockquote class="twitter-tweet" lang="en"><p>Well-formed Data at rest is as close to perfection in programming as it gets. All the crap that had to happen to put it there however...</p>&mdash; Fogus (@fogus) <a href="https://twitter.com/fogus/status/454582953067438080">April 11, 2014</a></blockquote>
+</div>
+On the other hand...
+
+> "Nothing messes with functional purity quite like the need for side effects. On the other hand, effects are marvelous because they move the app forward." - [re-frame intro](https://github.com/Day8/re-frame)
+
+Matrix and other glitch-free reactive libraries make state change coherent and reliable:
+* derived state is functionally declared;
+* by recording reads property by property, a detailed dependency graph emerges so...
+* ...when mutations move the app forward, efficiency and consistency are guaranteed. 
+
+From the [Cells Manifesto](http://smuglispweeny.blogspot.com/2008/02/cells-manifesto.html):
+
+"when application code assigns to some input cell X, the Cells engine guarantees:
+* recomputation exactly once of all and only state affected by the change to X, directly or indirectly through some intermediate datapoint. Note that if A depends on B, and B depends on X, when B gets recalculated it may come up with the same value as before. In this case A is not considered to have been affected by the change to X and will not be recomputed;
+* recomputations, when they read other datapoints, must see only values current with the new value of X. Example: if A depends on B and X, and B depends on X, when X changes and A reads B and X to compute a new value, B must return a value recomputed from the new value of X;
+* similarly, client observer callbacks must see only values current with the new value of X; and...
+* ...a corollary: should a client observer write to a datapoint Y, all the above must happen with values current with not just X, but also with the value of Y *prior* to the change to Y.
+* deferred "client" code must see only values current with X and not any values current with some subsequent change to Y queued by an observer."
+
+## The Full Story
+The *Matrix* dataflow library endows application state with causal power, freeing us of the burden of propagating change across highly interdependent models. More grandly, it brings our application models to life, animating them in response to streams of external inputs.
+> "UIs...I am not going to go there. I don't do that part."  
+-- Rich Hickey on the high ratio of code to logic in UIs, *Clojure/Conj 2017*
+
+We choose mxWeb as the vehicle for introducing Matrix because nothing challenges a developer more than keeping application state straight while an intelligent user does their best to use a rich interface correctly. Then marketing wants a U/X overhaul.
+
+*mxWeb* is a thin web un-framework built atop Matrix. We say "un-framework" because mxWeb exists only to wire the DOM for dataflow. The API design imperative is that the MDN reference be the mxWeb reference; mxWeb itself introduces no new architecture.
+
+Matrix does this simply by enhancing how we initialize, read, and write individual properties:
+* properties can be initialized as a literal value or as a function;
+* should some property `A` be initialized with a literal, we can write to it;
+* should a functional property `B` read `A`, `A` remembers `B`;
+* when we write to `A`, `A` tells `B`; and
+* we can supply "on change" callbacks for properties.
+
+What does it mean for one property to read another, for `B` to read `A`? It means declaring `B` as an arbitrary HLL function of `A` and possibly others. In pseudo code:
+````clojure
+B <= (fn [] (+ 42 A C))))
+````
+What does it mean for `A` to tell `B`? `A` makes `B` compute a new value. 
+
+What happens when `B` computes a new value?
+* `B` might have its own dependent properties to tell; and
+* `A` or `B` might also want to act on the world outside the graph of properties. 
+
+> "Nothing messes with functional purity quite like the need for side effects. On the other hand, effects are marvelous because they move the app forward." - [re-frame intro](https://github.com/Day8/re-frame)
+
+A Web game app might use a CLJS map to model a Romulan warship, and have a paired DOM element to render the ship. If `A` is the `cloaked` property of the map warship and it changes, the `hidden` attribute of the DOM warship needs to be added or removed. To this end, Matrix lets us define "on-change" *observers*.
 
 > [observer](https://dictionary.cambridge.org/dictionary/english/observer): noun. UK: /əbˈzɜː.vər/, US: /əbˈzɝː.vɚ/  A person who watches what happens but has no active part in it.
 
-Many reactive libraries use the term observer differently. Wwhen `A` is a function of `B`, they refer to `A` as an "observer" of `B`. The Matrix library conforms to the dictionary meaning of the word: observers are monitors, not participants. As for `A`, we call it a *dependent* of `B`.
+Observers are *monitors* of the dataflow between a graph of properties, not participants in that flow. They act, but they act outside the dataflow graph. *Caveat lector*: the reactive community generally uses "observer"...differently.
 
-`A` might not be a simple property like "cloaked". `A` might be `K` for "kids" and hold the child nodes of some parent. The very population of our application can change with events. We call this dynamic population of communicating nodes a *matrix*.
+#### lifting
+What about X, Y, and Z? i.e., Properties from existing libraries that know nothing about dataflow? We write whatever "glue" code it takes to wire existing libraries with dataflow. We call this "lifting" libraries into the dataflow. 
+
+> Lifting the DOM required about two thousand lines of code. Below we will explore several examples of lifting. 
+
+#### matrix?
+`A` might be more than a descriptive property such as "cloaked". `A` might be `K` for "kids" and hold the child nodes of some parent; i.e., the very population of our application model can shrink or grow with events. We call such a dynamic population of communicating nodes a *matrix*.
 
 > ma·trix ˈmātriks *noun* an environment in which something else takes form. *Origin:* Latin, female animal used for breeding, parent plant, from *matr-*, *mater*
 
-The Matrix library brings our application models to life, animating them in response to streams of external inputs. The movies were fun, but that Matrix bled energy from humans to feed machines. Mr. Hickey, a careful man with the dictionary, might disapprove the misconstruction.
+Simply by propagating change between functional properties, with strictly segregated dataflow to and from the outside world, the Matrix library brings applications to life.
 
-Can we really program this way? This [Algebra](https://tiltonsalgebra.com/#) application matrix consists of about twelve hundred `A`s and `B`s, and extends into a Postgres database. Everything runs under matrix control. The average number of dependencies for one value is a little more than one, and the deepest dependency chain is about a dozen. On complex dispays of many math problems, a little over a thousand values are dependent on other values. So, yes.
+#### Really?
+Can we really program this way? This [Algebra](https://tiltonsalgebra.com/#) app consists of about twelve hundred `A`s and `B`s, and extends into a Postgres database. Everything runs under matrix control. It lifts Qooxdoo JS, MathJax, Postgres and more. The average number of dependencies for one value is a little more than one, and the deepest dependency chain is about a dozen. On complex dispays of many math problems, a little over a thousand values are dependent on other values.
 
-### Related work
-> "Derived Values, Flowing" -- [re-frame](https://github.com/Day8/re-frame/blob/master/README.md) tag-line
+#### Related work
+> "Derived Values, Flowing" -- the [re-frame](https://github.com/Day8/re-frame/blob/master/README.md) tag-line
 
 Matrix enjoys much good company in this field. We believe Matrix offers more simplicity, transparency, granularity, expressiveness, efficiency, and functional coverage, but in each dimension differs only in degree, not spirit. Other recommended CLJS libraries are [Reagent](https://reagent-project.github.io/), [Hoplon/Javelin](https://github.com/hoplon/javelin), and [re-frame](https://github.com/Day8/re-frame). Beyond CLJS, we admire [MobX](https://github.com/mobxjs/mobx/blob/master/README.md) (JS), [binding.Scala](https://github.com/ThoughtWorksInc/Binding.scala/blob/11.0.x/README.md), and Python [Trellis](https://pypi.org/project/Trellis/). Let us know about any we missed.
 
-#### mxWeb, "poster" application
-*mxWeb* is a thin web un-framework built atop Matrix. We introduce Matrix in the context of mxWeb because nothing challenges a developer more than keeping application state straight while an intelligent user does their best to use a rich interface correctly. Then marketing wants the U/X redone.
-
-We say "un-framework" because mxWeb exists only to wire the DOM for dataflow. The API design imperative is that the MDN reference be the mxWeb reference; mxWeb itself introduces no new architecture.
-
 #### TodoMVC
-So far, so abstract. Ourselves, we think better in concrete. Let's get "hello, Matrix" running and then start building TodoMVC from scratch. 
+So far, so abstract. Ourselves, we think better in concrete. Let's get "hello, Matrix" running and then start building [TodoMVC](http://todomvc.com) from scratch. 
 
 The TodoMVC project specifies a trivial Web application as the basis for comparing Web frameworks. We will first satisfy the requirements, then extend the spec to include XHRs. Along the way we will tag milestones so the reader can conveniently visit any stage of development.
 
@@ -87,11 +192,11 @@ The sharp-eyed reader has spotted an unlikely HTML tag, `mxtodo-credits`. Here i
                   "Inspired by <a href=\"https://github.com/tastejs/todomvc/blob/master/app-spec.md\">TodoMVC</a>."]]
       (p credit))))
 ````
-Above we see the potential for custom HTML tags wrapping arbitrarily complex, reusable native DOM clusters, aka [Web Components](https://developer.mozilla.org/en-US/docs/Web/Web_Components). `mxtodo-credits` is rather simple, but next up is a function/component taking four parameters to support reuse.
+The above illustrates that, by supporting arbitrary functions as generators of HTML, with mxWeb we can develop custom HTML tags wrapping arbitrarily complex, reusable native DOM clusters, aka [Web Components](https://developer.mozilla.org/en-US/docs/Web/Web_Components). `mxtodo-credits` is rather simple, but next up is a function/component taking four parameters to support reuse.
 
 Note also that, yes, we can mix standard CLJS with our "HTML" because, again, it is all CLJS.
 ### git checkout wall-clock
-Reminder!
+Reminder:
 ````bash
 git checkout wall-clock
 ````
@@ -288,25 +393,25 @@ All that happens when this code executes:
 ````clojure
 (mset!> td :deleted (now))
 ````
-We will spare that detailed analysis of what happens when we click the "delete" button (the red "X" that appears on hover), but the reader might want to work out for themselves the dataflow from the :deleted property to these behaviors:
+We will spare the reader our detailed analysis of what happens when we click the "delete" button (the red "X" that appears on hover), but the reader might want to work out for themselves the dataflow from the :deleted property to these behaviors:
 * the item disappears;
 * if the item was incomplete when deleted, the "Items remaining" drops by one;
 * if the item was the only completed item, "Clear completed" disappears;
 * if the item was the last of any kind, the dashboard disappears.
 
-Now the spec requires a bit of routing.
+Next up: the spec requires a bit of routing.
 
 #### git checkout lift-routing
-The official TodoMVC spec requires a routing mechanism be used to let the user filter which to-dos are displayed, based on their completion status. The options are all, completed conly, and incomplete (active) only.
+The official TodoMVC spec requires a routing mechanism be used to implement the user filtering of which to-dos are displayed, based on their completion status. The options are "all", "completed" only, and "active" (incomplete) active only.
 
-The code we would like to write (and did) is this:
+The declarative code just reads the route, a property of the root node of the matrix:
 ````clojure
 (defn todo-items-list []
   (section {:class "main"}
     (ul {:class "todo-list"}
       (for [todo (sort-by td-created
                    (<mget (mx-todos me)
-                     (case (<mget (mx-find-matrix mx) :route) ;; <--- route property read
+                     (case (<mget (mx-find-matrix mx) :route) ;; <--- READ ROUTE PROPERTY
                        "All" :items
                        "Completed" :items-completed
                        "Active" :items-active
@@ -324,7 +429,7 @@ One popular CLJS routing library is [bide](https://github.com/funcool/bide). Bid
                        {:default     :ignore
                         :on-navigate (fn [route params query]
                                        (when-let [mtx @md/matrix]
-                                         ;;; ... and mset!> injects the user route into the matrix
+                                         ;;; ... WRITE ROUTE PROPERTY
                                          (mset!> mtx :route (name route))))}))
 ````
 Just two steps are required:
@@ -333,7 +438,201 @@ Just two steps are required:
 
 The routing change then causes the list view to recompute which items to display, and an observer on the `UL` children arranges for the DOM to be updated.
 
-[More RSN]
+#### git checkout todo-entry
+Earlier we emphasized that mxWeb is an "un-framework". With this tag we add support for user entry of new to-dos, and illustrate one advantage of not being a framework: mxWeb does not hide the DOM.
+````clojure
+(defn todo-entry-field []
+  (input {:class       "new-todo"
+          :autofocus   true
+          :placeholder "What needs doing?"
+          :onkeypress  #(when (= (.-key %) "Enter")
+                          (let [raw (form/getValue (.-target %))
+                                title (str/trim raw)]
+                            (when-not (str/blank? title)
+                              (mswap!> (<mget @matrix :todos) :items-raw conj
+                                (make-todo title)))
+                            (form/setValue (.-target %) "")))}))
+````
+The token `%` of course is the raw DOM event. In a different handler we will see manipulation of the DOM classlist. Not every library allows easy access to the DOM, especially those such as ReactJS where we declaratively author VDOM. With ReactJS, accessing the DOM is a [heavier lift](https://reactjs.org/docs/refs-and-the-dom.html#callback-refs).
+
+Speaking of raw DOM events, ReactJS hides those as well because ReactJS cannot handle their semantics. Example: `on-change` events fire on every keystroke on an input field. The MDN standard is that `on-change` fire only on blur or when the user hits enter, indicating they have completed their entry.
+
+\<soapbox\>
+ReactJS and every one of the [sixty-four submissions](http://todomvc.com/) to TodoMVC framework add a lot of value, but they also add their own baggage, and, like the Tower of Babel, segment the developer community, and limit library reuse. We need a front-end version of NoSQL.
+\</soapbox\>
+#### git checkout lifting-xhr
+Before concluding, we look at an especially interesting example of lifting: XHR, affectionately known as Callback Hell. We do so exceeding the official TodoMVC spec to alert our user of any to-do item that returns results from a search of of the FDA [Adverse Events database](https://open.fda.gov/data/faers/).
+
+Our treatment to date of [the XHR lift](https://github.com/kennytilton/matrix/tree/master/cljs/mxxhr) is technically minimal but the test suite includes clean dataflow solutions to several Hellish use cases. Our use case here is trivial, just a simple XHR query to the FDA API and one response, 200 indicating results found, 404 not. Notes follow the code.
+````clojure
+(defn adverse-event-checker [todo]
+  (i
+    {:class   "aes material-icons"
+     :title "Click to see some AE counts"
+     :onclick #(js/alert "Feature to display AEs not yet implemented")
+     :style   (cF (str "font-size:36px"
+                    ";display:" (case (<mget me :aes?)
+                                  :no "none"
+                                  "block")
+                    ";color:" (case (<mget me :aes?)
+                                :undecided "gray"
+                                :yes "red"
+                                ;; should not get here
+                                "white")))}
+
+    {:lookup   (cF+ [:obs (fn-obs (xhr-scavenge old))]
+                 (make-xhr (pp/cl-format nil ae-by-brand
+                             (js/encodeURIComponent
+                               (de-whitespace (td-title todo))))
+                   {:name       name :send? true
+                    :fake-delay (+ 500 (rand-int 2000))}))
+     :response (cF (when-let [xhr (<mget me :lookup)]
+                     (xhr-response xhr)))
+     :aes?     (cF (if-let [r (<mget me :response)]
+                     (if (= 200 (:status r)) :yes :no)
+                     :undecided))}
+    "warning"))
+````
+    
+That is the application code we can easily review in this project. To see where the response dataflow starts we must look at  mxXHR libary internals. (look for the `mset!>`; as for `with-cc`, we touch on that below):
+````clojure
+(defn xhr-send [xhr]
+  (go
+    (let [response (<! (client/get (<mget xhr :uri) {:with-credentials? false}))]
+       (with-cc :xhr-handler-sets-responded
+          (mset!> xhr :response
+            {:status (:status response)
+             :body   (if (:success response)
+                       ((:body-parser @xhr) (:body response))
+                       [(:error-code response)
+                        (:error-text response)])}))))))
+````
+Hellish async XHR responses are now just ordinary Matrix inputs. 
+
+Notes:
+* `ae-checker-style-formula` manifests a nice code win: complex `cF`s can be broken out into their own functions;
+* Google's Material Design icon fonts integrate smoothly;
+* We fake variable response latency;
+* For pedagogic reasons, we break up the lookup into several `cFs`:
+* `lookup` functionally returns an mxXHR incarnation of an actual XHR, but...
+* ...we specify that the XHR be *sent* immediately! This is where `with-cc` comes in...
+* ...getting into the weeds, `with-cc` enqueues its body for execution at the right time in the datafow lifecycle...
+* ...and should the user change the title and kick off a new lookup, an observer will GC the old one;
+* `response` runs immediately, reads the nil lookup `response` but establishing the dependency, and returns nil;
+* the `aes?` predicate runs immediately and does not see a `response`, so it returns `:undecided`;
+* the color and display style properties decide on "gray" and "block";
+* an mxWeb observer updates the DOM so we see a gray "warning" icon;
+* when the actual XHR gets a response, good or bad, it is `<mset!` *with dataflow integrity* into the `response` property of the mxXHR;
+* our AE checker `response` formula runs and captures the response;
+* `aes?` runs, sees the response, and decides on :yes :or :no;
+* the color and display style properties decide on new values;
+* mxWeb does its thing and the warning disappears or turns red.
+
+If you play with new to-dos, do *not* be alarmed by red warnings: all drugs have adverse events, and the FDA search is aggressive. You will also note an inefficiency we address in the next section, viz. that each to-do gets looked up anew each time the list changes. But first...
+
+Matrix dataflow neutralizes the Hell of asynchronous callbacks because Matrix was created to propagate change gracefully. The `mset!>` of an asynchronously received response into the Matrix graph differs not at all from a user deciding to click their mouse or press a key. In either case, Matrix guarantees smooth, consistent propagation of the change throughout the graph of connected properties in accordance with what we call *datafow integrity*.
+
+#### single source of behaviour
+The XHR example is a great example of a quality we have barely touched on. When programming wuth mxWeb we benefit from having what we call a *single source of behavior* (SSB), with "source" as an unintended but welcome pun. The component `adverse-event-checker` is almost perfectly self-sufficient. It specifies the HTML, the semantics, the dynamic styling, and the XHR handling. It connects to the dataflow through the to-do `title` property and by generating style changes to reflect the FDA lookup response.
+
+We find SSB a natural way to build applications. Authoring, debugging, and refactoring all go faster when related things are found together, or *co-located*, in the source
+
+#### dataflow integrity
+From the [Cells Manifesto](http://smuglispweeny.blogspot.com/2008/02/cells-manifesto.html), when application code assigns to some input cell X, the Cells engine guarantees:
+* recomputation exactly once of all and only state affected by the change to X, directly or indirectly through some intermediate datapoint. Note that if A depends on B, and B depends on X, when B gets recalculated it may come up with the same value as before. In this case A is not considered to have been affected by the change to X and will not be recomputed;
+* recomputations, when they read other datapoints, must see only values current with the new value of X. Example: if A depends on B and X, and B depends on X, when X changes and A reads B and X to compute a new value, B must return a value recomputed from the new value of X;
+* similarly, client observer callbacks must see only values current with the new value of X; and...
+* ...a corollary: should a client observer write to a datapoint Y, all the above must happen with values current with not just X, but also with the value of Y *prior* to the change to Y.
+* deferred "client" code must see only values current with X and not any values current with some subsequent change to Y queued by an observer.
+
+The astute reader will be surprised that observers, so carefully defined earlier *not* to be participants in the dataflow, are free to *initiate* dataflow. We make a careful distinction: they are allowed to do only as outsiders. The changes they initiate must be enqueued for execution *after* the change they are observing, as if they were event handlers initiating change.
+
+As much fun as it was watching multiple async responses flow into the Matrix because we rebuilt all LIs to add or remove one, let us now fix that excess.
+#### git checkout family-values
+A matrix is a simple tree formed of single parents with multiple so-called `kids`, a nice short name for children. Normally we just list the kids, but when the list changes incrementally and the children are mxWeb widgets, the mxWeb observer will be rebuilding those hefty widgets and rebuilding the DOM on each small change.
+
+To prevent this excess, Matrix has a small API we call "family values" after the [Charles Addams-inspired movie](https://www.youtube.com/watch?v=IHgfQ-0lYbg). The idea is to compute a collection of key values and then provide a factory function to be called with the key value to produce mxWeb instances only as needed after diffing the lists of key values.
+````clojure
+(defn todo-items-list []
+  (section {:class "main"}
+    (ul {:class "todo-list"}
+      {:kid-values (cF (when-let [rte (mx-route me)]
+                         (sort-by td-created
+                           (<mget (mx-todos me)
+                             (case rte
+                               "All" :items
+                               "Completed" :items-completed
+                               "Active" :items-active)))))
+       :kid-key #(<mget % :todo)
+       :kid-factory (fn [me todo]
+                      (todo-list-item todo))}
+      ;; cache is prior value for this implicit 'kids' slot; k-v-k uses it for diffing
+      (kid-values-kids me cache))))
+````
+Our key value is the abstract to-do model. `cache` above is a variable available to any property formula for the rare case when it wants to consider the prior computation when producing the next.
+
+Now when you add or remove items, you will see AE lookups executed only for added items.
+
+#### git checkout ez-dom
+Above we promised more about having easy access to the DOM from front-end code, something one might take for granted but for the example of ReactJS where VDOM hides the DOM. We deliver on that promise with the last feature we will implement: the ability to edit a to-do after it has been entered. 
+
+First, we drop a new input field into each LI dedicated to a to-do item:
+````clojure
+(input {:class     "edit"
+            :onblur    #(todo-edit % todo true)
+            :onkeydown #(todo-edit % todo (= (.-key %) "Enter"))})
+````
+And now the handler, where DOM access is substantial:
+````clojure
+(defn todo-edit [e todo edit-commited?]
+  (let [edt-dom (.-target e)
+        li-dom (dom/getAncestorByTagNameAndClass edt-dom "li")]
+
+    (when (classlist/contains li-dom "editing")
+      (let [title (str/trim (form/getValue edt-dom))
+            stop-editing #(classlist/remove li-dom "editing")]
+        (cond
+          edit-commited?
+          (do
+            (stop-editing)                                  ;; has to go first cuz a blur event will sneak in
+            (if (= title "")
+              (td-delete! todo)
+              (mset!> todo :title title)))
+
+          (= (.-key e) "Escape")
+          ;; this could leave the input field with mid-edit garbage, but
+          ;; that gets initialized correctly when starting editing
+          (stop-editing))))))
+````
+While the above seems like there should be a better way, we see the same code in many TodoMVC solutions, probably for the reason documented in a comment above: an extraneous blur event when halting editing. We assure these are ignored by directly altering the DOM classlist instead of going through the mxWeb/Matrix lifecycle which would remove the "editing" class too late.
+
+Finally, we have dropped in one last feature from the TodoMVC spec that makes little U/X sense but does let us demonstrate how me hacked around some unhelpful browser behavior, viz., overriding our own manipulation of a checkbox's checked status.
+````clojure
+(defn toggle-all []
+  (div {} {;; 'action' is an ad hoc bit of intermediate state that will be used to decide the
+           ;; input HTML checked attribute and will also guide the label onclick handler.
+           :action (cF (if (every? td-completed (mx-todo-items me))
+                         :uncomplete :complete))}
+
+    (input {:id        "toggle-all"
+            :class     "toggle-all"
+            ::mxweb/type "checkbox"
+            :checked   (cF (= (<mget (mx-par me) :action) :uncomplete))})
+
+    (label {:for     "toggle-all"
+            :onclick #(let [action (<mget me :action)]
+
+                        ;; else browser messes with checked, which we handle
+                        (event/preventDefault %)
+
+                        (doseq [td (mx-todo-items)]
+                          (mset!> td :completed (when (= action :complete) (util/now)))))}
+      "Mark all as complete")))
+````
+#### The missing TodoMVC requirement
+Nothing will be added by implementing persistence, but if you are curious you can check out [mxLocalStorag](https://github.com/kennytilton/matrix/blob/master/js/matrix/js/Matrix/mxWeb.js) at the very end of the source from our Javascript implementation of mxWeb. 
+
+## Summary
 
 ## License: MIT
 
