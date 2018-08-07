@@ -1,9 +1,15 @@
 # TodoMVC, with Matrix Inside&trade;
 *An introduction by example to Matrix dataflow and mxWeb*
 
-mxWeb makes web pages easier to build, debug, refactor, and maintain, simply by changing what happens when we read and write properties:
-* when B reads A, A remembers; and
+## tl;dr
+mxWeb makes web pages easier to build, debug, refactor, and maintain simply by changing what happens when we read and write properties:
+* when B reads A, A remembers B; and
 * when A changes, A tells B.
+
+From that we get:
+* declarative/functional code everywhere (not just the component);
+* more efficiency than is possible with VDOM; and
+* no other framework to learn.
 
 What does it mean for B to read A? It means B is expressed as an HLL function that reads A. An mxWeb "HTML" excerpt from the code below:
 ````clojure
@@ -58,12 +64,7 @@ A special property `:kids` manages bringing formulaically computed children mode
 * Observer code is for side effects outside the Matrix dataflow, but  
 A mechanism exists for observers to enqueue a Matrix write for processing immediately after the observed write completes;
 
-
-
- 
-
-
-
+## The Full Story
 The *Matrix* dataflow library endows application state with causal power, freeing us of the burden of propagating change across highly interdependent models. More grandly, it brings our application models to life, animating them in response to streams of external inputs.
 > "UIs...I am not going to go there. I don't do that part."  
 -- Rich Hickey on the high ratio of code to logic in UIs, *Clojure/Conj 2017*
