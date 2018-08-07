@@ -16,26 +16,38 @@ What does it mean for B to read A? It means B is expressed as an HLL function th
 (li
     {:class (cF (when (<mget todo :completed)
                   "completed"))}
+    ...)
 ````
-Notes:
-* `todo` is a closed over reference to a todo model instance
-* `cF` and `<mget` are from the generic Matrix library
-* `cF`, or "cell formulaic", makes the `:class` property of the `LI` functional, using the body shown
-* `<mget`, "or model get", is the Matrix property reader that arranges for `:completed` to remember `:class`
+...and another:
+````clojure
+(md/make ::todo-list
+    :items-raw (cI nil)
+    :items (cF (doall (remove td-deleted (<mget me :items-raw))))
+    :items-completed (cF (doall (filter td-completed (<mget me :items))))
+    :items-active (cF (doall (remove td-completed (<mget me :items))))
+    :empty? (cF (empty? (<mget me :items))))
+````
+Glossary for close readers:
+* `cI`, or "input Cell", can be written to by imeprative code;
+* `cF`, or "cell formulaic", makes the `:class` property of the `LI` functional, using the body shown; and
+* `<mget`, "or model get", is the Matrix property reader that arranges for `:completed` to remember `:class`.
 
-What does it mean for A to change and then tell B? We change A from imperative code with a special Matrix writer, then Matrix internals recalculate B:
+What does it mean for A to change and then tell B? It means we imperatively change A using a special Matrix writer, and then Matrix internals recalculate B:
 ````cljs
 (input {:class       "toggle"
         ::mxweb/type "checkbox"
-        :onclick     #(mswap!> todo :completed not)})
+        :onclick     #(mswap!> todo :completed
+                         #(when-not [%] (util/now)})
 ````
-`mswap!> is a Matrix property writer that:
-* changes the `:compeleted` property of the model todo; and
-* before returning, recomputes B.
+`mswap!>` is a Matrix property writer that:
+* changes the `:completed` property of the model todo; and
+* before returning, recomputes the :class property.
 
 One step is missing. How does the `li` DOM classlist change? We held something back:
-* when `A` changes, it can mutate properties outside the Matrix graph.
-
+* when `A` changes, it can:
+    * mutate properties outside the Matrix graph; or
+    * enqueue Matrix writes to other properties for execution immediately after the current write
+* 
 ````clojure
 (defmethod observe-by-type
   [:mxweb.base/tag]
@@ -47,22 +59,20 @@ One step is missing. How does the `li` DOM classlist change? We held something b
                    (str/join " " newv)
                    newv))))))
 ````
-Notes:
-* `observe-by-type` is one function from the overall "observer" mechanism;
-* we use "observer" in the strict dictionary sense of "monitor, not participant";
-* the name "tag" comes from the HTML usage;
+Glossary for close readers:
+* `observe-by-type` is one function from the overall "observer" mechanism dispatched when a property changes;
+    * we use "observer" in the strict dictionary sense of "monitor, not participant";
+* `tag-dom` returns the DOM element corresponding to an mxWeb proxy tag instance; and
+    * the name "tag" comes from the HTML usage;
 * `slot` is a Common Lisp holdover for property;
 * `me` is like `this` or `self`;
-* `tag-dom` returns the DOM element corresponding to an mxWeb proxy tag instance; and
 * `classlist/set` is from `goog.dom`
 
-That is the mxWeb framework. But here are some addenda:
+That is the mxWeb framework. But here are some addenda (for close readers):
 * We covered B reading A, but what if C reads B?  
-B will remember C, and when A changes and has B change, B will have C change
-* The typical application Matrix is a tree of so-called Models (objects)  
-A special property `:kids` manages bringing formulaically computed children models in and out of the Matrix smoothly;
-* Observer code is for side effects outside the Matrix dataflow, but  
-A mechanism exists for observers to enqueue a Matrix write for processing immediately after the observed write completes;
+B will remember C, and when A changes and has B change, B will have C change.
+* The typical application Matrix is a tree of so-called *models* (objects)  
+A Matrix observer on the special property `:kids` brings dynamically computed models into and out of the Matrix smoothly.
 
 ## The Full Story
 The *Matrix* dataflow library endows application state with causal power, freeing us of the burden of propagating change across highly interdependent models. More grandly, it brings our application models to life, animating them in response to streams of external inputs.
