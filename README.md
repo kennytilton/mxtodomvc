@@ -6,30 +6,33 @@ mxWeb&trade; makes web pages easier to build, debug, refactor, and maintain simp
 * when B reads A, A remembers B; and
 * when A changes, A tells B.
 
-From that fundamental wiring emerges:
-* declarative/functional code everywhere (not just the view);
+That fundamental rewiring supports:
+* declarative/functional expression of views and...
+* ...any other app state we choose (it is not just the view);
 * more efficiency than is possible with VDOM;
 * a scalable Web "un-framework" involving just HTML and CSS.
 
+Let us look closer at all that.
+
 #### B reads A
-What does it mean for B to read A? It means B is expressed as an HLL function that reads A. An mxWeb "HTML" excerpt from the code below, where `cF` makes `:class` functional and `<mget` is the Matrix property reader that remembers which property is asking:
+What does it mean for B to read A? It means B is expressed as an HLL function that reads A. 
 ````clojure
 (li
     {:class (cF (when (<mget todo :completed)
                   "completed"))}
     ...)
 ````
-...and another, applying Matrix to state beyond the view. `cI` sets up a proerty to tell functional client properties when imperative code pushes new "to-dos" to `items-raw`:
+That is an excerpt from the TodoMVC implementation we evolve below. `li` makes a proxy LI instance and has the same API as the HTML;`cF` makes `:class` functional; and `<mget` is the Matrix property reader that remembers which property is asking.
+
+The next excerpt shows model (as opposed to view) state managed by the Matrix. `cI` arranges for that property to tell functional client properties when they have changed:
 ````clojure
 (md/make ::todo-list
     :items-raw (cI nil)
     :items (cF (doall (remove td-deleted (<mget me :items-raw))))
-    :items-completed (cF (doall (filter td-completed (<mget me :items))))
-    :items-active (cF (doall (remove td-completed (<mget me :items))))
     :empty? (cF (empty? (<mget me :items))))
 ````
 #### A tells B
-What does it mean for A to tell B? When we imperatively change, Matrix internals automatically recalculate B:
+What does it mean for A to tell B? When we imperatively change A, Matrix internals automatically and transparently recalculate B:
 ````cljs
 (input {:class       "toggle"
         ::mxweb/type "checkbox"
@@ -53,17 +56,19 @@ We held something back. How does the `input` DOM classlist change?:
         ...others...
         :class (classlist/set dom new-value))))
 ````
-We do not offer an example of a deferred write at this time. We find those come up only when applications have grown quite large.
-Notess:
-* `observe-by-type` is one function from the overall "observer" mechanism dispatched when a property changes;
-* we use "observer" in the strict dictionary sense: "monitor, not participant". Other libraries use it differently.
+Notes:
+* we offer no example of a deferred write at this time. Those arise when applications have grown quite large.
+* *caveat lectorum* we use "observer" in the strict dictionary sense: "monitor, not participant". Other libraries use it differently.
 
-#### scalable
-This [Algebra](https://tiltonsalgebra.com/#) app consists of about twelve hundred `A`s and `B`s, and extends into a Postgres database. Everything runs under matrix control. It lifts Qooxdoo JS, MathJax, Postgres and more. The average number of dependencies for one value is a little more than one, and the deepest dependency chain is about a dozen. On complex dispays of many math problems, a little over a thousand values are dependent on other values.
+#### matrix?
+A might be more than a descriptive property such as "completed". `A` might be `K` for "kids" and hold the child nodes of some parent; i.e., the very population of our application model can shrink or grow with events. We call such a dynamic population of communicating nodes a *matrix*.
 
-That is the mxWeb framework. But here are some addenda (for close readers):
-* The typical application Matrix is a tree of so-called *models* (objects)  
-A Matrix observer on the special property `:kids` brings dynamically computed models into and out of the Matrix smoothly.
+> ma·trix ˈmātriks *noun* an environment in which something else takes form. *Origin:* Latin, female animal used for breeding, parent plant, from *matr-*, *mater*
+
+Simply by propagating change between functional properties, the Matrix library brings declaratively authored applications to life.
+
+#### really?
+Can we really program this way? This 80KLOC [Algebra](https://tiltonsalgebra.com/#) Common Lisp app consists of about twelve hundred `A`s and `B`s, and extends into a Postgres database. Everything runs under matrix control. It lifts Qooxdoo JS, MathJax, Postgres and more. The average number of dependencies for one value is a little more than one, and the deepest dependency chain is about a dozen. On complex dispays of many math problems, a little over a thousand values are dependent on other values.
 
 #### About A->B->C: mutation
 Clojurians understand well the danger of mutation. Via the `re-frame` doc we have:
@@ -76,11 +81,11 @@ On the other hand...
 
 <img height="350px" align="right" src="/image/tododag400.png?raw=true">
 
-One-way derived graphs are examples of *directed acyclic graphs* or *DAGs*. To the right we see a diagram of perhaps half of the TodoMVC DAG. And TodoMVC is a trivial dataflow problem, with few derived states and drastically few input states. Real-world applications have real-world DAGs that defy accurate hand implementations.  
+One-way derived graphs are examples of *directed acyclic graphs* or *DAGs*. To the right we see a diagram of perhaps half of the TodoMVC DAG. And TodoMVC is a trivial dataflow problem, with few derived states and unrealistically few input states. Real-world applications have real-world DAGs that defy accurate hand implementation.  
 
 Matrix, re-frame, MobX (JS) and other glitch-free reactive libraries make state change coherent and reliable:
 * derived state is functionally declared;
-* the "one-way flow" rule you may know from [Flux](https://facebook.github.io/flux/docs/in-depth-overview.html) is honored;
+* state flows "one-way";
 * by recording reads property by property, a detailed dependency graph emerges so...
 * ...when mutations move the app forward, efficiency and consistency are guaranteed. 
 
@@ -134,16 +139,6 @@ Observers are *monitors* of the dataflow between a graph of properties, not part
 What about X, Y, and Z? i.e., Properties from existing libraries that know nothing about dataflow? We write whatever "glue" code it takes to wire existing libraries with dataflow. We call this "lifting" libraries into the dataflow. 
 
 > Lifting the DOM required about two thousand lines of code. Below we will explore several examples of lifting. 
-
-#### matrix?
-`A` might be more than a descriptive property such as "cloaked". `A` might be `K` for "kids" and hold the child nodes of some parent; i.e., the very population of our application model can shrink or grow with events. We call such a dynamic population of communicating nodes a *matrix*.
-
-> ma·trix ˈmātriks *noun* an environment in which something else takes form. *Origin:* Latin, female animal used for breeding, parent plant, from *matr-*, *mater*
-
-Simply by propagating change between functional properties, with strictly segregated dataflow to and from the outside world, the Matrix library brings applications to life.
-
-#### Really?
-Can we really program this way? This [Algebra](https://tiltonsalgebra.com/#) app consists of about twelve hundred `A`s and `B`s, and extends into a Postgres database. Everything runs under matrix control. It lifts Qooxdoo JS, MathJax, Postgres and more. The average number of dependencies for one value is a little more than one, and the deepest dependency chain is about a dozen. On complex dispays of many math problems, a little over a thousand values are dependent on other values.
 
 #### Related work
 > "Derived Values, Flowing" -- the [re-frame](https://github.com/Day8/re-frame/blob/master/README.md) tag-line
