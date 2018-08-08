@@ -6,7 +6,7 @@ mxWeb&trade; makes web pages easier to build, debug, and revise simply by changi
 * when B reads A, A remembers B; and
 * when A changes, A tells B.
 
-Zooming in...
+That *almost* tells it all, but let us see concrete examples before digging deeper.
 
 #### B reads A
 What does it mean for B to read A? It means B is expressed as an HLL function that reads A. 
@@ -38,15 +38,8 @@ What does it mean for A to tell B? When we imperatively change A, Matrix interna
 * before returning, recomputes the :class property of the proxy `input`.
 
 Digging deeper:
-* me might have a property K for "kids", such as DOM element children; and
-* on-change handlers may be supplied for A or B.
-
-#### K for Kids
-Beyond merely descriptive properties such as "completed". we might have `K` for "kids" holding the children of some parent, such as the LI nodes under a UL DOM list. In other words, the population itself of our application model can grow (or shrink) with events. We call a dynamic population of causally connected nodes a *matrix*.
-
-> ma·trix ˈmātriks *noun* an environment in which something else takes form. *Origin:* Latin, female animal used for breeding, parent plant, from *matr-*, *mater*
-
-Simply by propagating change between functional properties, the Matrix library brings declaratively authored applications to life.
+* on-change handlers may be supplied for A or B; and
+* we might have a property K for "kids", such as the children of a parent DOM element.
 
 #### on-change handlers
 In the example above, the `:class` property of a proxy `input` gained or lost the "completed" class as the user directed. How does the actual DOM `input` classlist change?
@@ -69,6 +62,28 @@ mxWeb proxy instances know the DOM they represent, and Matrix change tracking at
 Notes:
 * we offer no example of a deferred write at this time. Those arise when applications have grown quite large.
 * *caveat lectorum* we use "observer" in the strict dictionary sense: "monitor, not participant". Other libraries use it differently.
+
+#### K for Kids
+Beyond merely descriptive properties such as "completed". we might have `K` for "kids" holding the children of some parent, such as the LI nodes under a UL DOM list. In other words, the population itself of our application model can grow (or shrink) with events. We call a dynamic population of causally connected nodes a *matrix*.
+
+> ma·trix ˈmātriks *noun* an environment in which something else takes form. *Origin:* Latin, female animal used for breeding, parent plant, from *matr-*, *mater*
+
+We will not worry about all of this just yet, but it is how our TodoMVC will avoid rebuilding the full DOM list of to-dos when one is added or removed or the selection changes:
+````clojure
+(ul {:class "todo-list"}
+  {:kid-values  (cF (sort-by td-created
+                      (<mget (mx-todos me)
+                        (case (<mget (mx-find-matrix mx) :route)
+                          "All" :items
+                          "Completed" :items-completed
+                          "Active" :items-active))))
+   :kid-key     #(<mget % :todo)
+   :kid-factory (fn [me todo]
+                  (todo-list-item todo))}
+  ;; cache is prior value for this implicit ':kids' slot; k-v-k uses it for diffing
+  (kid-values-kids me cache))
+````
+Simply by propagating change between functional properties, the Matrix library brings declaratively authored applications to life.
 
 #### tl;dr summary
 By rewiring the fundamental action of reading and writing properties, we can transparently capture the dependency graph implicit in the code we write. Because it is captured transaparently, we think only about our applications while coding. Because we build up application behavior from small, declarative formulas, the even the largest application decomposes naturally into manageable chunks. Because this formulaic authoring extends to model and not just view, we enjoy this automaticity more broadly. And because, with sufficent "glue" code, external libraries can be brought under the dataflow umbrella, an entire applications can be transparently analyzed and supervised automatically. 
