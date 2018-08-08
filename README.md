@@ -2,17 +2,11 @@
 *An introduction by example to Matrix dataflow and mxWeb*
 
 ## tl;dr
-mxWeb&trade; makes web pages easier to build, debug, refactor, and maintain simply by changing what happens when we read and write properties:
+mxWeb&trade; makes web pages easier to build, debug, and revise simply by changing what happens when we read and write properties:
 * when B reads A, A remembers B; and
 * when A changes, A tells B.
 
-That fundamental rewiring supports:
-* declarative/functional expression of views and...
-* ...any other app state we choose (it is not just the view);
-* more efficiency than is possible with VDOM;
-* a scalable Web "un-framework" involving just HTML and CSS.
-
-Let us look closer at all that.
+Zooming in...
 
 #### B reads A
 What does it mean for B to read A? It means B is expressed as an HLL function that reads A. 
@@ -42,11 +36,26 @@ What does it mean for A to tell B? When we imperatively change A, Matrix interna
 `mswap!>` is a Matrix property writer that:
 * changes the `:completed` property of the model todo; and
 * before returning, recomputes the :class property of the proxy `input`.
-#### observers
-We held something back. How does the `input` DOM classlist change?:
-* when `A` changes, it can:
+
+Digging deeper:
+* me might have a property K for "kids", such as DOM element children; and
+* on-change handlers may be supplied for A or B.
+
+#### K for Kids
+Beyond merely descriptive properties such as "completed". we might have `K` for "kids" holding the children of some parent, such as the LI nodes under a UL DOM list. In other words, the population itself of our application model can grow (or shrink) with events. We call a dynamic population of causally connected nodes a *matrix*.
+
+> ma·trix ˈmātriks *noun* an environment in which something else takes form. *Origin:* Latin, female animal used for breeding, parent plant, from *matr-*, *mater*
+
+Simply by propagating change between functional properties, the Matrix library brings declaratively authored applications to life.
+
+#### on-change handlers
+In the example above, the `:class` property of a proxy `input` gained or lost the "completed" class as the user directed. How does the actual DOM `input` classlist change?
+
+When `A` changes, it can:
     * mutate properties outside the Matrix graph; or
     * enqueue Matrix writes to other properties for execution immediately after the current write.
+
+mxWeb provides the observer for maintaining the DOM:
 ````clojure
 (defmethod observe-by-type
   [:mxweb.base/tag]
@@ -56,21 +65,20 @@ We held something back. How does the `input` DOM classlist change?:
         ...others...
         :class (classlist/set dom new-value))))
 ````
+mxWeb proxy instances know the DOM they represent, and Matrix change tracking at the property level tells mxWeb precisely what DOM needs updating. This obviates the need for VDOM generation and diffing.
 Notes:
 * we offer no example of a deferred write at this time. Those arise when applications have grown quite large.
 * *caveat lectorum* we use "observer" in the strict dictionary sense: "monitor, not participant". Other libraries use it differently.
 
-#### matrix?
-A might be more than a descriptive property such as "completed". `A` might be `K` for "kids" and hold the child nodes of some parent; i.e., the very population of our application model can shrink or grow with events. We call such a dynamic population of communicating nodes a *matrix*.
-
-> ma·trix ˈmātriks *noun* an environment in which something else takes form. *Origin:* Latin, female animal used for breeding, parent plant, from *matr-*, *mater*
-
-Simply by propagating change between functional properties, the Matrix library brings declaratively authored applications to life.
+#### tl;dr summary
+By rewiring the fundamental action of reading and writing properties, we can transparently capture the dependency graph implicit in the code we write. Because it is captured transaparently, we think only about our applications while coding. Because we build up application behavior from small, declarative formulas, the even the largest application decomposes naturally into manageable chunks. Because this formulaic authoring extends to model and not just view, we enjoy this automaticity more broadly. And because, with sufficent "glue" code, external libraries can be brought under the dataflow umbrella, an entire applications can be transparently analyzed and supervised automatically. 
 
 #### really?
 Can we really program this way? This 80KLOC [Algebra](https://tiltonsalgebra.com/#) Common Lisp app consists of about twelve hundred `A`s and `B`s, and extends into a Postgres database. Everything runs under matrix control. It lifts Qooxdoo JS, MathJax, Postgres and more. The average number of dependencies for one value is a little more than one, and the deepest dependency chain is about a dozen. On complex dispays of many math problems, a little over a thousand values are dependent on other values.
 
-#### About A->B->C: mutation
+This is the story of another 80KLOC Matrix app, a [clinical drug trial management system](http://smuglispweeny.blogspot.com/2008/03/my-biggest-lisp-project.html) with dataflow even more deeply extended to a persistent Lisp object system (CLOS) database.
+
+#### Postscript: on mutation
 Clojurians understand well the danger of mutation. Via the `re-frame` doc we have:
 <div style="width:400px">
   <blockquote class="twitter-tweet" lang="en"><p>Well-formed Data at rest is as close to perfection in programming as it gets. All the crap that had to happen to put it there however...</p>&mdash; Fogus (@fogus) <a href="https://twitter.com/fogus/status/454582953067438080">April 11, 2014</a></blockquote>
@@ -101,7 +109,10 @@ When application code assigns to some input cell X, the Cells engine guarantees:
     <li> deferred "client" code must see only values current with X and not any values current with some subsequent change to Y queued by an observer.</li>
 </blockquote>
 
-## The Full Story
+#### tl;dr Fini
+That completes our tl;dr distillation of Matrix, mxWeb, and a bit of TodoMVC. The remainder of this document reprises the above and adds a detailed code walkthrough of the incremental evolution of most of the TodoMVC classic.
+
+## Building TodoMVC with mxWeb
 The *Matrix* dataflow library endows application state with causal power, freeing us of the burden of propagating change across highly interdependent models. More grandly, it brings our application models to life, animating them in response to streams of external inputs.
 > "UIs...I am not going to go there. I don't do that part."  
 -- Rich Hickey on the high ratio of code to logic in UIs, *Clojure/Conj 2017*
