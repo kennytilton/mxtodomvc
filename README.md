@@ -21,10 +21,10 @@ The next excerpt shows model (the M in MVC) being managed by the Matrix. `cI` ar
 ````clojure
 (md/make ::todo-list
     :items-raw (cI nil)
-    :items (cF (doall (remove td-deleted (<mget me :items-raw))))
+    :items (cF (remove td-deleted (<mget me :items-raw)))
     :empty? (cF (empty? (<mget me :items))))
 ````
-Those simple examples could reasonably be ordinary functions of the to-do list. Other properties are more expensive hence usefully cached, and even these trivial formulaics make the to-do list functional properties stand out from other code.
+Those simple examples could reasonably be ordinary functions of the to-do list. Other properties are more expensive hence usefully cached, and even these trivial formulaics make the to-do list functional properties stand out from other code. Or they may require special tracking by so-called "observers" discussed below.
 
 #### A tells B
 What does it mean for A to tell B? When we imperatively change A, Matrix internals automatically and transparently recalculate B:
