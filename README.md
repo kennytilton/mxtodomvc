@@ -18,7 +18,7 @@ What does it mean for B to read A? It means B is expressed as an HLL function th
 ````
 That is an excerpt from the TodoMVC implementation we evolve below. `li` makes a proxy LI instance and has the same API as the HTML;`cF` makes `:class` functional; and `<mget` is the Matrix property reader that remembers which property is asking.
 
-The next excerpt shows model (as opposed to view) state managed by the Matrix. `cI` arranges for that property to tell functional client properties when they have changed:
+The next excerpt shows model (the M in MVC) managed by the Matrix. `cI` arranges for that property to tell functional client properties when they have changed:
 ````clojure
 (md/make ::todo-list
     :items-raw (cI nil)
@@ -38,6 +38,7 @@ What does it mean for A to tell B? When we imperatively change A, Matrix interna
 * before returning, recomputes the :class property of the proxy `input`.
 
 Digging deeper:
+* C can ask B who asked A, then A tells B tells C;
 * on-change handlers may be supplied for A or B; and
 * we might have a property K for "kids", such as the children of a parent DOM element.
 
@@ -85,6 +86,17 @@ We will not worry about all of this just yet, but it is how our TodoMVC will avo
 ````
 Simply by propagating change between functional properties, the Matrix library brings declaratively authored applications to life.
 
+#### lifting
+What about X, Y, and Z? i.e., Properties from existing libraries that know nothing about dataflow? We write whatever "glue" code it takes to wire existing libraries with dataflow. We call this "lifting" libraries into the dataflow. 
+
+> Lifting the DOM required about two thousand lines of code. Below we will explore several examples of lifting. 
+
+#### Related work
+> "Derived Values, Flowing" -- the [re-frame](https://github.com/Day8/re-frame/blob/master/README.md) tag-line
+
+Matrix enjoys much good company in this field. We believe Matrix offers more simplicity, transparency, granularity, expressiveness, efficiency, and functional coverage, but in each dimension differs only in degree, not spirit. Other recommended CLJS libraries are [Reagent](https://reagent-project.github.io/), [Hoplon/Javelin](https://github.com/hoplon/javelin), and [re-frame](https://github.com/Day8/re-frame). Beyond CLJS, we admire [MobX](https://github.com/mobxjs/mobx/blob/master/README.md) (JS), [binding.Scala](https://github.com/ThoughtWorksInc/Binding.scala/blob/11.0.x/README.md), and Python [Trellis](https://pypi.org/project/Trellis/). Let us know about any we missed.
+
+
 #### tl;dr summary
 By rewiring the fundamental action of reading and writing properties, we can transparently capture the dependency graph implicit in the code we write. Because it is captured transaparently, we think only about our applications while coding. Because we build up application behavior from small, declarative formulas, the even the largest application decomposes naturally into manageable chunks. Because this formulaic authoring extends to model and not just view, we enjoy this automaticity more broadly. And because, with sufficent "glue" code, external libraries can be brought under the dataflow umbrella, an entire applications can be transparently analyzed and supervised automatically. 
 
@@ -127,50 +139,6 @@ When application code assigns to some input cell X, the Cells engine guarantees:
 #### tl;dr Fini
 That completes our tl;dr distillation of Matrix, mxWeb, and a bit of TodoMVC. The remainder of this document reprises the above and adds a detailed code walkthrough of the incremental evolution of most of the TodoMVC classic.
 
-## Building TodoMVC with mxWeb
-The *Matrix* dataflow library endows application state with causal power, freeing us of the burden of propagating change across highly interdependent models. More grandly, it brings our application models to life, animating them in response to streams of external inputs.
-> "UIs...I am not going to go there. I don't do that part."  
--- Rich Hickey on the high ratio of code to logic in UIs, *Clojure/Conj 2017*
-
-We choose mxWeb as the vehicle for introducing Matrix because nothing challenges a developer more than keeping application state straight while an intelligent user does their best to use a rich interface correctly. Then marketing wants a U/X overhaul.
-
-*mxWeb* is a thin web un-framework built atop Matrix. We say "un-framework" because mxWeb exists only to wire the DOM for dataflow. The API design imperative is that the MDN reference be the mxWeb reference; mxWeb itself introduces no new architecture.
-
-Matrix does this simply by enhancing how we initialize, read, and write individual properties:
-* properties can be initialized as a literal value or as a function;
-* should some property `A` be initialized with a literal, we can write to it;
-* should a functional property `B` read `A`, `A` remembers `B`;
-* when we write to `A`, `A` tells `B`; and
-* we can supply "on change" callbacks for properties.
-
-What does it mean for one property to read another, for `B` to read `A`? It means declaring `B` as an arbitrary HLL function of `A` and possibly others. In pseudo code:
-````clojure
-B <= (fn [] (+ 42 A C))))
-````
-What does it mean for `A` to tell `B`? `A` makes `B` compute a new value. 
-
-What happens when `B` computes a new value?
-* `B` might have its own dependent properties to tell; and
-* `A` or `B` might also want to act on the world outside the graph of properties. 
-
-> "Nothing messes with functional purity quite like the need for side effects. On the other hand, effects are marvelous because they move the app forward." - [re-frame intro](https://github.com/Day8/re-frame)
-
-A Web game app might use a CLJS map to model a Romulan warship, and have a paired DOM element to render the ship. If `A` is the `cloaked` property of the map warship and it changes, the `hidden` attribute of the DOM warship needs to be added or removed. To this end, Matrix lets us define "on-change" *observers*.
-
-> [observer](https://dictionary.cambridge.org/dictionary/english/observer): noun. UK: /əbˈzɜː.vər/, US: /əbˈzɝː.vɚ/  A person who watches what happens but has no active part in it.
-
-Observers are *monitors* of the dataflow between a graph of properties, not participants in that flow. They act, but they act outside the dataflow graph. *Caveat lector*: the reactive community generally uses "observer"...differently.
-
-#### lifting
-What about X, Y, and Z? i.e., Properties from existing libraries that know nothing about dataflow? We write whatever "glue" code it takes to wire existing libraries with dataflow. We call this "lifting" libraries into the dataflow. 
-
-> Lifting the DOM required about two thousand lines of code. Below we will explore several examples of lifting. 
-
-#### Related work
-> "Derived Values, Flowing" -- the [re-frame](https://github.com/Day8/re-frame/blob/master/README.md) tag-line
-
-Matrix enjoys much good company in this field. We believe Matrix offers more simplicity, transparency, granularity, expressiveness, efficiency, and functional coverage, but in each dimension differs only in degree, not spirit. Other recommended CLJS libraries are [Reagent](https://reagent-project.github.io/), [Hoplon/Javelin](https://github.com/hoplon/javelin), and [re-frame](https://github.com/Day8/re-frame). Beyond CLJS, we admire [MobX](https://github.com/mobxjs/mobx/blob/master/README.md) (JS), [binding.Scala](https://github.com/ThoughtWorksInc/Binding.scala/blob/11.0.x/README.md), and Python [Trellis](https://pypi.org/project/Trellis/). Let us know about any we missed.
-
 #### TodoMVC
 So far, so abstract. Ourselves, we think better in concrete. Let's get "hello, Matrix" running and then start building [TodoMVC](http://todomvc.com) from scratch. 
 
@@ -190,6 +158,7 @@ This will auto compile and send all changes to the browser without the need to r
 For issues, questions, or comments, ping us at kentilton on gmail, or DM @hiskennyness on Slack in the #Clojurians channel.
 
 ## Building TodoMVC from Scratch
+[Documentation of the stepwise evolution of TodoMVC has moved ]here](documentation/InDepth.md)
 When starting on a TodoMVC implementation, we execute first just the title and footer as our own little "hello, world". Let us jump now to the commit of that milestone:
 ````bash
 git checkout hello-todomx
