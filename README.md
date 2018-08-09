@@ -15,9 +15,9 @@ What does it mean for B to read A? It means B is expressed as an HLL function th
                   "completed"))}
     ...)
 ````
-The above is an excerpt from the TodoMVC implementation we will evolve in the next introductory document. `li` makes a proxy LI instance and has the same API as the HTML; `cF` makes `:class` functional; and `<mget` is the Matrix property reader that remembers which property is asking.
+The above is an excerpt from the TodoMVC implementation which we will evolve in the next introductory document. `li` makes a proxy LI instance and has the same API as the HTML; `cF` makes `:class` functional; and `<mget` is the Matrix property reader that remembers which property is asking.
 
-The next excerpt shows model (the M in MVC) being managed by the Matrix. `cI` arranges for that property to tell functional reader properties when they have changed:
+In the next excerpt, the Matrix manages a model (the M in MVC) property. `cI` arranges for that property to tell functional reader properties when they have changed:
 ````clojure
 (md/make ::todo-list
     :items-raw (cI nil)
