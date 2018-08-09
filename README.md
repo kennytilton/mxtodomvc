@@ -5,7 +5,7 @@ mxWeb&trade; makes web pages easier to build, debug, and revise simply by changi
 * when B reads A, A remembers B; and
 * when A changes, A tells B.
 
-Those are just the fundamentals. Before looking beyond them, let us understand them better through concrete examples.
+Those are just the fundamentals. Let us understand them better through concrete examples.
 
 #### B reads A
 What does it mean for B to read A? It means B is expressed as an HLL function that reads A. 
@@ -40,10 +40,10 @@ What does it mean for A to tell B? When we imperatively change A, Matrix interna
 
 ### Digging deeper
 A few more fundamentals:
-* on-change handlers may be supplied for A, B, or C; and
+* on-change handlers, or "observers", may be supplied for A, B, or C; and
 * we might have a property K for "kids", such as the children of a parent DOM element.
 
-#### on-change handlers
+#### on-change handlers: observers
 On-change handlers are how automatically changing values manifest themselves as a useful application, doing somehing other than telling each other to recompute.
 
 When `A` changes, it can:
@@ -92,9 +92,7 @@ Simply by propagating change between functional properties, and manifesting thos
 ### Extending the scope: Lifting
 We explained above how the computed `:class` "completed" got propagated to the actual DOM classlist by an observer. That hints at the next fundamental, which we call "lifting". 
 
-The DOM knows nothing about Matrix, so we developed sufficient "glue" code to make it seem as if it did. That is mxWeb: six hundred lines code code creating two classes (one for HTML tags, one for CSS Styles) and enough other code to translate HLL handlers into native handlers. In the full implementation of TodoMVC we will see even more systems lifted into the Matrix: routing, XHR, localStorage, and even the system clock. 
-
-The lift,by the way, is a one-time cost; once completed, only occasional tweaks are needed. From then on, the wrapped library is part of the Matrix.  
+The DOM knows nothing about Matrix, so we developed sufficient "glue" code to make it seem as if it did. That is mxWeb: six hundred lines of code creating two classes (one for HTML tags, one for CSS Styles) and enough other code to translate HLL handlers into native handlers. In the full implementation of TodoMVC we will see even more systems lifted into the Matrix: routing, XHR, localStorage, and even the system clock.  
 
 ### Related work
 > "Derived Values, Flowing" -- the [re-frame](https://github.com/Day8/re-frame/blob/master/README.md) tag-line
@@ -103,7 +101,11 @@ Matrix enjoys much good company in this field. We believe Matrix offers more sim
 
 
 #### tl;dr summary
-By rewiring the fundamental action of reading and writing properties, we can transparently capture the dependency graph implicit in the code we write. Because it is captured transaparently, we think only about our applications while coding. Because we build up application behavior from small, declarative formulas, the even the largest application decomposes naturally into manageable chunks. Because this formulaic authoring extends to model and not just view, we enjoy this automaticity more broadly. And because, with sufficent "glue" code, external libraries can be brought under the dataflow umbrella, an entire applications can be transparently analyzed and supervised automatically. 
+By rewiring the fundamental action of reading and writing properties, Matrix captures the dependency graph implicit in the application code we write. 
+
+Because it is captured transaparently, we think only about our applications while coding. Because we build applications from small, declarative formulas, even the largest application decomposes naturally into manageable chunks. 
+
+Because this formulaic authoring extends to model and not just view, we enjoy this automaticity more broadly. And because, with sufficent "glue" code, external libraries can be brought under the dataflow umbrella, entire applications can be animated. 
 
 #### really?
 Can we really program this way? This 80KLOC [Algebra](https://tiltonsalgebra.com/#) Common Lisp app consists of about twelve hundred `A`s and `B`s, and extends into a Postgres database. Everything runs under matrix control. It lifts Qooxdoo JS, MathJax, Postgres and more. The average number of dependencies for one value is a little more than one, and the deepest dependency chain is about a dozen. On complex dispays of many math problems, a little over a thousand values are dependent on other values.
