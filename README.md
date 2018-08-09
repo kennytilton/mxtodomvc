@@ -40,13 +40,11 @@ What does it mean for A to tell B? When we imperatively change A, Matrix interna
 
 ### Digging deeper
 A few more fundamentals:
-* on-change handlers, or "observers", may be supplied for A, B, or C; and
+* on-change handlers, or "observers", may be supplied for A or B; and
 * we might have a property K for "kids", such as the children of a parent DOM element.
 
 #### on-change handlers: observers
-On-change handlers are how changing properties manifest themselves as a useful application, doing somehing other than telling each other to recompute.
-
-When `A` changes, it can:
+CHanging properties manifest themselves as a useful application, if only to update a Web page, via on-change callbacks we call "observers". When `A` changes, ian observer can:
 * mutate properties outside the Matrix graph; or
 * enqueue Matrix writes to other properties for execution immediately after the current write.
 
@@ -68,7 +66,7 @@ Notes:
 * *caveat lectorum* we use "observer" in the strict dictionary sense: "monitor, not participant". Other libraries use it differently.
 
 #### K for Kids
-Formulas can compute more than mere descriptive properties such as "completed"; we might have `K` for "kids" holding the children of some parent, such as the LI nodes under a UL DOM list. In other words, the population itself of our application model can grow or shrink with events. We call a dynamic population of causally connected nodes a *matrix*.
+Formulas can compute more than mere descriptive properties such as "completed"; we might have `K` for "kids" holding the children of some parent, such as the LI nodes under a UL DOM list. In other words, the population itself of our application model can grow or shrink with events. We call a dynamic population of causally connected models a *matrix*.
 
 > ma·trix ˈmātriks *noun* an environment in which something else takes form. *Origin:* Latin, female animal used for breeding, parent plant, from *matr-*, *mater*
 
@@ -89,10 +87,15 @@ We will not worry about all this code just yet, but here is how our TodoMVC will
 ````
 Simply by propagating change between functional properties, and manifesting those changes to the outside world, the Matrix library brings declarative, transparent, functional applications to life.
 
-### Extending the scope: Lifting
+### Extending the scope: lifting
 We explained above how the computed `:class` "completed" got propagated to the actual DOM classlist by an observer. That hints at the next fundamental, which we call "lifting". 
 
-The DOM knows nothing about Matrix, so we developed sufficient "glue" code to make it seem as if it did. That is mxWeb: six hundred lines of code creating two classes (one for HTML tags, one for CSS Styles) and enough other code to translate HLL handlers into native handlers. In the full implementation of TodoMVC we will see even more systems lifted into the Matrix: routing, XHR, localStorage, and even the system clock.  
+The DOM knows nothing about Matrix, so we developed sufficient "glue" code to make it seem as if it did. That is mxWeb: six hundred lines of code creating two classes (one for HTML tags, one for CSS Styles) and other code to translate HLL handlers into native handlers. In the full implementation of TodoMVC we will see even more systems lifted into the Matrix: routing, XHR, localStorage, and even the system clock.  
+
+#### Really?
+Can we really program this way? This 80KLOC [Algebra](https://tiltonsalgebra.com/#) Common Lisp app consists of about twelve hundred `A`s and `B`s, and extends into a Postgres database. Everything runs under matrix control. It lifts Qooxdoo JS, MathJax, Postgres and more. The average number of dependencies for one value is a little more than one, and the deepest dependency chain is about a dozen. On complex dispays of many math problems, a little over a thousand values are dependent on other values.
+
+This is the story of another 80KLOC Matrix app, a [clinical drug trial management system](http://smuglispweeny.blogspot.com/2008/03/my-biggest-lisp-project.html) with dataflow even more deeply extended to a persistent Lisp object system (CLOS) database.
 
 ### Related work
 > "Derived Values, Flowing" -- the [re-frame](https://github.com/Day8/re-frame/blob/master/README.md) tag-line
@@ -106,11 +109,6 @@ By rewiring the fundamental action of reading and writing properties, Matrix cap
 Because it is captured transaparently, we think only about our applications while coding. Because we build applications from small, declarative formulas, even the largest application decomposes naturally into manageable chunks. 
 
 Because this formulaic authoring extends to model and not just view, we enjoy this automaticity more broadly. And because, with sufficent "glue" code, external libraries can be brought under the dataflow umbrella, entire applications can be animated. 
-
-#### really?
-Can we really program this way? This 80KLOC [Algebra](https://tiltonsalgebra.com/#) Common Lisp app consists of about twelve hundred `A`s and `B`s, and extends into a Postgres database. Everything runs under matrix control. It lifts Qooxdoo JS, MathJax, Postgres and more. The average number of dependencies for one value is a little more than one, and the deepest dependency chain is about a dozen. On complex dispays of many math problems, a little over a thousand values are dependent on other values.
-
-This is the story of another 80KLOC Matrix app, a [clinical drug trial management system](http://smuglispweeny.blogspot.com/2008/03/my-biggest-lisp-project.html) with dataflow even more deeply extended to a persistent Lisp object system (CLOS) database.
 
 #### Postscript: on mutation
 Clojurians understand well the danger of mutation. Via the `re-frame` doc we have:
