@@ -1,12 +1,11 @@
 # TodoMVC, with Matrix Inside&trade;
 *An introduction by example to Matrix dataflow and mxWeb*
 
-## tl;dr
 mxWeb&trade; makes web pages easier to build, debug, and revise simply by changing what happens when we read and write properties:
 * when B reads A, A remembers B; and
 * when A changes, A tells B.
 
-That *almost* tells it all, but let us see concrete examples before digging deeper.
+Next, we make those abstract fundamentals concrete before digging deeper.
 
 #### B reads A
 What does it mean for B to read A? It means B is expressed as an HLL function that reads A. 
@@ -16,15 +15,17 @@ What does it mean for B to read A? It means B is expressed as an HLL function th
                   "completed"))}
     ...)
 ````
-That is an excerpt from the TodoMVC implementation we evolve below. `li` makes a proxy LI instance and has the same API as the HTML;`cF` makes `:class` functional; and `<mget` is the Matrix property reader that remembers which property is asking.
+The above is an excerpt from the TodoMVC implementation we will evolve in next introductory document. `li` makes a proxy LI instance and has the same API as the HTML;`cF` makes `:class` functional; and `<mget` is the Matrix property reader that remembers which property is asking.
 
-The next excerpt shows model (the M in MVC) managed by the Matrix. `cI` arranges for that property to tell functional client properties when they have changed:
+The next excerpt shows model (the M in MVC) being managed by the Matrix. `cI` arranges for that property to tell functional client properties when they have changed:
 ````clojure
 (md/make ::todo-list
     :items-raw (cI nil)
     :items (cF (doall (remove td-deleted (<mget me :items-raw))))
     :empty? (cF (empty? (<mget me :items))))
 ````
+Those simple examples could reasonably be simple functions of the to-do list. Others are more expensive hence usefully cached, and even these help make the to-do list functional properties stand out from other code.
+
 #### A tells B
 What does it mean for A to tell B? When we imperatively change A, Matrix internals automatically and transparently recalculate B:
 ````cljs
@@ -37,19 +38,21 @@ What does it mean for A to tell B? When we imperatively change A, Matrix interna
 * changes the `:completed` property of the model todo; and
 * before returning, recomputes the :class property of the proxy `input`.
 
-Digging deeper:
-* C can ask B who asked A, then A tells B tells C;
-* on-change handlers may be supplied for A or B; and
+#### Digging deeper
+A few more fundamentals:
+* on-change handlers may be supplied for A, B, or C; and
 * we might have a property K for "kids", such as the children of a parent DOM element.
 
 #### on-change handlers
-In the example above, the `:class` property of a proxy `input` gained or lost the "completed" class as the user directed. How does the actual DOM `input` classlist change?
+On-change handlers are how automatically changing values manifest themselves as a useful application, doing somehing other than telling each other to recompute.
 
 When `A` changes, it can:
     * mutate properties outside the Matrix graph; or
     * enqueue Matrix writes to other properties for execution immediately after the current write.
 
-mxWeb provides the observer for maintaining the DOM:
+In the example above, the `:class` property of a proxy `input` instance gained or lost the "completed" class as the user so directed via an `onclick` handler. How does the actual DOM `input` classlist change?
+
+mxWeb provides an observer for maintaining the DOM:
 ````clojure
 (defmethod observe-by-type
   [:mxweb.base/tag]
@@ -59,17 +62,17 @@ mxWeb provides the observer for maintaining the DOM:
         ...others...
         :class (classlist/set dom new-value))))
 ````
-mxWeb proxy instances know the DOM they represent, and Matrix change tracking at the property level tells mxWeb precisely what DOM needs updating. This obviates the need for VDOM generation and diffing.
+mxWeb proxy instances know which DOM element they represent, and Matrix change tracking at the property level tells mxWeb precisely which DOM attribute needs updating. This obviates the need for VDOM generation and diffing.
 Notes:
 * we offer no example of a deferred write at this time. Those arise when applications have grown quite large.
 * *caveat lectorum* we use "observer" in the strict dictionary sense: "monitor, not participant". Other libraries use it differently.
 
 #### K for Kids
-Beyond merely descriptive properties such as "completed". we might have `K` for "kids" holding the children of some parent, such as the LI nodes under a UL DOM list. In other words, the population itself of our application model can grow (or shrink) with events. We call a dynamic population of causally connected nodes a *matrix*.
+Formulas can compute more than mere descriptive properties such as "completed"; we might have `K` for "kids" holding the children of some parent, such as the LI nodes under a UL DOM list. In other words, the population itself of our application model can grow or shrink with events. We call a dynamic population of causally connected nodes a *matrix*.
 
 > ma·trix ˈmātriks *noun* an environment in which something else takes form. *Origin:* Latin, female animal used for breeding, parent plant, from *matr-*, *mater*
 
-We will not worry about all of this just yet, but it is how our TodoMVC will avoid rebuilding the full DOM list of to-dos when one is added or removed or the selection changes:
+We will not worry about all this code just yet, but here is how our TodoMVC will avoid rebuilding the full DOM list of to-dos when one is added or removed or the selection changes:
 ````clojure
 (ul {:class "todo-list"}
   {:kid-values  (cF (sort-by td-created
@@ -84,12 +87,12 @@ We will not worry about all of this just yet, but it is how our TodoMVC will avo
   ;; cache is prior value for this implicit ':kids' slot; k-v-k uses it for diffing
   (kid-values-kids me cache))
 ````
-Simply by propagating change between functional properties, the Matrix library brings declaratively authored applications to life.
+Simply by propagating change between functional properties, and manifesting those changes to the outside world, the Matrix library brings declarative, transparent, functional applications to life.
 
 #### lifting
-What about X, Y, and Z? i.e., Properties from existing libraries that know nothing about dataflow? We write whatever "glue" code it takes to wire existing libraries with dataflow. We call this "lifting" libraries into the dataflow. 
+What about X, Y, and Z? i.e., Properties from existing libraries that know nothing about dataflow? We write whatever "glue" code it takes to wire existing libraries with dataflow. We call this "lifting" those libraries into the dataflow. 
 
-> Lifting the DOM required about two thousand lines of code. Below we will explore several examples of lifting. 
+Lifting the DOM required eight hundred  lines of code. Below we will explore several examples of lifting. 
 
 #### Related work
 > "Derived Values, Flowing" -- the [re-frame](https://github.com/Day8/re-frame/blob/master/README.md) tag-line
