@@ -158,7 +158,7 @@ This will auto compile and send all changes to the browser without the need to r
 For issues, questions, or comments, ping us at kentilton on gmail, or DM @hiskennyness on Slack in the #Clojurians channel.
 
 ## Building TodoMVC from Scratch
-[Documentation of the stepwise evolution of TodoMVC has moved ]here](documentation/InDepth.md)
+\[Documentation of the stepwise evolution of TodoMVC has moved [here](documentation/InDepth.md)\]
 When starting on a TodoMVC implementation, we execute first just the title and footer as our own little "hello, world". Let us jump now to the commit of that milestone:
 ````bash
 git checkout hello-todomx
