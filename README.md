@@ -5,7 +5,7 @@ mxWeb&trade; makes web pages easier to build, debug, and revise simply by changi
 * when B reads A, A remembers B; and
 * when A changes, A tells B.
 
-Next, we make those abstract fundamentals concrete before digging deeper.
+Those are just the fundamentals. Before looking beyond them, let us understand them better through concrete examples.
 
 #### B reads A
 What does it mean for B to read A? It means B is expressed as an HLL function that reads A. 
@@ -15,7 +15,7 @@ What does it mean for B to read A? It means B is expressed as an HLL function th
                   "completed"))}
     ...)
 ````
-The above is an excerpt from the TodoMVC implementation we will evolve in next introductory document. `li` makes a proxy LI instance and has the same API as the HTML;`cF` makes `:class` functional; and `<mget` is the Matrix property reader that remembers which property is asking.
+The above is an excerpt from the TodoMVC implementation we will evolve in the next introductory document. `li` makes a proxy LI instance and has the same API as the HTML; `cF` makes `:class` functional; and `<mget` is the Matrix property reader that remembers which property is asking.
 
 The next excerpt shows model (the M in MVC) being managed by the Matrix. `cI` arranges for that property to tell functional client properties when they have changed:
 ````clojure
@@ -24,7 +24,7 @@ The next excerpt shows model (the M in MVC) being managed by the Matrix. `cI` ar
     :items (cF (doall (remove td-deleted (<mget me :items-raw))))
     :empty? (cF (empty? (<mget me :items))))
 ````
-Those simple examples could reasonably be simple functions of the to-do list. Others are more expensive hence usefully cached, and even these help make the to-do list functional properties stand out from other code.
+Those simple examples could reasonably be ordinary functions of the to-do list. Other properties are more expensive hence usefully cached, and even these trivial formulaics make the to-do list functional properties stand out from other code.
 
 #### A tells B
 What does it mean for A to tell B? When we imperatively change A, Matrix internals automatically and transparently recalculate B:
@@ -36,9 +36,9 @@ What does it mean for A to tell B? When we imperatively change A, Matrix interna
 ````
 `mswap!>` is a Matrix property writer that:
 * changes the `:completed` property of the model todo; and
-* before returning, recomputes the :class property of the proxy `input`.
+* *before returning* recomputes the :class property of the proxy `li` we saw above.
 
-#### Digging deeper
+### Digging deeper
 A few more fundamentals:
 * on-change handlers may be supplied for A, B, or C; and
 * we might have a property K for "kids", such as the children of a parent DOM element.
@@ -89,12 +89,14 @@ We will not worry about all this code just yet, but here is how our TodoMVC will
 ````
 Simply by propagating change between functional properties, and manifesting those changes to the outside world, the Matrix library brings declarative, transparent, functional applications to life.
 
-#### lifting
-What about X, Y, and Z? i.e., Properties from existing libraries that know nothing about dataflow? We write whatever "glue" code it takes to wire existing libraries with dataflow. We call this "lifting" those libraries into the dataflow. 
+### Extending the scope: Lifting
+We explained above how the computed `:class` "completed" got propagated to the actual DOM classlist by an observer. That hints at the next fundamental, which we call "lifting". 
 
-Lifting the DOM required eight hundred  lines of code. Below we will explore several examples of lifting. 
+The DOM knows nothing about Matrix, so we developed sufficient "glue" code to make it seem as if it did. That is mxWeb: six hundred lines code code creating two classes (one for HTML tags, one for CSS Styles) and enough other code to translate HLL handlers into native handlers. In the full implementation of TodoMVC we will see even more systems lifted into the Matrix: routing, XHR, localStorage, and even the system clock. 
 
-#### Related work
+The lift,by the way, is a one-time cost; once completed, only occasional tweaks are needed. From then on, the wrapped library is part of the Matrix.  
+
+### Related work
 > "Derived Values, Flowing" -- the [re-frame](https://github.com/Day8/re-frame/blob/master/README.md) tag-line
 
 Matrix enjoys much good company in this field. We believe Matrix offers more simplicity, transparency, granularity, expressiveness, efficiency, and functional coverage, but in each dimension differs only in degree, not spirit. Other recommended CLJS libraries are [Reagent](https://reagent-project.github.io/), [Hoplon/Javelin](https://github.com/hoplon/javelin), and [re-frame](https://github.com/Day8/re-frame). Beyond CLJS, we admire [MobX](https://github.com/mobxjs/mobx/blob/master/README.md) (JS), [binding.Scala](https://github.com/ThoughtWorksInc/Binding.scala/blob/11.0.x/README.md), and Python [Trellis](https://pypi.org/project/Trellis/). Let us know about any we missed.
