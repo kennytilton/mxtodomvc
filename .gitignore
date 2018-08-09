@@ -1,3 +1,5 @@
+/checkouts
+/checkoutsNOT
 .DS_Store
 /.idea/
 mxtodomvc.iml
