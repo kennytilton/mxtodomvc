@@ -17,7 +17,7 @@ What does it mean for B to read A? It means B is expressed as an HLL function th
 ````
 The above is an excerpt from the TodoMVC implementation we will evolve in the next introductory document. `li` makes a proxy LI instance and has the same API as the HTML; `cF` makes `:class` functional; and `<mget` is the Matrix property reader that remembers which property is asking.
 
-The next excerpt shows model (the M in MVC) being managed by the Matrix. `cI` arranges for that property to tell functional client properties when they have changed:
+The next excerpt shows model (the M in MVC) being managed by the Matrix. `cI` arranges for that property to tell functional reader properties when they have changed:
 ````clojure
 (md/make ::todo-list
     :items-raw (cI nil)
@@ -44,15 +44,15 @@ A few more fundamentals:
 * we might have a property K for "kids", such as the children of a parent DOM element.
 
 #### on-change handlers: observers
-On-change handlers are how automatically changing values manifest themselves as a useful application, doing somehing other than telling each other to recompute.
+On-change handlers are how changing properties manifest themselves as a useful application, doing somehing other than telling each other to recompute.
 
 When `A` changes, it can:
-    * mutate properties outside the Matrix graph; or
-    * enqueue Matrix writes to other properties for execution immediately after the current write.
+* mutate properties outside the Matrix graph; or
+* enqueue Matrix writes to other properties for execution immediately after the current write.
 
-In the example above, the `:class` property of a proxy `input` instance gained or lost the "completed" class as the user so directed via an `onclick` handler. How does the actual DOM `input` classlist change?
+In the example above, the `:class` property of a proxy `li` instance gained or lost the "completed" class as the user toggeled the model to-do's `:completed` property via an `onclick` handler. Great, but how does the actual DOM `li` classlist change?
 
-mxWeb provides an observer for maintaining the DOM:
+The mxWeb library provides an observer for maintaining the DOM:
 ````clojure
 (defmethod observe-by-type
   [:mxweb.base/tag]
