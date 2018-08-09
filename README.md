@@ -3,7 +3,7 @@
 
 mxWeb&trade; makes web pages easier to build, debug, and revise simply by changing what happens when we read and write properties:
 * when B reads A, A remembers B; and
-* when A changes, A tells B.
+* when we write to A, A tells B.
 
 Those are just the fundamentals. Let us understand them better through concrete examples.
 
