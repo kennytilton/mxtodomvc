@@ -5,7 +5,7 @@ mxWeb&trade; makes web pages easier to build, debug, and revise simply by changi
 * when B reads A, A remembers B; and
 * when we write to A, A tells B.
 
-Those are just the fundamentals. Let us understand them better through concrete examples before digging deeper. 
+Those are the fundamentals. Before digging deeper, let us understand these core capabilities better by looking at some concrete examples. 
 #### B reads A
 What does it mean for B to read A? It means B is expressed as an HLL function that reads A. 
 ````clojure
@@ -14,7 +14,7 @@ What does it mean for B to read A? It means B is expressed as an HLL function th
                   "completed"))}
     ...)
 ````
-The above is an excerpt from the TodoMVC implementation we will build in the next introductory document. `li` makes a proxy LI instance and has the same API as the HTML; `cF` makes `:class` functional; and `<mget` is the Matrix property reader that remembers which property is asking.
+The above is an excerpt from the TodoMVC implementation we will build in the next introductory document. `li` makes a proxy LI instance and its API mirrors the HTML `<li attribute*> children* </li>`; `cF` makes `:class` functional; and `<mget` is the Matrix property reader that remembers which property is asking.
 
 In the next excerpt, the Matrix manages a model property, "model" as in MVC. `cI` sets that property up to tell functional reader properties when `:items-raw` changes:
 ````clojure
@@ -23,10 +23,10 @@ In the next excerpt, the Matrix manages a model property, "model" as in MVC. `cI
     :items (cF (remove td-deleted (<mget me :items-raw)))
     :empty? (cF (empty? (<mget me :items))))
 ````
-Yes, those simple examples could reasonably be ordinary functions of the to-do list, but these are just two small carveouts in the progressive decomposition of TodoMVC. Our win will be the decomposition, not the size of any particular carveout.
+Those simple derivations could instead be ordinary functions of the to-do list, but these are just two small carveouts in the progressive decomposition of TodoMVC. Our win will be the decomposition, not the size of any particular carveout.
 
 #### A tells B
-What does it mean for A to tell B? It means that, when we imperatively change A, Matrix internals will recalculate B:
+What does it mean for A to tell B? It means that, when we imperatively change A, Matrix internals will automatically recalculate B:
 ````cljs
 (input {:class       "toggle"
         ::mxweb/type "checkbox"
