@@ -24,17 +24,17 @@ In the next excerpt, the Matrix manages a model (the M in MVC) property. `cI` ar
     :items (cF (remove td-deleted (<mget me :items-raw)))
     :empty? (cF (empty? (<mget me :items))))
 ````
-Those simple examples could reasonably be ordinary functions of the to-do list. Other properties are more expensive hence usefully cached, and even these trivial formulaics make the to-do list functional properties stand out from other code. Or they may require special tracking by so-called "observers" discussed below.
+Yes, those simple examples could reasonably be ordinary functions of the to-do list, but these are just two small carve outs in the decomposition of TodoMVC. The win will be in the decomposition, not the size of any particular carve out.
 
 #### A tells B
-What does it mean for A to tell B? When we imperatively change A, Matrix internals automatically and transparently recalculate B:
+What does it mean for A to tell B? It means that, when we imperatively change A, Matrix internals will recalculate B:
 ````cljs
 (input {:class       "toggle"
         ::mxweb/type "checkbox"
         :onclick     #(mswap!> todo :completed
                          #(when-not [%] (util/now)})
 ````
-`mswap!>` is a Matrix property writer that:
+The Matrix property writer `mswap!>`:
 * changes the `:completed` property of the model todo; and
 * *before returning* recomputes the :class property of the proxy `li` we saw above.
 
@@ -43,12 +43,13 @@ A few more fundamentals:
 * on-change handlers, or "observers", may be supplied for A or B; and
 * we might have a property K for "kids", such as the children of a parent DOM element.
 
-#### on-change handlers: observers
-CHanging properties manifest themselves as a useful application, if only to update a Web page, via on-change callbacks we call "observers". When `A` changes, ian observer can:
+Again, some concrete examples...
+#### on-change handlers, or "observers"
+In the example above, the `:class` property of a proxy `li` instance gained or lost the "completed" class as the user toggeled the model to-do's `:completed` property via an `onclick` handler. Great, but how does the actual DOM `li` classlist change?
+
+Changing properties manifest themselves as a useful application via on-change callbacks we call "observers". When `A` changes, an observer can:
 * mutate properties outside the Matrix graph; or
 * enqueue Matrix writes to other properties for execution immediately after the current write.
-
-In the example above, the `:class` property of a proxy `li` instance gained or lost the "completed" class as the user toggeled the model to-do's `:completed` property via an `onclick` handler. Great, but how does the actual DOM `li` classlist change?
 
 The mxWeb library provides an observer for maintaining the DOM:
 ````clojure
@@ -60,17 +61,17 @@ The mxWeb library provides an observer for maintaining the DOM:
         ...others...
         :class (classlist/set dom new-value))))
 ````
-mxWeb proxy instances know which DOM element they represent, and Matrix change tracking at the property level tells mxWeb precisely which DOM attribute needs updating. This obviates the need for VDOM generation and diffing.
+mxWeb proxy instances know which DOM element they represent, and Matrix change tracking at the property level tells mxWeb precisely which DOM attribute needs updating, obviating the need for VDOM generation and diffing.
 Notes:
 * we offer no example of a deferred write at this time. Those arise when applications have grown quite large.
 * *caveat lectorum* we use "observer" in the strict dictionary sense: "monitor, not participant". Other libraries use it differently.
 
 #### K for Kids
-Formulas can compute more than mere descriptive properties such as "completed"; we might have `K` for "kids" holding the children of some parent, such as the LI nodes under a UL DOM list. In other words, the population itself of our application model can grow or shrink with events. We call a dynamic population of causally connected models a *matrix*.
+Formulas can compute more than mere descriptive properties such as "completed". We might have `K` for "kids" holding the children of some parent, such as the LI nodes under a UL DOM list. In other words, the population itself of our application model can grow or shrink with events. We call a dynamic population of causally connected models a *matrix*.
 
 > ma·trix ˈmātriks *noun* an environment in which something else takes form. *Origin:* Latin, female animal used for breeding, parent plant, from *matr-*, *mater*
 
-We will not worry about all this code just yet, but here is how our TodoMVC will avoid rebuilding the full DOM list of to-dos when one is added or removed or the selection changes:
+Here is how our TodoMVC will avoid rebuilding the full DOM list of to-dos when a to-do is added or removed; the filter changes; or the `:completed` property of a to-do is changed. 
 ````clojure
 (ul {:class "todo-list"}
   {:kid-values  (cF (sort-by td-created
@@ -85,7 +86,7 @@ We will not worry about all this code just yet, but here is how our TodoMVC will
   ;; cache is prior value for this implicit ':kids' slot; k-v-k uses it for diffing
   (kid-values-kids me cache))
 ````
-Simply by propagating change between functional properties, and manifesting those changes to the outside world, the Matrix library brings declarative, transparent, functional applications to life.
+As an exercise, try pairing  the `<mget` dependencies above with the ways the list changes. The one not evident -- changes to the completed property of a todo -- is expressed by the collections `:items` *et al* we saw defined above.#
 
 ### Extending the scope: lifting
 We explained above how the computed `:class` "completed" got propagated to the actual DOM classlist by an observer. That hints at the next fundamental, which we call "lifting". 
@@ -103,12 +104,14 @@ This is the story of another 80KLOC Matrix app, a [clinical drug trial managemen
 Matrix enjoys much good company in this field. We believe Matrix offers more simplicity, transparency, granularity, expressiveness, efficiency, and functional coverage, but in each dimension differs only in degree, not spirit. Other recommended CLJS libraries are [Reagent](https://reagent-project.github.io/), [Hoplon/Javelin](https://github.com/hoplon/javelin), and [re-frame](https://github.com/Day8/re-frame). Beyond CLJS, we admire [MobX](https://github.com/mobxjs/mobx/blob/master/README.md) (JS), [binding.Scala](https://github.com/ThoughtWorksInc/Binding.scala/blob/11.0.x/README.md), and Python [Trellis](https://pypi.org/project/Trellis/). Let us know about any we missed.
 
 
-#### tl;dr summary
+#### Summary
 By rewiring the fundamental action of reading and writing properties, Matrix captures the dependency graph implicit in the application code we write. 
 
 Because it is captured transaparently, we think only about our applications while coding. Because we build applications from small, declarative formulas, even the largest application decomposes naturally into manageable chunks. 
 
-Because this formulaic authoring extends to model and not just view, we enjoy this automaticity more broadly. And because, with sufficent "glue" code, external libraries can be brought under the dataflow umbrella, entire applications can be animated. 
+Because this formulaic authoring extends to the model and not just the view, we enjoy this automaticity more broadly. With sufficent "glue" code, external libraries can be brought under the dataflow umbrella. 
+
+mxWeb&trade; makes web pages easier to build, debug, and revise simply by changing what happens when we read and write properties.
 
 #### Postscript: on mutation
 Clojurians understand well the danger of mutation. Via the `re-frame` doc we have:
