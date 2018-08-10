@@ -1,13 +1,15 @@
 # Building TodoMVC, with Matrix Inside&trade;
-*An introduction by example to Matrix dataflow and mxWeb*
+*An introduction by example to Matrix dataflow and mxWeb*, continued
+
+> Have you read [the preamble](../README.md) to this write-up? If so, you might want to skip down to "Set Up".
 
 The *Matrix* dataflow library endows application state with causal power, freeing us of the burden of propagating change across highly interdependent models. More grandly, it brings our application models to life, animating them in response to streams of external inputs.
 > "UIs...I am not going to go there. I don't do that part."  
 -- Rich Hickey on the high ratio of code to logic in UIs, *Clojure/Conj 2017*
 
-We choose mxWeb as the vehicle for introducing Matrix because nothing challenges a developer more than keeping application state straight while an intelligent user does their best to use a rich interface correctly. Then marketing wants a U/X overhaul.
+We choose *mxWeb* as the vehicle for introducing Matrix because nothing challenges a developer more than keeping application state straight while an intelligent user does their best to use a rich interface correctly. Then marketing wants a U/X overhaul.
 
-*mxWeb* is a thin web un-framework built atop Matrix. We say "un-framework" because mxWeb exists only to wire the DOM for dataflow. The API design imperative is that the MDN reference be the mxWeb reference; mxWeb itself introduces no new architecture.
+mxWeb is a thin web un-framework built atop Matrix. We say "un-framework" because mxWeb exists only to wire the DOM for dataflow. The API design imperative is that the MDN reference be the mxWeb reference; mxWeb itself introduces no new architecture.
 
 Matrix does this simply by enhancing how we initialize, read, and write individual properties:
 * properties can be initialized as a literal value or as a function;
@@ -69,7 +71,7 @@ git checkout hello-todomx
 ````
 From now on, our cue to check out a new tag will be these headers:
 #### git checkout hello-todomx
-And here is the mxWeb HTML work-aike, look-alike code:
+And here is the mxWeb HTML work-aike, look-alike code for "hello, todomx":
 ````clojure
 (defn matrix-build []
   (md/make
@@ -82,7 +84,7 @@ The "tags" such as `header` and `h` are CLJS macros. It is *all* CLJS.
 
 As with HTML, each mxWeb tag macro takes the same parameters:
 * an optional map of DOM attributes;
-* an optional map of custom application properties; and
+* unique to mxWeb, an optional map of custom application properties; and
 * any number of child elements.
 
 The sharp-eyed reader has spotted an unlikely HTML tag, `mxtodo-credits`. Here is the code for that:
@@ -94,19 +96,18 @@ The sharp-eyed reader has spotted an unlikely HTML tag, `mxtodo-credits`. Here i
                   "Inspired by <a href=\"https://github.com/tastejs/todomvc/blob/master/app-spec.md\">TodoMVC</a>."]]
       (p credit))))
 ````
-The above illustrates that, by supporting arbitrary functions as generators of HTML, with mxWeb we can develop custom HTML tags wrapping arbitrarily complex, reusable native DOM clusters, aka [Web Components](https://developer.mozilla.org/en-US/docs/Web/Web_Components). `mxtodo-credits` is rather simple, but next up is a function/component taking four parameters to support reuse.
+In other words, mxWeb supports arbitrarily complex, reusable native DOM clusters, aka [Web Components](https://developer.mozilla.org/en-US/docs/Web/Web_Components). `mxtodo-credits` is rather simple, but next up is a function/component taking four parameters to support reuse.
 
-Note also that, yes, we can mix standard CLJS with our "HTML" because, again, it is all CLJS.
 ### git checkout wall-clock
 Reminder:
 ````bash
 git checkout wall-clock
 ````
-The TodoMVC spec does not include a time or date display, but a simple "wall clock" permits a quick but deep dive into:
+The TodoMVC spec does not include a time or date display. We added a simple "wall clock" because it lets us take a quick, deep dive into mxWeb in just a few lines of code. Here is what we will see:
 1. automatic state management: our first dataflow;
 1. transparent state management;
 2. DOM efficiency without VDOM complexity;
-3. the mxWeb approach to Web Components;
+3. the mxWeb version of Web Components;
 4. all dataflow all the time: "lifting" components into the Matrix;
 5. a single source of behavior: co-location of model and view; and
 6. the Grail of object reuse.
@@ -139,12 +140,14 @@ The first `wall-clock` shows the date and updates every hour (no, this makes no 
         :date (.toDateString date))
       (subs date start end))))
 ````
+Now let's work through the bullets above and see how they are manifested in the code above.
+
 #### 1. automatic state management: our first dataflow  
 > "Any component that uses an atom is automagically re-rendered when its value changes." -- [Reagent](https://reagent-project.github.io/)
 
 > "Anything that can be derived from the application state, should be derived. Automatically." -- the [MobX](https://github.com/mobxjs/mobx) philosophy
 
-On every interval, the imperative `mset!>` feeds the browser clock epoch into the application Matrix `clock` property. The child string content of the DIV gets regenerated because `clock` changed. In code we will learn about later, mxWeb knows to reset the innerHTML of the DOM element corresponding to our proxy DIV. Hello, dataflow.
+On every interval, the imperative `mset!>` feeds the browser clock epoch into the application Matrix `clock` property. The child string content of the DIV gets regenerated because `clock` changed. In code we will learn about later, mxWeb knows to reset the innerHTML of the DOM element corresponding to our proxy DIV.
 
 > "Cells automatically and consistently propagate data dependency changes" -- [Hoplon/Javelin](https://github.com/hoplon/hoplon/wiki/Hoplon-Overview)
 #### 2. transparent state management
@@ -154,31 +157,31 @@ There is no explicit publish or subscribe. We simply read with `mget` and assign
 #### 3. DOM efficiency without VDOM cost and complexity
 > "When part of the data source changes, Binding.scala knows about the exact corresponding partial DOM affected by the change." -- binding.Scala [design](https://github.com/ThoughtWorksInc/Binding.scala)
 
-The preceding explains why mxWeb is faster than VDOM; property-to-property dataflow means the system knows with fine granularity when and what DOM needs updating when new inputs hit the Matrix. The actual code includes strategically placed print statements that illustrate in the console that the DIV is created once but its content on each interval. This is a small win, but in examples to come we achieve significant changes with no more than `classlist/set`.
+The preceding explains why mxWeb is faster than VDOM; property-to-property dataflow means the system knows with fine granularity when and what DOM needs updating when new inputs hit the Matrix. 
 #### 4. the mxWeb approach to Web Components
 Above we see the function `wall-clock` has four parameters, `[mode interval start end]`. Achieving component reuse with mxWeb differs not at all from parameterizing any Clojure function for maximum utility.
 #### 5. all dataflow all the time: "lifting" components into the Matrix  
-We want to program with it as much as possible but, as just one example, browsers do not know about Matrix dataflow. If the component will not come to the Matrix, the Matrix will wrap the component: we write more or less "glue" code to bring it into the datafow.  
+We want to program with dataflow as much as possible, but browsers do not know about Matrix dataflow. If the component will not come to the Matrix, the Matrix will wrap the component: we write more or less "glue" code to bring it into the datafow.  
 ````clojure
 (js/setInterval
     #(mset!> me :clock (util/now))
     interval)
 ````  
-We call this gluing process "lifting". Lifting the system clock required just a few lines of code. We hinted earlier that mxWeb exemplifies "lifting". That took almost two thousand lines.
+We call such glue "lifting". Lifting the system clock required just a few lines of code. We hinted earlier that mxWeb exemplifies "lifting". That took six hundred lines.
 #### 6. a single source of behavior: co-location of model and view  
-This will be an anti-feature to many. Our wall clock widget needs application state, and it generates and relays that state itself. The `clock` property holds the JS epoch, and the 'ticker' property holds a timer driving `clock`. Nearby in the code, a child element consumes the stream of `clock` values. Everything resides together in the source for quick authoring, debugging, revision, and understanding.
-> The current trend in web library architecture involves decomposing monolithic apps into small elements combined usefully at run-time by the library to form the desired application. With mxWeb, the elements shaping an application behavior are found together in the source. Bucking trends makes us nervous, so we were happy to see Facebook engineers bragging on their "co-location" of GraphQL snippets alongside the components that consumed them.  
+Our wall clock widget needs application state, and it generates and relays that state itself. The `clock` property holds the JS epoch, and the 'ticker' property holds a timer driving `clock`. Nearby in the code, a child element consumes the stream of `clock` values. Everything resides together in the source for quick authoring, debugging, revision, and understanding.
+  
 #### 7. the Grail of object reuse  
-In classic OOP, objects have rigid definitions making generality unlikely. Few DIV elements need a stream of clock values, so normally we would need to sub-class DIV to arrange for one. Matrix, like the prototype model of OOP, lets us code up a new dataflow-capable clock property on the fly.
+In classic OOP, objects have rigid slot definitions and semantics. That makes generality hence reuse unlikely. For example, few DIV elements need a stream of clock values, so normally we would need to sub-class DIV to arrange for one. Matrix, like the prototype model of OOP, lets us code up a new dataflow-capable clock property on the fly and attach it to our proxy `div`.
 
 ### git checkout enter-todos
 As promised, that was a deep first dive. This tag will be much simpler, merely introducing to-dos, unstored, unedited, and not even enterable:
 * we load a few fixed-todos at start-up;
 * we show them in a list;
 * one control lets us toggle a to-do between completed or not; and
-* another control deletes a to-do, logically but irrevocably.
+* another control logically deletes a to-do.
 
-Here is how we make a to-do. Recall that `cI` is shorthand for making an "input cell", one to which we can assign new values from imperative code in an event handler.
+Here is tte code to make a to-do. Recall that `cI` is shorthand for making an "input cell", one to which we can assign new values from imperative code in an event handler.
 ````clojure
 (defn make-todo
   "Make a matrix incarnation of a todo item"
@@ -201,7 +204,7 @@ Here is the to-do-list container model, set up to take a list of hard-coded init
                       (make-todo to-do})))
     :items (cF (doall (remove td-deleted (<mget me :items-raw))))))
 ````
-The bulk of the to-do app does not care about deleted to-dos, so we use a clumsy name "items-raw" for the true list of items ever created, and save the name "items" for the ones actually used.
+The bulk of the to-do app does not care about deleted to-dos, so we use a clumsy name "items-raw" for the true list of items ever created, and save the name "items" for the ones actually used. `cFn` is short for "formulaic then input", meaning the property is initialized by running the
 
 We can now start our demo matrix off with a few preset to-dos. Some things to note:
 * the optional first "type" parameter ::todoApp is supplied
@@ -209,7 +212,7 @@ We can now start our demo matrix off with a few preset to-dos. Some things to no
   * `cFonce` effectively defers the enclosed form until the right lifecycle point in the matrix's initial construction.
   * `with-par me` is how the matrix DOM knows where it is in the matrix tree. All matrix nodes know their parents so they can navigate the tree freely to gather information.
 * the app credits are now provided by a new "web component", and that along with the "wall-clock" reusable are off in their own namespace.
-* most interesting is `(mxu-find-type me ::todoApp)`, a bit of exposed wiring that demonstrates how Matrix elements pull information from elsewhere in the Matrix using various "mx-find-\*" selector-like utilities we will discuss below. 
+* most interesting is `(mxu-find-type me ::todoApp)`, a bit of exposed wiring that demonstrates how Matrix elements pull information from elsewhere in the Matrix using various "mx-find-\*" CSS selector-like utilities. 
 
 ````clojure
 (md/make ::md/todoApp
