@@ -5,7 +5,7 @@ mxWeb&trade; makes web pages easier to build, debug, and revise simply by changi
 * when B reads A, A remembers B; and
 * when we write to A, A tells B.
 
-Those are the fundamentals. Before digging deeper, let us understand these core capabilities better by looking at some concrete examples. 
+Those are the fundamentals. Before digging deeper, let us better understand these core capabilities by looking at some examples. 
 #### B reads A
 What does it mean for B to read A? It means B is expressed as an HLL function that reads A. 
 ````clojure
@@ -16,14 +16,16 @@ What does it mean for B to read A? It means B is expressed as an HLL function th
 ````
 The above is an excerpt from the TodoMVC implementation we will build in the next introductory document. `li` makes a proxy LI instance and its API mirrors the HTML `<li attribute*> children* </li>`; `cF` makes `:class` functional; and `<mget` is the Matrix property reader that remembers which property is asking.
 
-In the next excerpt, the Matrix manages a model property, "model" as in MVC. `cI` sets that property up to tell functional reader properties when `:items-raw` changes:
+In the next excerpt, the Matrix manages a model property, "model" as in MVC. `cI` sets that property up to tell functional  properties `:items` when `:items-raw` changes:
 ````clojure
 (md/make ::todo-list
     :items-raw (cI nil)
     :items (cF (remove td-deleted (<mget me :items-raw)))
     :empty? (cF (empty? (<mget me :items))))
 ````
-Those simple derivations could instead be ordinary functions of the to-do list, but these are just two small carveouts in the progressive decomposition of TodoMVC. Our win will be the decomposition, not the size of any particular carveout.
+Note that functional `:items` will then tell functional `:empty?` if *it* has changed. 
+
+Aside: those simple derivations could instead be ordinary functions of the to-do list, but these are just two small carveouts in the progressive decomposition of TodoMVC. Our win will be the decomposition, not the size of any particular carveout.
 
 #### A tells B
 What does it mean for A to tell B? It means that, when we imperatively change A, Matrix internals will automatically recalculate B:
@@ -66,7 +68,9 @@ Notes:
 * *caveat lectorum* we use "observer" in the strict dictionary sense: "monitor, not participant". Other libraries use it differently.
 
 #### K for Kids
-Formulas can compute more than mere descriptive properties such as "completed". We might have `K` for "kids" holding the children of some parent, such as the LI nodes under a UL DOM list. In other words, the population itself of our application model can grow or shrink with events. We call a dynamic population of causally connected models a *matrix*.
+Formulas can compute more than mere descriptive properties such as "completed". We might have `K` (for "kids") holding the children of some parent, such as the LI nodes under a UL DOM list. In other words, the population itself of our application model can grow or shrink with events. 
+
+We call a dynamic population of causally connected models a *matrix*.
 
 > ma·trix ˈmātriks *noun* an environment in which something else takes form. *Origin:* Latin, female animal used for breeding, parent plant, from *matr-*, *mater*
 
@@ -85,7 +89,7 @@ Here is how our TodoMVC will avoid rebuilding the full DOM list of to-dos when a
   ;; cache is prior value for this implicit ':kids' slot; k-v-k uses it for diffing
   (kid-values-kids me cache))
 ````
-As an exercise, try pairing  the `<mget` dependencies above with the ways the list changes. The one not evident -- changes to the completed property of a todo -- is expressed by the collections `:items` *et al* we saw defined above.#
+As an exercise, try pairing  the `<mget` dependencies above with the ways the list changes. The one not evident -- changes to the completed property of a todo -- is expressed by the collections `:items` *et al* we saw defined above.
 
 ### Extending the scope: lifting
 We explained above how the computed `:class` "completed" got propagated to the actual DOM classlist by an observer. That hints at the next fundamental, which we call "lifting". 
@@ -100,14 +104,14 @@ Matrix enjoys much good company in this field. We believe Matrix offers more sim
 ### Really?
 Can we really program this way? This 80KLOC [Algebra intelligent tutor](https://tiltonsalgebra.com/#) consists of about twelve hundred `A`s and `B`s, and extends into a Postgres database. Everything runs under matrix control. It lifts Qooxdoo JS, MathJax, Postgres and more. The average number of dependencies for one value is a little more than one, and the deepest dependency chain is about a dozen. On complex dispays of many math problems, a little over a thousand values are dependent on other values.
 
-This is the story of another 80KLOC Matrix app, a [clinical drug trial management system](http://smuglispweeny.blogspot.com/2008/03/my-biggest-lisp-project.html) with dataflow even more deeply extended to a persistent Lisp object system (CLOS) database.
+This is the story of another 80KLOC Matrix app, a [clinical drug trial management system](http://smuglispweeny.blogspot.com/2008/03/my-biggest-lisp-project.html) with dataflow extended even deeper into a persistent Lisp object system (CLOS) database.
 
 ### Summary
 Rewired reads and writes let Matrix transparently capture the dependency graph implicit in the application code we write. 
 
 The transparency means we think *only* about our applications while coding. Because we build applications from small, declarative formulas, even the largest application decomposes naturally into manageable chunks. 
 
-Because this formulaic authoring extends to the model and not just the view, we enjoy this automaticity more broadly. With sufficent "glue" code, external libraries can be brought under the dataflow umbrella. 
+Because this formulaic authoring extends to the model and not just the view, we enjoy this automaticity more broadly. With sufficent "glue" code, external libraries are brought under the dataflow umbrella. Dataflow then shapes the entire application.
 
 mxWeb&trade; makes web pages easier to build, debug, and revise simply by changing what happens when we read and write properties.
 
