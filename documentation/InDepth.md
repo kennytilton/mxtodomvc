@@ -1,7 +1,7 @@
 # Building TodoMVC, with Matrix Inside&trade;
 *An introduction by example to Matrix dataflow and mxWeb*, continued
 
-> Have you read [the preamble](../README.md) to this write-up? If so, you might want to skip down to "Set Up".
+> Have you read [the preamble](../README.md) to this write-up? If so, you might want to skip down to "Set Up". If not, you might want to start there for a gentler introduction to Matrix and mxWeb.
 
 The *Matrix* dataflow library endows application state with causal power, freeing us of the burden of propagating change across highly interdependent models. More grandly, it brings our application models to life, animating them in response to streams of external inputs.
 
