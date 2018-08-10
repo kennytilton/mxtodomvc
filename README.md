@@ -15,16 +15,16 @@ What does it mean for B to read A? It means B is expressed as an HLL function th
                   "completed"))}
     ...)
 ````
-The above is an excerpt from the TodoMVC implementation which we will evolve in the next introductory document. `li` makes a proxy LI instance and has the same API as the HTML; `cF` makes `:class` functional; and `<mget` is the Matrix property reader that remembers which property is asking.
+The above is an excerpt from the TodoMVC implementation we will build in the next introductory document. `li` makes a proxy LI instance and has the same API as the HTML; `cF` makes `:class` functional; and `<mget` is the Matrix property reader that remembers which property is asking.
 
-In the next excerpt, the Matrix manages a model (the M in MVC) property. `cI` arranges for that property to tell functional reader properties when they have changed:
+In the next excerpt, the Matrix manages a model property, "model" as in MVC. `cI` sets that property up to tell functional reader properties when `:items-raw` changes:
 ````clojure
 (md/make ::todo-list
     :items-raw (cI nil)
     :items (cF (remove td-deleted (<mget me :items-raw)))
     :empty? (cF (empty? (<mget me :items))))
 ````
-Yes, those simple examples could reasonably be ordinary functions of the to-do list, but these are just two small carve outs in the decomposition of TodoMVC. The win will be in the decomposition, not the size of any particular carve out.
+Yes, those simple examples could reasonably be ordinary functions of the to-do list, but these are just two small carveouts in the progressive decomposition of TodoMVC. Our win will be the decomposition, not the size of any particular carveout.
 
 #### A tells B
 What does it mean for A to tell B? It means that, when we imperatively change A, Matrix internals will recalculate B:
@@ -93,21 +93,20 @@ We explained above how the computed `:class` "completed" got propagated to the a
 
 The DOM knows nothing about Matrix, so we developed sufficient "glue" code to make it seem as if it did. That is mxWeb: six hundred lines of code creating two classes (one for HTML tags, one for CSS Styles) and other code to translate HLL handlers into native handlers. In the full implementation of TodoMVC we will see even more systems lifted into the Matrix: routing, XHR, localStorage, and even the system clock.  
 
-#### Really?
-Can we really program this way? This 80KLOC [Algebra](https://tiltonsalgebra.com/#) Common Lisp app consists of about twelve hundred `A`s and `B`s, and extends into a Postgres database. Everything runs under matrix control. It lifts Qooxdoo JS, MathJax, Postgres and more. The average number of dependencies for one value is a little more than one, and the deepest dependency chain is about a dozen. On complex dispays of many math problems, a little over a thousand values are dependent on other values.
-
-This is the story of another 80KLOC Matrix app, a [clinical drug trial management system](http://smuglispweeny.blogspot.com/2008/03/my-biggest-lisp-project.html) with dataflow even more deeply extended to a persistent Lisp object system (CLOS) database.
-
 ### Related work
 > "Derived Values, Flowing" -- the [re-frame](https://github.com/Day8/re-frame/blob/master/README.md) tag-line
 
 Matrix enjoys much good company in this field. We believe Matrix offers more simplicity, transparency, granularity, expressiveness, efficiency, and functional coverage, but in each dimension differs only in degree, not spirit. Other recommended CLJS libraries are [Reagent](https://reagent-project.github.io/), [Hoplon/Javelin](https://github.com/hoplon/javelin), and [re-frame](https://github.com/Day8/re-frame). Beyond CLJS, we admire [MobX](https://github.com/mobxjs/mobx/blob/master/README.md) (JS), [binding.Scala](https://github.com/ThoughtWorksInc/Binding.scala/blob/11.0.x/README.md), and Python [Trellis](https://pypi.org/project/Trellis/). Let us know about any we missed.
 
+#### Really?
+Can we really program this way? This 80KLOC [Algebra intelligent tutor](https://tiltonsalgebra.com/#) consists of about twelve hundred `A`s and `B`s, and extends into a Postgres database. Everything runs under matrix control. It lifts Qooxdoo JS, MathJax, Postgres and more. The average number of dependencies for one value is a little more than one, and the deepest dependency chain is about a dozen. On complex dispays of many math problems, a little over a thousand values are dependent on other values.
+
+This is the story of another 80KLOC Matrix app, a [clinical drug trial management system](http://smuglispweeny.blogspot.com/2008/03/my-biggest-lisp-project.html) with dataflow even more deeply extended to a persistent Lisp object system (CLOS) database.
 
 #### Summary
-By rewiring the fundamental action of reading and writing properties, Matrix captures the dependency graph implicit in the application code we write. 
+Rewired the reads and writes let Matrix transparently capture the dependency graph implicit in the application code we write. 
 
-Because it is captured transaparently, we think only about our applications while coding. Because we build applications from small, declarative formulas, even the largest application decomposes naturally into manageable chunks. 
+The transparency means we think *only* about our applications while coding. Because we build applications from small, declarative formulas, even the largest application decomposes naturally into manageable chunks. 
 
 Because this formulaic authoring extends to the model and not just the view, we enjoy this automaticity more broadly. With sufficent "glue" code, external libraries can be brought under the dataflow umbrella. 
 
