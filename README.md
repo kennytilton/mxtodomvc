@@ -98,13 +98,13 @@ The DOM knows nothing about Matrix, so we developed sufficient "glue" code to ma
 
 Matrix enjoys much good company in this field. We believe Matrix offers more simplicity, transparency, granularity, expressiveness, efficiency, and functional coverage, but in each dimension differs only in degree, not spirit. Other recommended CLJS libraries are [Reagent](https://reagent-project.github.io/), [Hoplon/Javelin](https://github.com/hoplon/javelin), and [re-frame](https://github.com/Day8/re-frame). Beyond CLJS, we admire [MobX](https://github.com/mobxjs/mobx/blob/master/README.md) (JS), [binding.Scala](https://github.com/ThoughtWorksInc/Binding.scala/blob/11.0.x/README.md), and Python [Trellis](https://pypi.org/project/Trellis/). Let us know about any we missed.
 
-#### Really?
+### Really?
 Can we really program this way? This 80KLOC [Algebra intelligent tutor](https://tiltonsalgebra.com/#) consists of about twelve hundred `A`s and `B`s, and extends into a Postgres database. Everything runs under matrix control. It lifts Qooxdoo JS, MathJax, Postgres and more. The average number of dependencies for one value is a little more than one, and the deepest dependency chain is about a dozen. On complex dispays of many math problems, a little over a thousand values are dependent on other values.
 
 This is the story of another 80KLOC Matrix app, a [clinical drug trial management system](http://smuglispweeny.blogspot.com/2008/03/my-biggest-lisp-project.html) with dataflow even more deeply extended to a persistent Lisp object system (CLOS) database.
 
-#### Summary
-Rewired the reads and writes let Matrix transparently capture the dependency graph implicit in the application code we write. 
+### Summary
+Rewired reads and writes let Matrix transparently capture the dependency graph implicit in the application code we write. 
 
 The transparency means we think *only* about our applications while coding. Because we build applications from small, declarative formulas, even the largest application decomposes naturally into manageable chunks. 
 
