@@ -4,10 +4,11 @@
 > Have you read [the preamble](../README.md) to this write-up? If so, you might want to skip down to "Set Up".
 
 The *Matrix* dataflow library endows application state with causal power, freeing us of the burden of propagating change across highly interdependent models. More grandly, it brings our application models to life, animating them in response to streams of external inputs.
-> "UIs...I am not going to go there. I don't do that part."  
--- Rich Hickey on the high ratio of code to logic in UIs, *Clojure/Conj 2017*
 
 We choose *mxWeb* as the vehicle for introducing Matrix because nothing challenges a developer more than keeping application state straight while an intelligent user does their best to use a rich interface correctly. Then marketing wants a U/X overhaul.
+
+> "UIs...I am not going to go there. I don't do that part."  
+-- Rich Hickey on the high ratio of code to logic in UIs, *Clojure/Conj 2017*
 
 mxWeb is a thin web un-framework built atop Matrix. We say "un-framework" because mxWeb exists only to wire the DOM for dataflow. The API design imperative is that the MDN reference be the mxWeb reference; mxWeb itself introduces no new architecture.
 
