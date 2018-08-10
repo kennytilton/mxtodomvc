@@ -5,8 +5,7 @@ mxWeb&trade; makes web pages easier to build, debug, and revise simply by changi
 * when B reads A, A remembers B; and
 * when we write to A, A tells B.
 
-Those are just the fundamentals. Let us understand them better through concrete examples.
-
+Those are just the fundamentals. Let us understand them better through concrete examples before digging deeper. 
 #### B reads A
 What does it mean for B to read A? It means B is expressed as an HLL function that reads A. 
 ````clojure
