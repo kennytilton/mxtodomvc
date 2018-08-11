@@ -15,7 +15,7 @@ What does it mean for B to read A? It means B is expressed as an HLL function th
                   "completed"))}
     ...)
 ````
-The above is an excerpt from the TodoMVC implementation we will build in the next introductory document. `li` makes a proxy LI instance and its API mirrors the HTML `<li attribute*> children* </li>`; `cF` makes `:class` functional; and `<mget` is the Matrix property reader that remembers which property is asking.
+The above is an excerpt from TodoMVC, which we will build next. `li` makes a proxy LI instance. Its API mirrors the HTML syntax `<li attribute*> children* </li>`. `cF` makes `:class` functional. `<mget` is the Matrix property reader that remembers which property is asking.
 
 In the next excerpt, the Matrix manages a model property, "model" as in MVC. `cI` sets that property up to tell functional  properties `:items` when `:items-raw` changes:
 ````clojure
@@ -24,9 +24,9 @@ In the next excerpt, the Matrix manages a model property, "model" as in MVC. `cI
     :items (cF (remove td-deleted (<mget me :items-raw)))
     :empty? (cF (empty? (<mget me :items))))
 ````
-Note that functional `:items` will then tell functional `:empty?` if *it* has changed. Note also that here we see how the `<mget` noise can be hidden with a simple `(defn td-deleted [todo] (<mget todo :deleted))`.
+Functional `:items` will tell functional `:empty?` if *it* has changed. We also hide the `<mget` noise behhind a simple `(defn td-deleted [todo] (<mget todo :deleted))`. Dependencies are detected dynamically, meaning the tracking sees inside function calls.
 
-Aside: those simple derivations could instead be ordinary functions of the to-do list, but these are just two small carveouts in the progressive decomposition of TodoMVC. Our win will be the decomposition, not the size of any particular carveout.
+Aside: those simple derivations could just be ordinary functions of the to-do list, but these are just two small carveouts in the progressive decomposition of TodoMVC. Our win will be the decomposition, not the size of any particular carveout.
 
 #### A tells B
 What does it mean for A to tell B? It means that, when we imperatively change A, Matrix internals will automatically recalculate B:
@@ -69,13 +69,13 @@ Notes:
 * *caveat lectorum* we use "observer" in the strict dictionary sense: "monitor, not participant". Other libraries use it differently.
 
 #### K for Kids
-Formulas can compute more than mere descriptive properties such as "completed". We might have `K` for "kids" holding the children of some parent, such as the LI nodes under a UL DOM list. In other words, the population itself of our application model can grow or shrink with events. 
+Formulas can compute more than mere descriptive properties such as "completed". We might have `K` for "kids" holding the children of some parent, such as the `LI` nodes under a `UL` DOM list. In other words, the population of our application model can grow or shrink with events. 
 
 We call a dynamic population of causally connected models a *matrix*.
 
 > ma·trix ˈmātriks *noun* an environment in which something else takes form. *Origin:* Latin, female animal used for breeding, parent plant, from *matr-*, *mater*
 
-Here is how our TodoMVC will avoid rebuilding the full DOM list of to-dos when: (1) a to-do is added or deleted; (2) the user selects a different filter; or the `:completed` property of a to-do is changed. 
+Here is how our TodoMVC will avoid rebuilding the full DOM list of to-dos when: (1) a to-do is added or deleted; (2) the user selects a different filter; or (3) the `:completed` property of a to-do is changed. 
 ````clojure
 (ul {:class "todo-list"}
   {:kid-values  (cF (sort-by td-created
@@ -95,9 +95,7 @@ As an exercise, try pairing  the `<mget` dependencies above with the enumerated 
 ### Extending the scope: lifting
 We explained above how the computed `:class` "completed" got propagated to the actual DOM classlist by an observer. That hints at the next fundamental, which we call "lifting". 
 
-The DOM knows nothing about Matrix, so we developed sufficient "glue" code to make it seem as if it did. 
-
-mxWeb consists of six hundred lines of code creating two classes (one for HTML tags, one for CSS Styles) and other code to translate HLL handlers into native handlers. 
+The DOM knows nothing about Matrix, so we developed sufficient "glue" code to make it seem as if it did. mxWeb consists of six hundred lines of code creating two classes (one for HTML tags, one for CSS Styles) and other code to translate HLL handlers into native handlers. 
 
 In the full implementation of TodoMVC we will see even more systems lifted into the Matrix: routing, XHR, localStorage RSN), and even a few lines to lift the system clock.  
 
@@ -112,15 +110,24 @@ Can we really program this way? This 80KLOC [Algebra intelligent tutor](https://
 This is the story of another 80KLOC Matrix app, a [clinical drug trial management system](http://smuglispweeny.blogspot.com/2008/03/my-biggest-lisp-project.html) with dataflow extended even deeper into a persistent Lisp object system (CLOS) database.
 
 ### Summary
-Rewired reads and writes let Matrix transparently capture the dependency graph implicit in the application code we write. 
+We began with a mystery: how does rewiring reads and writes of properties produce a new approach to application development? We then learned:
+* properties can be expressed as small functions of other properties.
+* dependencies of one property on another is recorded automatically, and changes propagate automatically. This transparency lets us focus on application semantics.
+* observers express change usefully, such as updating the dom.
+* everything is efficient because change is property by property.
+* and all the above applies across view, model, and external libraries with sufficient glue code.
 
-The transparency means we think *only* about our applications while coding. Because we build applications from small, declarative formulas, even the largest application decomposes naturally into manageable chunks.
+We program declaratively, functionally, in manageable chunks. mxWeb/Matrix then brings that code to life, reliablyand efficiently, with automatic state consistency.
 
-These formulas are functional yet fast, cacheing computations. Cache invalidation is auto
+We saw first that the rewiring automatically captures the fine-grained dependency graph (DAG) implicit in A reading B. With the DAG in hand, we update state (including the DOM) reliably and efficiently.
 
-Because this formulaic authoring extends to the model and not just the view, we enjoy this automaticity more broadly. With sufficent "glue" code, external libraries are brought under the dataflow umbrella. Dataflow then shapes the entire application.
+With the engine handling state change, we think only about our applications while coding.
 
-mxWeb&trade; makes web pages easier to build, debug, and revise simply by changing what happens when we read and write properties.
+We saw that applications are built up property by property in small, declarative, functonal formulas. Being small, they are easy to write, debug, and revise. They are functional yet fast, cacheing computations. Cache invalidation is automatic and precise thanks again to the captured DAG.
+
+We saw all this applied to the model as well as to the view, and further to external libraries. The coding "wins" are enjoyed across the whole application.
+
+mxWeb&trade; makes web pages easier to build, debug, and revise.   
 
 #### Postscript: on mutation
 Clojurians understand well the danger of mutation. Via the `re-frame` doc we have:
