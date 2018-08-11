@@ -110,24 +110,17 @@ Can we really program this way? This 80KLOC [Algebra intelligent tutor](https://
 This is the story of another 80KLOC Matrix app, a [clinical drug trial management system](http://smuglispweeny.blogspot.com/2008/03/my-biggest-lisp-project.html) with dataflow extended even deeper into a persistent Lisp object system (CLOS) database.
 
 ### Summary
-We began with a mystery: how does rewiring reads and writes of properties produce a new approach to application development? We then learned:
-* properties can be expressed as small functions of other properties.
-* dependencies of one property on another is recorded automatically, and changes propagate automatically. This transparency lets us focus on application semantics.
-* observers express change usefully, such as updating the dom.
-* everything is efficient because change is property by property.
-* and all the above applies across view, model, and external libraries with sufficient glue code.
+We began with a mystery: how does rewiring reads and writes of properties produce a new approach to application development? 
 
-We program declaratively, functionally, in manageable chunks. mxWeb/Matrix then brings that code to life, reliablyand efficiently, with automatic state consistency.
+Part of the mystery was solved when we learned that A could be defined declaratively as a function of B.
 
-We saw first that the rewiring automatically captures the fine-grained dependency graph (DAG) implicit in A reading B. With the DAG in hand, we update state (including the DOM) reliably and efficiently.
-
-With the engine handling state change, we think only about our applications while coding.
+We then saw that the rewiring automatically captures the fine-grained dependency graph (DAG) implicit in A reading B. With the DAG in hand, we can update state (including the DOM) reliably and efficiently.
 
 We saw that applications are built up property by property in small, declarative, functonal formulas. Being small, they are easy to write, debug, and revise. They are functional yet fast, cacheing computations. Cache invalidation is automatic and precise thanks again to the captured DAG.
 
-We saw all this applied to the model as well as to the view, and further to external libraries. The coding "wins" are enjoyed across the whole application.
+We saw all the above applied to the model as well as to the view, and then to external libraries. The coding "wins" are enjoyed across the whole application.
 
-mxWeb&trade; makes web pages easier to build, debug, and revise.   
+And that is how, simply by changing what it means to read and write properties, mxWeb&trade; makes web pages easier to build, debug, and revise.   
 
 #### Postscript: on mutation
 Clojurians understand well the danger of mutation. Via the `re-frame` doc we have:
