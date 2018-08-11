@@ -116,7 +116,7 @@ Part of the mystery was solved when we learned that A could be defined declarati
 
 We then saw that the rewiring automatically captures the fine-grained dependency graph (DAG) implicit in A reading B. With the DAG in hand, we can update state (including the DOM) reliably and efficiently.
 
-We saw that applications are built up property by property in small, declarative, functonal formulas. Being small, they are easy to write, debug, and revise. They are functional yet fast, cacheing computations. Cache invalidation is automatic and precise thanks again to the captured DAG.
+Applications are built up property by property in small, declarative, functonal formulas. Being small, they are easy to write, debug, and revise. They are functional yet fast, caching computations. Cache invalidation is automatic and precise thanks again to the captured DAG.
 
 We saw all the above applied to the model as well as to the view, and then to external libraries. The coding "wins" are enjoyed across the whole application.
 
