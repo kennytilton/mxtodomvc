@@ -143,7 +143,7 @@ Matrix, re-frame, MobX (JS) and other glitch-free reactive libraries make state 
 
 From the [Cells Manifesto](http://smuglispweeny.blogspot.com/2008/02/cells-manifesto.html):
 <blockquote>
-When application code assigns to some input cell X, the Cells engine guarantees:
+When application code assigns a new value to some input cell X, the Cells engine guarantees:
 <ul>
     <li>recomputation exactly once of all and only state affected by the change to X, directly or indirectly through some intermediate datapoint. Note that if A depends on B, and B depends on X, when B gets recalculated it may come up with the same value as before. In this case A is not considered to have been affected by the change to X and will not be recomputed;</li>
     <li>recomputations, when they read other datapoints, must see only values current with the new value of X. Example: if A depends on B and X, and B depends on X, when X changes and A reads B and X to compute a new value, B must return a value recomputed from the new value of X;
