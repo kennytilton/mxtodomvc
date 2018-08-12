@@ -125,26 +125,26 @@ We saw all the above applied to the model as well as to the view, and then to ex
 
 And that is how, simply by changing what it means to read and write properties, mxWeb&trade; makes web pages easier to build, debug, and revise.   
 
-#### Postscript: on mutation
+### Postscript: on mutation
 Clojurians understand well the danger of mutation. Via the `re-frame` doc we have:
 <div style="width:400px">
   <blockquote class="twitter-tweet" lang="en"><p>Well-formed Data at rest is as close to perfection in programming as it gets. All the crap that had to happen to put it there however...</p>&mdash; Fogus (@fogus) <a href="https://twitter.com/fogus/status/454582953067438080">April 11, 2014</a></blockquote>
 </div>
-On the other hand...
+That said...
 
 > "Nothing messes with functional purity quite like the need for side effects. On the other hand, effects are marvelous because they move the app forward." - [re-frame intro](https://github.com/Day8/re-frame)
 
 <img height="350px" align="right" src="/image/tododag400.png?raw=true">
 
-One-way derived graphs are examples of *directed acyclic graphs* or *DAGs*. To the right we see a diagram of perhaps half of the TodoMVC DAG. And TodoMVC is a trivial dataflow problem, with few derived states and unrealistically few input states. Real-world applications have real-world DAGs that defy accurate hand implementation.  
+One-way, dependency graphs are examples of *directed acyclic graphs* or *DAGs*. To the right we see a diagram of perhaps half of the TodoMVC DAG. And TodoMVC is a trivial dataflow problem, with few derived states computing from unrealistically few input states. Real-world applications have real-world DAGs which defy manual propagation.  
 
 Matrix, re-frame, MobX (JS) and other glitch-free reactive libraries make state change coherent and reliable:
 * derived state is functionally declared;
 * state flows "one-way";
 * by recording reads property by property, a detailed dependency graph emerges so...
 * ...when mutations move the app forward, efficiency and consistency are guaranteed. 
-
-From the [Cells Manifesto](http://smuglispweeny.blogspot.com/2008/02/cells-manifesto.html):
+#### Data integrity
+From the [Cells Manifesto](http://smuglispweeny.blogspot.com/2008/02/cells-manifesto.html),our definition of so-called *data integrity*:
 <blockquote>
 When application code assigns a new value to some input cell X, the Cells engine guarantees:
 <ul>
