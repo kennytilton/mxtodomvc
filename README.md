@@ -113,7 +113,7 @@ Can we really program this way? This 80KLOC [Algebra intelligent tutor](https://
 This is the story of another 80KLOC Matrix app, a [clinical drug trial management system](http://smuglispweeny.blogspot.com/2008/03/my-biggest-lisp-project.html) with dataflow extended even deeper into a persistent Lisp object system (CLOS) database.
 
 ### Summary
-We began with a mystery: how does rewiring reads and writes of properties produce a new approach to application development? 
+We began with a mystery: how does rewiring reads and writes yield a new approach to application development? 
 
 Part of the mystery was solved when we learned that A could be defined declaratively as a function of B.
 
