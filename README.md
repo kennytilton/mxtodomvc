@@ -157,7 +157,7 @@ When application code assigns a new value to some input cell X, the Cells engine
 </blockquote>
 
 ## Building TodoMVC from Scratch
-That completes high level look at Matrix, mxWeb, and a bit of TodoMVC. 
+That completes our high level look at Matrix, mxWeb, and a bit of TodoMVC. 
 
 To see the full mxWeb treatment of TodoMVC, switch to the branch "building" in this repo.
 
