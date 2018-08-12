@@ -49,9 +49,9 @@ A few more fundamentals:
 
 Again, some concrete examples...
 #### on-change handlers, or "observers"
-In the example above, the `:class` property of a proxy `li` instance gained or lost the "completed" class as the user toggeled the model to-do's `:completed` property via an `onclick` handler. Great, but how does the actual DOM `li` classlist get changed?
+In the example above, the `:class` property of a proxy `li` instance gained or lost the "completed" string as the user toggleed the model to-do's `:completed` property via an `onclick` handler. Great, but how does the actual DOM `li` classlist get changed?
 
-Changing properties manifest themselves as a useful application via on-change callbacks we call "observers". When `A` changes, an observer can:
+Changing properties manifest themselves via on-change callbacks we call "observers". When `A` changes, an observer can:
 * mutate properties outside the Matrix graph; or
 * enqueue Matrix writes to other properties for execution immediately after the current write.
 
@@ -107,7 +107,7 @@ In the full implementation of TodoMVC we will see even more systems lifted into 
 Matrix enjoys much good company in this field. Other recommended CLJS libraries are [Reagent](https://reagent-project.github.io/), [Hoplon/Javelin](https://github.com/hoplon/javelin), and [re-frame](https://github.com/Day8/re-frame). Beyond CLJS, we admire [MobX](https://github.com/mobxjs/mobx/blob/master/README.md) (JS), [binding.Scala](https://github.com/ThoughtWorksInc/Binding.scala/blob/11.0.x/README.md), and Python [Trellis](https://pypi.org/project/Trellis/). Please let us know about any we missed.
 
 ### Really?
-Can we really program this way? This 80KLOC [Algebra intelligent tutor](https://tiltonsalgebra.com/#) consists of about twelve hundred `A`s and `B`s, and extends into a Postgres database. Everything runs under matrix control. It lifts Qooxdoo JS, MathJax, Postgres and more. The average number of dependencies for one value is a little more than one, and the deepest dependency chain is about a dozen. On complex dispays of many math problems, a little over a thousand values are dependent on other values.
+Can we really program this way? This 80KLOC [Algebra intelligent tutor](https://tiltonsalgebra.com/#) consists of about twelve hundred `A`s and `B`s. Everything runs under Matrix control. It lifts Qooxdoo JS, MathJax, Postgres and more. The average number of dependencies for one value is a little more than one, and the deepest dependency chain is about a dozen. On complex dispays of many math problems, a little over a thousand values are dependent on other values.
 
 This is the story of another 80KLOC Matrix app, a [clinical drug trial management system](http://smuglispweeny.blogspot.com/2008/03/my-biggest-lisp-project.html) with dataflow extended even deeper into a persistent Lisp object system (CLOS) database.
 
