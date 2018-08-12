@@ -19,7 +19,7 @@ The above is an excerpt from TodoMVC, which we will build next. `li` makes a pro
 
 `<mget` is the Matrix property reader that remembers which property is asking. It can be called outside of formulas. Dependencies are detected dynamically, meaning the tracking sees inside function calls. This in turn means we can hide the `<mget` noise behind a simple `(defn td-completed [todo] (<mget todo :completed))`. 
 
-In the next excerpt, the Matrix manages a to-do model property, "model" as in MVC. Note `td-deleted`, hiding an `<mget`. 
+In the next excerpt, the Matrix manages a `to-do` model property, "model" as in MVC. Note `td-deleted`, hiding an `<mget` while still establishing a dependency on the `:completed` property of each `to-do`. 
 ````clojure
 (md/make ::todo-list
     :items-raw (cI nil)
