@@ -8,23 +8,25 @@ mxWeb&trade; makes web pages easier to build, debug, and revise simply by changi
 Mysterious, right? But those are just the essentials. As we expand on them, their expression as a different way of programming front ends will be less surprising. We begin by providing concrete examples of each. 
 
 #### B reads A
-What does it mean for B to read A? It means B is expressed as an HLL function that reads A. 
+What does it mean for B to read A? It means B is expressed as an HLL function that reads A. Colloquially, we call these *formulas*, explaining `cF` or `formulaic cell`.
 ````clojure
 (li
     {:class (cF (when (<mget todo :completed)
                   "completed"))}
     ...)
 ````
-The above is an excerpt from TodoMVC, which we will build next. `li` makes a proxy LI instance. Its API mirrors the HTML syntax `<li attribute*> children* </li>`. `cF` makes `:class` functional. `<mget` is the Matrix property reader that remembers which property is asking.
+The above is an excerpt from TodoMVC, which we will build next. `li` makes a proxy LI instance. Its API mirrors the HTML syntax `<li attribute*> children* </li>`. `cF` makes `:class` functional. 
 
-In the next excerpt, the Matrix manages a model property, "model" as in MVC. `cI` sets that property up to tell functional  properties `:items` when `:items-raw` changes:
+`<mget` is the Matrix property reader that remembers which property is asking. It can be called outside formulas. Dependencies are detected dynamically, meaning the tracking sees inside function calls. We can hide the `<mget` noise behhind a simple `(defn td-completed [todo] (<mget todo :completed))`. 
+
+In the next excerpt, the Matrix manages a model property, "model" as in MVC. Note `td-deleted`, hiding an `<mget`. `cI` sets that property up to tell functional  properties `:items` when `:items-raw` changes:
 ````clojure
 (md/make ::todo-list
     :items-raw (cI nil)
     :items (cF (remove td-deleted (<mget me :items-raw)))
     :empty? (cF (empty? (<mget me :items))))
 ````
-Functional `:items` will tell functional `:empty?` if *it* has changed. We also hide the `<mget` noise behhind a simple `(defn td-deleted [todo] (<mget todo :deleted))`. Dependencies are detected dynamically, meaning the tracking sees inside function calls.
+Functional `:items` will tell functional `:empty?` if *it* has changed. 
 
 Aside: those simple derivations could just be ordinary functions of the to-do list, but these are just two small carveouts in the progressive decomposition of TodoMVC. Our win will be the decomposition, not the size of any particular carveout.
 
