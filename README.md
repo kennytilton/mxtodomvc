@@ -49,9 +49,9 @@ A few more fundamentals:
 
 Again, some concrete examples...
 #### on-change handlers, or "observers"
-In the example above, the `:class` property of a proxy `li` instance gained or lost the "completed" string as the user toggleed the model to-do's `:completed` property via an `onclick` handler. Great, but how does the actual DOM `li` classlist get changed?
+In the example above, the `:class` property of a proxy `li` instance gained or lost the "completed" string as the user toggled the model to-do's `:completed` property via an `onclick` handler. Great, but how does the actual DOM `li` classlist get changed?
 
-Changing properties manifest themselves via on-change callbacks we call "observers". When `A` changes, an observer can:
+Changing properties manifest themselves via on-change callbacks we call *observers*. When `A` changes, an observer can:
 * mutate properties outside the Matrix graph; or
 * enqueue Matrix writes to other properties for execution immediately after the current write.
 
@@ -65,13 +65,14 @@ The mxWeb library provides an observer for maintaining the DOM:
        ...others...
        :class (classlist/set dom new-value))))
 ````
-mxWeb proxy instances know which DOM element they represent, and Matrix change tracking at the property level tells mxWeb precisely which DOM attribute needs updating, obviating the need for VDOM generation and diffing.
+mxWeb proxy instances know which DOM element they represent, and because Matrix tracks change by property we have no need for VDOM or riffing: mxWeb knows exactly what to change.
+
 Notes:
 * we offer no example of a deferred write at this time. Those arise when applications have grown quite large.
-* *caveat lectorum* we use "observer" in the strict dictionary sense: "monitor, not participant". Other libraries use it differently.
+* *caveat lectorum* we use "observer" in the strict dictionary sense: "monitor, not participant". Other libraries use it for what we call dependent or formulaic properties.
 
 #### K for Kids
-Formulas can compute more than mere descriptive properties such as "completed". We might have `K` for "kids" holding the children of some parent, such as the `LI` nodes under a `UL` DOM list. In other words, the population of our application model can grow or shrink with events. 
+Formulas can compute other than merely descriptive properties such as "completed". We might have `K` for "kids" holding the children of some parent, such as the `LI` nodes under a `UL` DOM list. In other words, the population of our application model can grow or shrink with events. 
 
 We call a dynamic population of causally connected models a *matrix*.
 
