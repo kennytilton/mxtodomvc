@@ -144,12 +144,12 @@ Matrix, re-frame, MobX (JS) and other glitch-free reactive libraries make state 
 * by recording reads property by property, a detailed dependency graph emerges so...
 * ...when mutations move the app forward, efficiency and consistency are guaranteed. 
 #### Data integrity
-From the [Cells Manifesto](http://smuglispweeny.blogspot.com/2008/02/cells-manifesto.html),our definition of so-called *data integrity*:
+From the Common Lisp [Cells Manifesto](http://smuglispweeny.blogspot.com/2008/02/cells-manifesto.html), our definition of so-called *data integrity*:
 <blockquote>
 When application code assigns a new value to some input cell X, the Cells engine guarantees:
 <ul>
     <li>recomputation exactly once of all and only state affected by the change to X, directly or indirectly through some intermediate datapoint. Note that if A depends on B, and B depends on X, when B gets recalculated it may come up with the same value as before. In this case A is not considered to have been affected by the change to X and will not be recomputed;</li>
-    <li>recomputations, when they read other datapoints, must see only values current with the new value of X. Example: if A depends on B and X, and B depends on X, when X changes and A reads B and X to compute a new value, B must return a value recomputed from the new value of X;
+    <li>recomputations, when they read other datapoints, must see only values current with the new value of X. Example: if A depends directly on B *and* X, and B itself depends on X, then when X changes and A reads B and X to compute a new value, B must return a value recomputed from the new value of X;
     </li>
     <li> similarly, client observer callbacks must see only values current with the new value of X; and...</li>
     <li>...a corollary: should a client observer write to a datapoint Y, all the above must happen with values current with not just X, but also with the value of Y *prior* to the change to Y.</li>
@@ -157,5 +157,9 @@ When application code assigns a new value to some input cell X, the Cells engine
 </blockquote>
 
 ## Building TodoMVC from Scratch
-That completes our tl;dr distillation of Matrix, mxWeb, and a bit of TodoMVC. A much deeper explication can be found in our annotated, [stepwise evolution of TodoMVC](documentation/InDepth.md).
+That completes high level look at Matrix, mxWeb, and a bit of TodoMVC. 
+
+To see the full mxWeb treatment of TodoMVC, switch to the branch "building" in this repo.
+
+A much deeper explication of mxWeb can be found in our annotated, [stepwise evolution of TodoMVC](documentation/InDepth.md).
 
