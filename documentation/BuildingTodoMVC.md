@@ -3,52 +3,7 @@
 
 > Have you read [the preamble](../README.md) to this write-up? If so, you might want to skip down to "Set Up". If not, you might want to start there for a gentler introduction to Matrix and mxWeb.
 
-The *Matrix* dataflow library endows application state with causal power, freeing us of the burden of propagating change across highly interdependent models. More grandly, it brings our application models to life, animating them in response to streams of external inputs.
-
-We choose *mxWeb* as the vehicle for introducing Matrix because nothing challenges a developer more than keeping application state straight while an intelligent user does their best to use a rich interface correctly. Then marketing wants a U/X overhaul.
-
-> "UIs...I am not going to go there. I don't do that part."  
--- Rich Hickey on the high ratio of code to logic in UIs, *Clojure/Conj 2017*
-
-mxWeb is a thin web un-framework built atop Matrix. We say "un-framework" because mxWeb exists only to wire the DOM for dataflow. The API design imperative is that the MDN reference be the mxWeb reference; mxWeb itself introduces no new architecture.
-
-Matrix does this simply by enhancing how we initialize, read, and write individual properties:
-* properties can be initialized as a literal value or as a function;
-* should some property `A` be initialized with a literal, we can write to it;
-* should a functional property `B` read `A`, `A` remembers `B`;
-* when we write to `A`, `A` tells `B`; and
-* we can supply "on change" callbacks for properties.
-
-What does it mean for one property to read another, for `B` to read `A`? It means declaring `B` as an arbitrary HLL function of `A` and possibly others. In pseudo code:
-````clojure
-B <= (fn [] (+ 42 A C))))
-````
-What does it mean for `A` to tell `B`? `A` makes `B` compute a new value. 
-
-What happens when `B` computes a new value?
-* `B` might have its own dependent properties to tell; and
-* `A` or `B` might also want to act on the world outside the graph of properties. 
-
-> "Nothing messes with functional purity quite like the need for side effects. On the other hand, effects are marvelous because they move the app forward." - [re-frame intro](https://github.com/Day8/re-frame)
-
-A Web game app might use a CLJS map to model a Romulan warship, and have a paired DOM element to render the ship. If `A` is the `cloaked` property of the map warship and it changes, the `hidden` attribute of the DOM warship needs to be added or removed. To this end, Matrix lets us define "on-change" *observers*.
-
-> [observer](https://dictionary.cambridge.org/dictionary/english/observer): noun. UK: /əbˈzɜː.vər/, US: /əbˈzɝː.vɚ/  A person who watches what happens but has no active part in it.
-
-Observers are *monitors* of the dataflow between a graph of properties, not participants in that flow. They act, but they act outside the dataflow graph. *Caveat lector*: the reactive community generally uses "observer"...differently.
-
-#### lifting
-What about X, Y, and Z? i.e., Properties from existing libraries that know nothing about dataflow? We write whatever "glue" code it takes to wire existing libraries with dataflow. We call this "lifting" libraries into the dataflow. 
-
-> Lifting the DOM required about two thousand lines of code. Below we will explore several examples of lifting. 
-
-#### Related work
-> "Derived Values, Flowing" -- the [re-frame](https://github.com/Day8/re-frame/blob/master/README.md) tag-line
-
-Matrix enjoys much good company in this field. We believe Matrix offers more simplicity, transparency, granularity, expressiveness, efficiency, and functional coverage, but in each dimension differs only in degree, not spirit. Other recommended CLJS libraries are [Reagent](https://reagent-project.github.io/), [Hoplon/Javelin](https://github.com/hoplon/javelin), and [re-frame](https://github.com/Day8/re-frame). Beyond CLJS, we admire [MobX](https://github.com/mobxjs/mobx/blob/master/README.md) (JS), [binding.Scala](https://github.com/ThoughtWorksInc/Binding.scala/blob/11.0.x/README.md), and Python [Trellis](https://pypi.org/project/Trellis/). Let us know about any we missed.
-
-#### TodoMVC
-So far, so abstract. Ourselves, we think better in concrete. Let's get "hello, Matrix" running and then start building [TodoMVC](http://todomvc.com) from scratch. 
+Let's get "hello, Matrix" running and then start building [TodoMVC](http://todomvc.com) from scratch. 
 
 The TodoMVC project specifies a trivial Web application as the basis for comparing Web frameworks. We will first satisfy the requirements, then extend the spec to include XHRs. Along the way we will tag milestones so the reader can conveniently visit any stage of development.
 
@@ -66,7 +21,7 @@ This will auto compile and send all changes to the browser without the need to r
 For issues, questions, or comments, ping us at kentilton on gmail, or DM @hiskennyness on Slack in the #Clojurians channel.
 
 ## Building TodoMVC from Scratch
-When starting on a TodoMVC implementation, we execute first just the title and footer as our own little "hello, world". Let us jump now to the commit of that milestone:
+When starting on a TodoMVC implementation, we first execute just the title and footer as our own little "hello, world". Let us jump now to the commit of that milestone:
 ````bash
 git checkout hello-todomx
 ````
