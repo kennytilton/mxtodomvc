@@ -5,7 +5,7 @@ mxWeb&trade; makes web pages easier to build, debug, and revise simply by changi
 * when B reads A, A remembers B; and
 * when we write to A, A tells B.
 
-Mysterious, right? But those are just the essentials. As we expand on them, their expression as a different way of programming front ends will be less surprising. We begin by providing concrete examples of each. 
+Mysterious, right? But those are just the essentials. As we expand on them, their expression as a different way of programming the web will be less surprising. We begin by providing concrete examples of each. 
 
 #### B reads A
 What does it mean for B to read A? It means B is expressed as an HLL function that reads A. Colloquially, we call these *formulas*, explaining `cF` or `formulaic cell`.
