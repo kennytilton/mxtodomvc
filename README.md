@@ -17,7 +17,7 @@ What does it mean for B to read A? It means B is expressed as an HLL function th
 ````
 The above is an excerpt from TodoMVC, which we will build next. `li` makes a proxy LI instance. Its API mirrors the HTML syntax `<li attribute*> children* </li>`. `cF` makes `:class` functional. 
 
-`<mget` is the Matrix property reader that remembers which property is asking. It can be called outside formulas. Dependencies are detected dynamically, meaning the tracking sees inside function calls. We can hide the `<mget` noise behind a simple `(defn td-completed [todo] (<mget todo :completed))`. 
+`<mget` is the Matrix property reader that remembers which property is asking. It can be called outside of formulas. Dependencies are detected dynamically, meaning the tracking sees inside function calls. This in turn means we can hide the `<mget` noise behind a simple `(defn td-completed [todo] (<mget todo :completed))`. 
 
 In the next excerpt, the Matrix manages a model property, "model" as in MVC. Note `td-deleted`, hiding an `<mget`. `cI` sets that property up to tell functional  properties `:items` when `:items-raw` changes:
 ````clojure
