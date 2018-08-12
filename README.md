@@ -8,18 +8,18 @@ mxWeb&trade; makes web pages easier to build, debug, and revise simply by changi
 Mysterious, right? But those are just the essentials. As we expand on them, their expression as a different way of programming the web will be less surprising. We begin by providing concrete examples of each. 
 
 #### B reads A
-What does it mean for B to read A? It means B is expressed as an HLL function that reads A. Colloquially, we call these *formulas*, explaining `cF` or `formulaic cell`.
+What does it mean for B to read A? It means B is expressed as an HLL function that reads A. Colloquially, we call these *formulas*.
 ````clojure
 (li
     {:class (cF (when (<mget todo :completed)
                   "completed"))}
     ...)
 ````
-The above is an excerpt from TodoMVC, which we will build next. `li` makes a proxy LI instance. Its API mirrors the HTML syntax `<li attribute*> children* </li>`. `cF` makes `:class` functional. 
+The above is an excerpt from TodoMVC, which we will build next. `li` makes a proxy LI instance. Its API mirrors the HTML syntax `<li attribute*> children* </li>`. `cF` (for *formulaic cell*) makes `:class` functional. 
 
 `<mget` is the Matrix property reader that remembers which property is asking. It can be called outside of formulas. Dependencies are detected dynamically, meaning the tracking sees inside function calls. This in turn means we can hide the `<mget` noise behind a simple `(defn td-completed [todo] (<mget todo :completed))`. 
 
-In the next excerpt, the Matrix manages a `to-do` model property, "model" as in MVC. Note `td-deleted`, hiding an `<mget` while still establishing a dependency on the `:completed` property of each `to-do`. 
+In the next excerpt, the Matrix manages a `to-do` model property, "model" as in MVC. Note `td-deleted`, hiding an `<mget` while still establishing a dependency on the `:deleted` property of each `to-do`. 
 ````clojure
 (md/make ::todo-list
     :items-raw (cI nil)
