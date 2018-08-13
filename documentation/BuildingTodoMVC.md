@@ -25,10 +25,12 @@ For issues, questions, or comments, ping us at kentilton on gmail, or DM @hisken
 ## Building TodoMVC from Scratch
 When starting on a TodoMVC implementation, we first execute just the title and footer as our own little "hello, world". Let us jump now to the commit of that milestone:
 ````bash
+# Control-D
 git checkout hello-todomx
+lein fig:build
 ````
 Thanks to the miracle of Figwheel, your browser should now look more Todo-ish:
-(insert graphics)
+
 From now on, our cue to check out a new tag will be these headers:
 #### git checkout hello-todomx
 And here is the mxWeb HTML work-aike, look-alike code for "hello, todomx":
