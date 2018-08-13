@@ -70,7 +70,7 @@ Reminder:
 ````bash
 git checkout wall-clock
 ````
-The TodoMVC spec does not include a time or date display. We added a simple "wall clock" because it lets us take a quick, deep dive into mxWeb in just a few lines of code. Here is what we will see:
+We add a simple "wall clock". It is not in the TodoMVC spes, but it lets us take a quick, deep dive into mxWeb in just a few lines of code. Here is what we will see:
 * automatic, transparent state management: our first dataflow;
 * DOM efficiency without VDOM;
 * the mxWeb version of Web Components;
@@ -89,7 +89,7 @@ And now the code. First, the big picture illustrating mxWeb's approach to "Web C
                 (h1 "todos?")
                 (mxtodo-credits)))))
 ````
-The first `wall-clock` shows the date and updates every hour (no, this makes no sense), the second shows the time second by second. And now the component:
+The first `wall-clock` shows the date and updates every hour, the second shows the time second by second. And now the component:
 ````clojure
 (defn wall-clock [mode interval start end]
   (div
@@ -106,16 +106,16 @@ The first `wall-clock` shows the date and updates every hour (no, this makes no 
         :date (.toDateString date))
       (subs date start end))))
 ````
-Now let's work through the bullets above and see how they are manifested in the code above.
+Now let's work through the bullets and see how they are manifested in the code above.
 
 #### automatic, transparent state management
-On every interval, we feed the browser clock epoch into the application Matrix `clock` property. The child string content of the DIV gets regenerated because `clock` changed. There is no explicit publish or subscribe. We simply read with `<mget` and assign with `mset!>`.
+On every interval, we feed the browser clock epoch into the application Matrix `clock` property. The child string content of the DIV gets regenerated because `clock` changed. There is no explicit publish or subscribe; we simply read with `<mget` and assign with `mset!>`.
 #### DOM efficiency without VDOM
-The only DOM update made as the clock ticks is to the innerHTML of the `div`. Property-to-property dataflow means the system knows with fine granularity when and what DOM needs updating.
+As the UI clockticks, the only DOM update made to the innerHTML of the `div`. Property-to-property dataflow tells the system  with fine granularity when and what DOM needs updating.
 #### the mxWeb approach to Web Components
 The function `wall-clock` has four parameters, `[mode interval start end]`. Achieving component reuse with mxWeb differs not at all from parameterizing any Clojure function for maximum utility.
 #### all dataflow all the time: "lifting" components into the Matrix  
-We want to program with dataflow as much as possible, but browsers do not know about Matrix dataflow; we write more or less "glue" code to bring the system clock into the dataflow.  
+We want to program with dataflow as much as possible, but browsers do not know about the Matrix, so we write more or less "glue" code to bring the system clock into the dataflow.  
 ````clojure
 (js/setInterval
     #(mset!> me :clock (util/now))
@@ -160,13 +160,7 @@ Here is the to-do-list container model, set up to take a list of hard-coded init
 ````
 The bulk of the to-do app does not care about deleted to-dos, so we use a clumsy name "items-raw" for the true list of items ever created, and save the name "items" for the ones actually used. `cFn` is short for "formulaic then input", meaning the property is initialized by running the formula and thereafter is set by imperative code.
 
-We can now start our demo matrix off with a few preset to-dos. Some things to note:
-* the optional first "type" parameter ::todoApp is supplied
-* building the matrix DOM is now wrapped in `(cFonce (with-par me ...)`;
-  * `cFonce` effectively defers the enclosed form until the right lifecycle point in the matrix's initial construction.
-  * `with-par me` is how the matrix DOM knows where it is in the matrix tree. All matrix nodes know their parents so they can navigate the tree freely to gather information.
-* the app credits are now provided by a new "web component", and that along with the "wall-clock" reusable are off in their own namespace.
-* most interesting is `(mxu-find-type me ::todoApp)`, a bit of exposed wiring that demonstrates how Matrix elements pull information from elsewhere in the Matrix using various "mx-find-\*" CSS selector-like utilities. 
+We can now start our demo matrix off with a few preset to-dos. 
 
 ````clojure
 (md/make ::md/todoApp
@@ -182,7 +176,9 @@ We can now start our demo matrix off with a few preset to-dos. Some things to no
                     (todo-items-dashboard)
                     (webco/app-credits mxtodo-credits)))))
 ````
-And now the to-do item view itself, the structure and nice CSS authored by the developers of the TodoMVC exercise.
+The TodoMVC credits are now delivered by a new *app-credits* component. More interesting is `(mxu-find-type me ::todoApp)`, a bit of exposed wiring demonstrating how Matrix elements pull information from elsewhere in the Matrix; they navigate to Matrix nodes with the information they need using various "mx-find-\*" CSS selector-like utilities.
+
+And now the to-do item view itself.
 ````clojure
 (defn todo-list-item [todo]
   (li
