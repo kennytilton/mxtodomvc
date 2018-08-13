@@ -36,7 +36,7 @@ And here is the mxWeb HTML work-aike, look-alike code for "hello, todomx":
                 (h1 "todos")
                 (mxtodo-credits)))))
 ````
-The "tags" such as `header` and `h` are CLJS macros. It is *all* CLJS.
+The "tags" such as `section`, `header`, and `h1` are CLJS macros. mxWeb is *all* CLJS.
 
 As with HTML, each mxWeb tag macro takes the same parameters:
 * an optional map of DOM attributes;
@@ -52,7 +52,7 @@ The sharp-eyed reader has spotted an unlikely HTML tag, `mxtodo-credits`. Here i
                   "Inspired by <a href=\"https://github.com/tastejs/todomvc/blob/master/app-spec.md\">TodoMVC</a>."]]
       (p credit))))
 ````
-In other words, mxWeb supports arbitrarily complex, reusable native DOM clusters, aka [Web Components](https://developer.mozilla.org/en-US/docs/Web/Web_Components). `mxtodo-credits` is rather simple, but next up is a function/component taking four parameters to support reuse.
+Hello, [Web Components](https://developer.mozilla.org/en-US/docs/Web/Web_Components). `mxtodo-credits` is rather simple as components go, but next up is one that takes parameters to support reuse.
 
 ### git checkout wall-clock
 Reminder:
@@ -60,13 +60,13 @@ Reminder:
 git checkout wall-clock
 ````
 The TodoMVC spec does not include a time or date display. We added a simple "wall clock" because it lets us take a quick, deep dive into mxWeb in just a few lines of code. Here is what we will see:
-1. automatic state management: our first dataflow;
-1. transparent state management;
-2. DOM efficiency without VDOM complexity;
-3. the mxWeb version of Web Components;
-4. all dataflow all the time: "lifting" components into the Matrix;
-5. a single source of behavior: co-location of model and view; and
-6. the Grail of object reuse.
+* automatic state management: our first dataflow;
+* transparent state management;
+* DOM efficiency without VDOM complexity;
+* the mxWeb version of Web Components;
+* all dataflow all the time: "lifting" components into the Matrix;
+* a single source of behavior: co-location of model and view; and
+* the Grail of object reuse.
 
 And now the code. First, the big picture illustrating mxWeb's approach to "Web Components":
 ````clojure
@@ -98,25 +98,14 @@ The first `wall-clock` shows the date and updates every hour (no, this makes no 
 ````
 Now let's work through the bullets above and see how they are manifested in the code above.
 
-#### 1. automatic state management: our first dataflow  
-> "Any component that uses an atom is automagically re-rendered when its value changes." -- [Reagent](https://reagent-project.github.io/)
+#### automatic, transparent state management
+On every interval, we feed the browser clock epoch into the application Matrix `clock` property. The child string content of the DIV gets regenerated because `clock` changed. There is no explicit publish or subscribe. We simply read with `mget` and assign with `mset!>`.
 
-> "Anything that can be derived from the application state, should be derived. Automatically." -- the [MobX](https://github.com/mobxjs/mobx) philosophy
-
-On every interval, the imperative `mset!>` feeds the browser clock epoch into the application Matrix `clock` property. The child string content of the DIV gets regenerated because `clock` changed. In code we will learn about later, mxWeb knows to reset the innerHTML of the DOM element corresponding to our proxy DIV.
-
-> "Cells automatically and consistently propagate data dependency changes" -- [Hoplon/Javelin](https://github.com/hoplon/hoplon/wiki/Hoplon-Overview)
-#### 2. transparent state management
-> "Instead of worrying about subscribing or “listening” to events and managing the order of callbacks, you just write rules to compute values." -- Python [Trellis](https://pypi.org/project/Trellis/)
-
-There is no explicit publish or subscribe. We simply read with `mget` and assign with `mset!>`. When we get to managing Todo items, we will hide mget/mset!> behind functions. (Dependency tracking sees into function calls.)
-#### 3. DOM efficiency without VDOM cost and complexity
-> "When part of the data source changes, Binding.scala knows about the exact corresponding partial DOM affected by the change." -- binding.Scala [design](https://github.com/ThoughtWorksInc/Binding.scala)
-
-The preceding explains why mxWeb is faster than VDOM; property-to-property dataflow means the system knows with fine granularity when and what DOM needs updating when new inputs hit the Matrix. 
-#### 4. the mxWeb approach to Web Components
-Above we see the function `wall-clock` has four parameters, `[mode interval start end]`. Achieving component reuse with mxWeb differs not at all from parameterizing any Clojure function for maximum utility.
-#### 5. all dataflow all the time: "lifting" components into the Matrix  
+#### DOM efficiency without VDOM
+Property-to-property dataflow means the system knows with fine granularity when and what DOM needs updating when new inputs hit the Matrix. 
+#### the mxWeb approach to Web Components
+The function `wall-clock` has four parameters, `[mode interval start end]`. Achieving component reuse with mxWeb differs not at all from parameterizing any Clojure function for maximum utility.
+#### all dataflow all the time: "lifting" components into the Matrix  
 We want to program with dataflow as much as possible, but browsers do not know about Matrix dataflow. If the component will not come to the Matrix, the Matrix will wrap the component: we write more or less "glue" code to bring it into the datafow.  
 ````clojure
 (js/setInterval
@@ -124,20 +113,20 @@ We want to program with dataflow as much as possible, but browsers do not know a
     interval)
 ````  
 We call such glue "lifting". Lifting the system clock required just a few lines of code. We hinted earlier that mxWeb exemplifies "lifting". That took six hundred lines.
-#### 6. a single source of behavior: co-location of model and view  
+#### a single source of behavior: co-location of model and view  
 Our wall clock widget needs application state, and it generates and relays that state itself. The `clock` property holds the JS epoch, and the 'ticker' property holds a timer driving `clock`. Nearby in the code, a child element consumes the stream of `clock` values. Everything resides together in the source for quick authoring, debugging, revision, and understanding.
   
-#### 7. the Grail of object reuse  
-In classic OOP, objects have rigid slot definitions and semantics. That makes generality hence reuse unlikely. For example, few DIV elements need a stream of clock values, so normally we would need to sub-class DIV to arrange for one. Matrix, like the prototype model of OOP, lets us code up a new dataflow-capable clock property on the fly and attach it to our proxy `div`.
+#### the Grail of object reuse  
+Few DIV elements need a stream of clock values, so normally we would need to sub-class DIV to arrange for one. Matrix, like the prototype model of OOP, lets us code up a new dataflow-capable clock property on the fly and attach it to our proxy `div`.
 
 ### git checkout enter-todos
-As promised, that was a deep first dive. This tag will be much simpler, merely introducing to-dos, unstored, unedited, and not even enterable:
+As promised, that was a deep first dive. This tag will be simpler, adding a bunch more UI structure but no ability to edit or even create todos:
 * we load a few fixed-todos at start-up;
 * we show them in a list;
 * one control lets us toggle a to-do between completed or not; and
 * another control logically deletes a to-do.
 
-Here is tte code to make a to-do. Recall that `cI` is shorthand for making an "input cell", one to which we can assign new values from imperative code in an event handler.
+Here is the code to make a to-do. `cI` is shorthand for making an "input cell", one to which we can assign new values from imperative code in an event handler.
 ````clojure
 (defn make-todo
   "Make a matrix incarnation of a todo item"
@@ -150,7 +139,7 @@ Here is tte code to make a to-do. Recall that `cI` is shorthand for making an "i
     :completed (cI nil)
     :deleted (cI nil)))
 ````
-The only slots demanded by the spec are "title" and a boolean "completed", but as experienced CRUD developers we went further in ways not important to this exercise. Note that apparent booleans will in fact be nil or timestamps, so no "?" suffixes.
+Apparent booleans like `:completed` will in fact be nil or timestamps, so no "?" suffixes.
 
 Here is the to-do-list container model, set up to take a list of hard-coded initial to-dos to get us rolling:
 ````clojure
@@ -160,7 +149,7 @@ Here is the to-do-list container model, set up to take a list of hard-coded init
                       (make-todo to-do})))
     :items (cF (doall (remove td-deleted (<mget me :items-raw))))))
 ````
-The bulk of the to-do app does not care about deleted to-dos, so we use a clumsy name "items-raw" for the true list of items ever created, and save the name "items" for the ones actually used. `cFn` is short for "formulaic then input", meaning the property is initialized by running the
+The bulk of the to-do app does not care about deleted to-dos, so we use a clumsy name "items-raw" for the true list of items ever created, and save the name "items" for the ones actually used. `cFn` is short for "formulaic then input", meaning the property is initialized by running the formula and thereafter is set by imperative code.
 
 We can now start our demo matrix off with a few preset to-dos. Some things to note:
 * the optional first "type" parameter ::todoApp is supplied
@@ -240,25 +229,7 @@ Other things the reader might notice:
 * `doall` in various formulas may soon be baked in to Matrix, because lazy evaluation breaks dependency tracking.  
 Recall that Matrix works by changing what happens when we read properties. The internal mechanism is to bind a formula to `*depender*` when kicking off its rule. With lazy evaluation, that binding is gone by the time the read occurs.
 
-We can now play with toggling the completion state of to-dos, deleting them directly, or deleting them with the "clear completed" button, keeping an eye on "items remaining". Consider now what happens when we click the completion toggle of the view displaying an uncompleted todo:
-* the completed property of the associated model gets set to the current JS epoch;
-* the class of the todo list item view gets recomputed because it read that :completed property. It changes to "completed";
-* the LI DOM element classList gets set to "completed" by an mxWeb observer;
-* the :content property formula of the "Items remaining" span recounts the list of todos filtering out the completed and comes up with one less;
-* an mxWeb observer updates the span innerHTML to the new "remaining" count;
-* the :items-completed property on the todos list model container gets recalculated because it reads the :completed property of *all* todo item models. It grows by one;
-* the :hidden property of the "Clear completed" button/map gets recalculated because it reads the :items-completed property of the list of todos. If the length changes either way between zero and one, the :class property gains or loses the "hidden" value and...
-* an mxWeb observer updates the classList of the DOM element corresponding to the "Clear completed" button.
-
-All that happens when this code executes:
-````clojure
-(mset!> td :deleted (now))
-````
-We will spare the reader our detailed analysis of what happens when we click the "delete" button (the red "X" that appears on hover), but the reader might want to work out for themselves the dataflow from the :deleted property to these behaviors:
-* the item disappears;
-* if the item was incomplete when deleted, the "Items remaining" drops by one;
-* if the item was the only completed item, "Clear completed" disappears;
-* if the item was the last of any kind, the dashboard disappears.
+We can now play with toggling the completion state of to-dos, deleting them directly, or deleting them with the "clear completed" button, keeping an eye on "items remaining".  
 
 Next up: the spec requires a bit of routing.
 
@@ -314,13 +285,8 @@ Earlier we emphasized that mxWeb is an "un-framework". With this tag we add supp
                                 (make-todo title)))
                             (form/setValue (.-target %) "")))}))
 ````
-The token `%` of course is the raw DOM event. In a different handler we will see manipulation of the DOM classlist. Not every library allows easy access to the DOM, especially those such as ReactJS where we declaratively author VDOM. With ReactJS, accessing the DOM is a [heavier lift](https://reactjs.org/docs/refs-and-the-dom.html#callback-refs).
+The token `%` is the raw DOM event. In a different handler we will see manipulation of the DOM classlist. 
 
-Speaking of raw DOM events, ReactJS hides those as well because ReactJS cannot handle their semantics. Example: `on-change` events fire on every keystroke on an input field. The MDN standard is that `on-change` fire only on blur or when the user hits enter, indicating they have completed their entry.
-
-\<soapbox\>
-ReactJS and every one of the [sixty-four submissions](http://todomvc.com/) to TodoMVC framework add a lot of value, but they also add their own baggage, and, like the Tower of Babel, segment the developer community, and limit library reuse. We need a front-end version of NoSQL.
-\</soapbox\>
 #### git checkout lifting-xhr
 Before concluding, we look at an especially interesting example of lifting: XHR, affectionately known as Callback Hell. We do so exceeding the official TodoMVC spec to alert our user of any to-do item that returns results from a search of of the FDA [Adverse Events database](https://open.fda.gov/data/faers/).
 
