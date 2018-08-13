@@ -38,11 +38,20 @@ And here is the mxWeb HTML work-aike, look-alike code for "hello, todomx":
                 (h1 "todos")
                 (mxtodo-credits)))))
 ````
-The "tags" such as `section`, `header`, and `h1` are CLJS macros. mxWeb is *all* CLJS.
+The "tags" such as `section`, `header`, and `h1` are CLJS macros. mxWeb is *all* CLJS. 
 
-As with HTML, each mxWeb tag macro takes the same parameters:
+Just to complete the picture, and without further discussion, the above gets installed in our Web page thus:
+````clojure
+(let [root (dom/getElement "tagroot")
+      app-matrix (matrix-build)]
+  (set! (.-innerHTML root) nil)
+  (dom/appendChild root
+    (tag-dom-create
+      (<mget app-matrix :mx-dom))))
+````
+Back to the TodoMVC code. As with HTML, each mxWeb tag macro takes the same parameters:
 * an optional map of DOM attributes;
-* unique to mxWeb, an optional map of custom application properties; and
+* unique to mxWeb, and omitted here, an optional map of custom application properties; and
 * any number of child elements.
 
 The sharp-eyed reader has spotted an unlikely HTML tag, `mxtodo-credits`. Here is the code for that:
