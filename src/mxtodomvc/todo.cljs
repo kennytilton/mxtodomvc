@@ -3,7 +3,7 @@
     [tiltontec.util.core :as util]
     [tiltontec.cell.core
      :refer-macros [cF cFn] :refer [cI]]
-    [tiltontec.model.core :as md :refer [make <mget mset!>]]))
+    [tiltontec.model.core :as md :refer [make <mget mset!> mswap!>]]))
 
 (declare td-deleted td-completed make-todo)
 
@@ -78,5 +78,5 @@
   (mset!> td :deleted (util/now)))
 
 (defn td-toggle-completed! [td]
-  (mswapt!> td :completed
+  (mswap!> td :completed
     #(when-not % (util/now))))
