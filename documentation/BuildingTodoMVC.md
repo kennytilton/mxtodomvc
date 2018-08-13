@@ -1,11 +1,13 @@
 # Building TodoMVC, with Matrix Inside&trade;
-*An introduction by example to Matrix dataflow and mxWeb*, continued
+*An introduction by example to Matrix dataflow and mxWeb, continued*
 
-> Have you read [the preamble](../README.md) to this write-up? If not, you might want to start there for a gentler introduction to Matrix and mxWeb.
+The [TodoMVC](http://todomvc.com) project specifies a trivial Web application as the basis for comparing Web frameworks. In [the preamble](../README.md) to this write-up, we looked at what makes programming with Matrix and mxWeb different, only lightly touching on mxTodoMVC code. 
 
-Let's get "hello, Matrix" running and then start building [TodoMVC](http://todomvc.com) from scratch. 
+> If you have not read that preamble, you might want to start there for a gentler introduction to Matrix and mxWeb.
 
-The TodoMVC project specifies a trivial Web application as the basis for comparing Web frameworks. We will first satisfy the requirements, then extend the spec to include XHRs. Along the way we will tag milestones so the reader can conveniently visit any stage of development.
+In this write-up, we will checkout a series of git tags marking milestones along our incremental evolution of TodoMVC. At each stage we will review the new code, but not delve too deeply into the mxWeb mechanics. That we will save for a final, [detailed exploration](InDepth.md) for those of us who need to see all the moving parts to be comfortable with high level APIs, especially those that seem like magic.
+
+Let's get "hello, Matrix" running and start building TodoMVC from scratch. 
 
 ## Set-Up
 
