@@ -62,12 +62,11 @@ Reminder:
 git checkout wall-clock
 ````
 The TodoMVC spec does not include a time or date display. We added a simple "wall clock" because it lets us take a quick, deep dive into mxWeb in just a few lines of code. Here is what we will see:
-* automatic state management: our first dataflow;
-* transparent state management;
-* DOM efficiency without VDOM complexity;
+* automatic, transparent state management: our first dataflow;
+* DOM efficiency without VDOM;
 * the mxWeb version of Web Components;
 * all dataflow all the time: "lifting" components into the Matrix;
-* a single source of behavior: co-location of model and view; and
+* a single source of behavior (SSB): co-location of model and view; and
 * the Grail of object reuse.
 
 And now the code. First, the big picture illustrating mxWeb's approach to "Web Components":
@@ -101,25 +100,24 @@ The first `wall-clock` shows the date and updates every hour (no, this makes no 
 Now let's work through the bullets above and see how they are manifested in the code above.
 
 #### automatic, transparent state management
-On every interval, we feed the browser clock epoch into the application Matrix `clock` property. The child string content of the DIV gets regenerated because `clock` changed. There is no explicit publish or subscribe. We simply read with `mget` and assign with `mset!>`.
-
+On every interval, we feed the browser clock epoch into the application Matrix `clock` property. The child string content of the DIV gets regenerated because `clock` changed. There is no explicit publish or subscribe. We simply read with `<mget` and assign with `mset!>`.
 #### DOM efficiency without VDOM
-Property-to-property dataflow means the system knows with fine granularity when and what DOM needs updating when new inputs hit the Matrix. 
+The only DOM update made as the clock ticks is to the innerHTML of the `div`. Property-to-property dataflow means the system knows with fine granularity when and what DOM needs updating.
 #### the mxWeb approach to Web Components
 The function `wall-clock` has four parameters, `[mode interval start end]`. Achieving component reuse with mxWeb differs not at all from parameterizing any Clojure function for maximum utility.
 #### all dataflow all the time: "lifting" components into the Matrix  
-We want to program with dataflow as much as possible, but browsers do not know about Matrix dataflow. If the component will not come to the Matrix, the Matrix will wrap the component: we write more or less "glue" code to bring it into the datafow.  
+We want to program with dataflow as much as possible, but browsers do not know about Matrix dataflow; we write more or less "glue" code to bring the system clock into the dataflow.  
 ````clojure
 (js/setInterval
     #(mset!> me :clock (util/now))
     interval)
 ````  
-We call such glue "lifting". Lifting the system clock required just a few lines of code. We hinted earlier that mxWeb exemplifies "lifting". That took six hundred lines.
-#### a single source of behavior: co-location of model and view  
-Our wall clock widget needs application state, and it generates and relays that state itself. The `clock` property holds the JS epoch, and the 'ticker' property holds a timer driving `clock`. Nearby in the code, a child element consumes the stream of `clock` values. Everything resides together in the source for quick authoring, debugging, revision, and understanding.
+We call such glue "lifting". Lifting the system clock required just a few lines of code. We hinted earlier that mxWeb exemplifies lifting. That took six hundred lines.
+#### a single source of behavior (SSB): co-location of model and view  
+Our wall clock widget needs application state, and it generates and relays that state itself. The `clock` property holds the JS epoch, and the 'ticker' property holds a timer driving `clock`. Nearby in the code, a child element consumes the stream of `clock` values. Everything resides together in the source for quick authoring, debugging, revision, and understanding. We call this having a *single source of behavior*, or SSB.
   
 #### the Grail of object reuse  
-Few DIV elements need a stream of clock values, so normally we would need to sub-class DIV to arrange for one. Matrix, like the prototype model of OOP, lets us code up a new dataflow-capable clock property on the fly and attach it to our proxy `div`.
+Few DIV elements need a stream of clock values. In a rigid OOP framework, we would need to sub-class DIV to arrange for one. Matrix, like the prototype model of OOP, lets us code up a new dataflow-capable clock property on the fly and attach it to our proxy `div`.
 
 ### git checkout enter-todos
 As promised, that was a deep first dive. This tag will be simpler, adding a bunch more UI structure but no ability to edit or even create todos:
