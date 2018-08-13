@@ -27,6 +27,8 @@ When starting on a TodoMVC implementation, we first execute just the title and f
 ````bash
 git checkout hello-todomx
 ````
+Thanks to the miracle of Figwheel, your browser should now look more Todo-ish:
+(insert graphics)
 From now on, our cue to check out a new tag will be these headers:
 #### git checkout hello-todomx
 And here is the mxWeb HTML work-aike, look-alike code for "hello, todomx":
@@ -70,7 +72,8 @@ Reminder:
 ````bash
 git checkout wall-clock
 ````
-We add a simple "wall clock". It is not in the TodoMVC spes, but it lets us take a quick, deep dive into mxWeb in just a few lines of code. Here is what we will see:
+(insert graphic)
+We add a simple "wall clock". It is not in the TodoMVC spec, but it lets us take a quick, deep dive into mxWeb in just a few lines of code. Here is what we will see:
 * automatic, transparent state management: our first dataflow;
 * DOM efficiency without VDOM;
 * the mxWeb version of Web Components;
