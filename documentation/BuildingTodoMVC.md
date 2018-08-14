@@ -215,10 +215,10 @@ Elsewhere we find the "change" dataflow initiators:
   (mset!> td :deleted (util/now)))
 
 (defn td-toggle-completed! [td]
-  (mset!> td :completed
-    (when-not (td-completed td) (util/now))))
+  (mswap!> td :completed
+    #(when-not % (util/now))))
 ````
-We may as well get what we call the dashboard out of the way (without the selectors if you know your TodoMVC) because it adds a lot of behavior without any more Matrix complexity:
+We execute a simple dashboard as well, without the filters just yet:
 ````clojure
 (defn todo-items-dashboard []
   (footer {:class  "footer"
@@ -242,10 +242,7 @@ In support of the above we extend the model of the to-do list with more dataflow
     :items-completed (cF (doall (filter td-completed (<mget me :items))))
     :empty? (cF (empty? (<mget me :items)))))
 ````
-Other things the reader might notice:
-* `mx-todos` and `mx-todo-items` wrap the complexity of navigating the Matrix to find desired data;
-* `doall` in various formulas may soon be baked in to Matrix, because lazy evaluation breaks dependency tracking.  
-Recall that Matrix works by changing what happens when we read properties. The internal mechanism is to bind a formula to `*depender*` when kicking off its rule. With lazy evaluation, that binding is gone by the time the read occurs.
+`mx-todos` and `mx-todo-items` wrap the complexity of navigating the Matrix to find that desired data.
 
 We can now play with toggling the completion state of to-dos, deleting them directly, or deleting them with the "clear completed" button, keeping an eye on "items remaining".  
 
