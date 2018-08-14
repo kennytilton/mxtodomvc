@@ -20,8 +20,6 @@ lein fig:build
 ````
 This will auto compile and send all changes to the browser without the need to reload. After the compilation process is complete, you will get a Browser Connected REPL. A web page should appear on a browser near you with a header saying just "hello, Matrix".
 
-<img height="48px" align="center" src="pix/hello-matrix.png?raw=true">
-
 For issues, questions, or comments, ping us at kentilton on gmail, or DM @hiskennyness on Slack in the #Clojurians channel.
 
 ## Building TodoMVC from Scratch
@@ -97,7 +95,7 @@ And now the code. First, the big picture illustrating mxWeb's approach to "Web C
                 (h1 "todos?")
                 (mxtodo-credits)))))
 ````
-The first `wall-clock` shows the date and updates every hour, the second shows the time second by second. And now the component:
+The first `wall-clock` shows the date and updates every hour, the second shows the time second by second. And now the function "component":
 ````clojure
 (defn wall-clock [mode interval start end]
   (div
@@ -119,9 +117,9 @@ Now let's work through the bullets and see how they are manifested in the code a
 #### automatic, transparent state management
 On every interval, we feed the browser clock epoch into the application Matrix `clock` property. The child string content of the DIV gets regenerated because `clock` changed. There is no explicit publish or subscribe; we simply read with `<mget` and assign with `mset!>`.
 #### DOM efficiency without VDOM
-As the UI clock ticks, the only DOM update made is to set the innerHTML of the `div`. Property-to-property dataflow tells us with fine granularity exactly what DOM changes must be made.
+As the UI clock ticks, the only DOM update made is to set the innerHTML of the `div`. Property-to-property dataflow tells mxWeb with fine granularity exactly what DOM to change.
 #### the mxWeb approach to Web Components
-The function `wall-clock` has four parameters, `[mode interval start end]`. mxWeb "components" are as flexible as any Clojure function we care to define.
+The function `wall-clock` has four parameters, `[mode interval start end]`. mxWeb "components" are as flexible as any Clojure function interface.
 #### all dataflow all the time: "lifting" components into the Matrix  
 Browsers do not know about the Matrix, so we write more or less "glue" code to bring the system clock into the dataflow.  
 ````clojure
@@ -246,7 +244,7 @@ In support of the above we extend the model of the to-do list with more dataflow
 
 We can now play with toggling the completion state of to-dos, deleting them directly, or deleting them with the "clear completed" button, keeping an eye on "items remaining".  
 
-Next up: the spec requires a bit of routing.
+Next up, a bit of routing.
 
 #### lift-routing
 The official TodoMVC spec requires a routing mechanism be used to implement the user filtering of which to-dos are displayed, based on their completion status. The options are "all", "completed" only, and "active" (incomplete) only.
@@ -271,7 +269,7 @@ The declarative code just reads the route, a property of the root node of the ma
                        :items)))]
         (todo-list-item todo)))))
 ````
-One popular CLJS routing library is [bide](https://github.com/funcool/bide). Bide knows nothing about Matrix dataflow, so we have a bit of glue to write to make the `:route` property dataflow-ready.
+One popular CLJS routing library is [bide](https://github.com/funcool/bide). Bide knows nothing about Matrix dataflow, so we have a bit of glue to write:
 ````clojure
 (md/make ::md/todoApp
       .....
@@ -292,7 +290,7 @@ Just two steps are required:
 The routing change then causes the list view to recompute which items to display, and an observer on the `UL` children arranges for the DOM to be updated.
 
 #### todo-entry
-Earlier we emphasized that mxWeb is an "un-framework". With this tag we add support for user entry of new to-dos, and illustrate one advantage of not being a framework: mxWeb does not hide the DOM. Our next feature -- allowing the user to enter the to-dos -- benefits a couple of places from direct DOM and event access.
+We have called mxWeb an "un-framework". With this tag we add support for user entry of new to-dos, and illustrate one advantage of not being a framework: mxWeb does not hide the DOM. Our next feature -- allowing the user to enter the to-dos -- benefits a couple of places from direct DOM and event access.
 ````bash
 # Control-D
 git checkout todo-entry
@@ -317,12 +315,14 @@ mxWeb callbacks are passed the raw browser event, above accessed as the token `%
 
 #### lifting-xhr
 Now an especially interesting example of lifting: XHR, affectionately known as Callback Hell. We do so exceeding the official TodoMVC spec to alert our user of any to-do item that returns results from a search of the FDA [Adverse Events database](https://open.fda.gov/data/faers/).
+
+If you enter a new to-do, it will appear with a gray alert icon, gray signifying undecided. If no adverse events are found, the alert disappears. If any are found, it turns red. (You will also observe excessive such lookups, to be addressed next.)
 ````bash
 # Control-D
 git checkout lifting-xhr
 lein fig:build
 ````
-Our treatment to date of [the XHR lift](https://github.com/kennytilton/matrix/tree/master/cljs/mxxhr) is technically minimal but the test suite includes clean dataflow solutions to several Hellish use cases. Our use case here is trivial, just a simple XHR query to the FDA API and one response, 200 indicating results found, 404 not. Notes follow the code.
+Our treatment to date of [the XHR lift](https://github.com/kennytilton/matrix/tree/master/cljs/mxxhr) is technically minimal but the test suite includes clean dataflow solutions to several Hellish use cases. Our use case here is trivial, just a simple XHR query to the FDA API and one response bound to success or error information.
 ````clojure
 (defn adverse-event-checker [todo]
   (i
@@ -375,7 +375,7 @@ Notes:
 
 > If you play with new to-dos, do *not* be alarmed by red warnings: all drugs have adverse events, and the FDA search is aggressive: cats have adverse events. Dogs are fine.
 
-You will also note an inefficiency to be addressed in the next section: every to-do gets looked up anew each time the list changes. Let us fix that.
+Now let's fix the excess look-ups.
 #### family-values
 A matrix is a simple tree formed of single parents with multiple so-called `kids`, a nice short name for children. When the list changes incrementally and the children are mxWeb widgets, the mxWeb observer will be rebuilding those hefty widgets on each small change.
 ````bash
@@ -383,7 +383,7 @@ A matrix is a simple tree formed of single parents with multiple so-called `kids
 git checkout family-values
 lein fig:build
 ````
-To prevent this excess, Matrix has a small API we call "family values" after the [Charles Addams-inspired movie](https://www.youtube.com/watch?v=IHgfQ-0lYbg). The idea is to compute a collection of key values and provide a factory function to be called with the key value to produce mxWeb instances only as needed after diffing the key values.
+To prevent this excess, Matrix has a small API we call "family values" after the [Charles Addams-inspired movie](https://www.youtube.com/watch?v=IHgfQ-0lYbg). The idea is to compute a collection of keys and provide a factory function to be called with a key, to produce mxWeb instances only as needed after diffing the keys.
 ````clojure
 (defn todo-items-list []
   (section {:class "main"}
@@ -401,7 +401,7 @@ To prevent this excess, Matrix has a small API we call "family values" after the
       ;; cache is prior value for this implicit 'kids' slot; k-v-k uses it for diffing
       (kid-values-kids me cache))))
 ````
-Our key is the abstract to-do model. `cache` above is a variable supplied by the `cF` macro. It will be bound to the prior computation for a formula, or the symbol `unbound` on the first invocation. `kid-values-kids` does the work of diffing new and prior values and calling the factory as needed for new values.
+Our key is the abstract to-do model. `cache` above is a variable supplied by the `cF` macro. It will be bound to the prior computation for a formula, or the symbol `unbound` on the first invocation. `kid-values-kids` does the work of diffing new and prior key lists and calling the factory as needed for new keys.
 
 We do not offer a diagram here because this you have to see live: when you add an item, you will see an AE lookup executed only for the new item. When you delete an item, no lookups will be executed. Before this version, all to-dos were looked up on each change.
 
@@ -466,7 +466,7 @@ Finally, we have dropped in one last feature from the TodoMVC spec that makes li
       "Mark all as complete")))
 ````
 #### The missing TodoMVC requirement: lifting local-storage
-Nothing will be added by implementing persistence, but if you are curious you can check out [mxLocalStorag](https://github.com/kennytilton/matrix/blob/master/js/matrix/js/Matrix/mxWeb.js) at the very end of the source from our Javascript implementation of mxWeb. 
+Nothing will be added by implementing persistence, but if you are curious you can check out [mxLocalStorage](https://github.com/kennytilton/matrix/blob/master/js/matrix/js/Matrix/mxWeb.js) at the very end of the source from our Javascript implementation of mxWeb. 
 
 ## Summary
-That completes our implementation of the TodoMVC spec. In our next in-depth write-up of mxWeb, we will look more closely at certain elements to fully lift any sense of mystery created by the dataflow paradigm.
+That completes our implementation of the TodoMVC spec. In our next [in-depth write-up](InDepth.md) of mxWeb, we will look more closely at certain elements to fully lift any sense of mystery created by the dataflow paradigm.
