@@ -146,7 +146,7 @@ lein fig:build
 ````
 <img height="384px" align="center" src="pix/enter-todos.png?raw=true">
 
-Here is the code to make a to-do. `cI` is shorthand for making an "input cell", one to which we can assign new values from imperative code in an event handler.
+Here is the code to make a to-do *model*. `cI` is shorthand for "input cell", one to which we can imperatively assign values in an event handler.
 ````clojure
 (defn make-todo
   "Make a matrix incarnation of a todo item"
@@ -230,6 +230,8 @@ We execute a simple dashboard as well, without the filters just yet:
                          (td-delete! td))}
       "Clear completed")))
 ````
+Both `hidden` properties address spec requirements, and are implemented precisely by just adding or removing the DOM hidden attribute. The `content` is adjusted with no more than setting `innerHTML`.
+
 In support of the above we extend the model of the to-do list with more dataflow properties:
 ````clojure
 (defn todo-list [seed-todos]
@@ -354,7 +356,9 @@ Our treatment to date of [the XHR lift](https://github.com/kennytilton/matrix/tr
     "warning"))
 ````
     
-That is the application code. To see where the response dataflow starts we must look at mxXHR libary internals. (Look for the `mset!>`; as for `with-cc`, we touch on that below):
+That is the application code, a powerful example of the SSB *single source* principle. Add or remove that block of code to completely swap in/out all concerns. 
+
+To see where the response dataflow starts we must look at mxXHR libary internals. (Look for the `mset!>`; as for `with-cc`, we touch on that below):
 ````clojure
 (defn xhr-send [xhr]
   (go
@@ -442,7 +446,7 @@ And now the handler, where DOM access is substantial:
 ````
 While the above seems like there should be a better way, we see the same code in many TodoMVC solutions, probably for the reason documented in a comment above: browsers deliver an extraneous blur event when halting editing. We ensure these are ignored by directly altering the DOM classlist instead of going through the mxWeb/Matrix lifecycle, which removes the "editing" class too late to head off the extra blur.
 
-Finally, we have dropped in one last feature from the TodoMVC spec that makes little U/X sense but does let us demonstrate how me hacked around some unhelpful browser behavior, viz., overriding our own manipulation of a checkbox's checked status.
+Finally, we have dropped in one last feature from the TodoMVC spec that makes little U/X sense but does let us demonstrate how we hacked around some unhelpful browser behavior, viz., overriding our own manipulation of a checkbox's checked status.
 ````clojure
 (defn toggle-all []
   (div {} {;; 'action' is an ad hoc bit of intermediate state that will be used to decide the
