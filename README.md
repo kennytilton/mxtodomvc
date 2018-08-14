@@ -162,5 +162,5 @@ That completes our high level look at Matrix, mxWeb, and a bit of TodoMVC.
 
 To see the full mxWeb treatment of TodoMVC, switch to the branch "building" in this repo.
 
-A much deeper explication of mxWeb can be found in our annotated, [stepwise evolution of TodoMVC](documentation/InDepth.md).
+A much deeper explication of mxWeb can be found in our annotated, [stepwise evolution of TodoMVC](documentation/BuildingTodoMVC.md).
 
