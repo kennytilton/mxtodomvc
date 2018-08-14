@@ -248,8 +248,14 @@ We can now play with toggling the completion state of to-dos, deleting them dire
 
 Next up: the spec requires a bit of routing.
 
-#### git checkout lift-routing
-The official TodoMVC spec requires a routing mechanism be used to implement the user filtering of which to-dos are displayed, based on their completion status. The options are "all", "completed" only, and "active" (incomplete) active only.
+#### lift-routing
+The official TodoMVC spec requires a routing mechanism be used to implement the user filtering of which to-dos are displayed, based on their completion status. The options are "all", "completed" only, and "active" (incomplete) only.
+````bash
+# Control-D
+git checkout lift-routing
+lein fig:build
+````
+<img height="384px" align="center" src="pix/lift-routing.png?raw=true">
 
 The declarative code just reads the route, a property of the root node of the matrix:
 ````clojure
@@ -285,8 +291,15 @@ Just two steps are required:
 
 The routing change then causes the list view to recompute which items to display, and an observer on the `UL` children arranges for the DOM to be updated.
 
-#### git checkout todo-entry
-Earlier we emphasized that mxWeb is an "un-framework". With this tag we add support for user entry of new to-dos, and illustrate one advantage of not being a framework: mxWeb does not hide the DOM.
+#### todo-entry
+Earlier we emphasized that mxWeb is an "un-framework". With this tag we add support for user entry of new to-dos, and illustrate one advantage of not being a framework: mxWeb does not hide the DOM. Our next feature -- allowing the user to enter the to-dos -- benefits a couple of places from direct DOM and event access.
+````bash
+# Control-D
+git checkout todo-entry
+lein fig:build
+````
+<img height="384px" align="center" src="pix/todo-entry.png?raw=true">
+
 ````clojure
 (defn todo-entry-field []
   (input {:class       "new-todo"
@@ -302,7 +315,7 @@ Earlier we emphasized that mxWeb is an "un-framework". With this tag we add supp
 ````
 The token `%` is the raw DOM event. In a different handler we will see manipulation of the DOM classlist. 
 
-#### git checkout lifting-xhr
+#### lifting-xhr
 Before concluding, we look at an especially interesting example of lifting: XHR, affectionately known as Callback Hell. We do so exceeding the official TodoMVC spec to alert our user of any to-do item that returns results from a search of of the FDA [Adverse Events database](https://open.fda.gov/data/faers/).
 
 Our treatment to date of [the XHR lift](https://github.com/kennytilton/matrix/tree/master/cljs/mxxhr) is technically minimal but the test suite includes clean dataflow solutions to several Hellish use cases. Our use case here is trivial, just a simple XHR query to the FDA API and one response, 200 indicating results found, 404 not. Notes follow the code.
@@ -370,27 +383,10 @@ Notes:
 * the color and display style properties decide on new values;
 * mxWeb does its thing and the warning disappears or turns red.
 
-If you play with new to-dos, do *not* be alarmed by red warnings: all drugs have adverse events, and the FDA search is aggressive. You will also note an inefficiency we address in the next section, viz. that each to-do gets looked up anew each time the list changes. But first...
+> If you play with new to-dos, do *not* be alarmed by red warnings: all drugs have adverse events, and the FDA search is aggressive: cats have adverse events. Dogs are fine.
 
-Matrix dataflow neutralizes the Hell of asynchronous callbacks because Matrix was created to propagate change gracefully. The `mset!>` of an asynchronously received response into the Matrix graph differs not at all from a user deciding to click their mouse or press a key. In either case, Matrix guarantees smooth, consistent propagation of the change throughout the graph of connected properties in accordance with what we call *datafow integrity*.
-
-#### single source of behaviour
-The XHR example is a great example of a quality we have barely touched on. When programming wuth mxWeb we benefit from having what we call a *single source of behavior* (SSB), with "source" as an unintended but welcome pun. The component `adverse-event-checker` is almost perfectly self-sufficient. It specifies the HTML, the semantics, the dynamic styling, and the XHR handling. It connects to the dataflow through the to-do `title` property and by generating style changes to reflect the FDA lookup response.
-
-We find SSB a natural way to build applications. Authoring, debugging, and refactoring all go faster when related things are found together, or *co-located*, in the source
-
-#### dataflow integrity
-From the [Cells Manifesto](http://smuglispweeny.blogspot.com/2008/02/cells-manifesto.html), when application code assigns to some input cell X, the Cells engine guarantees:
-* recomputation exactly once of all and only state affected by the change to X, directly or indirectly through some intermediate datapoint. Note that if A depends on B, and B depends on X, when B gets recalculated it may come up with the same value as before. In this case A is not considered to have been affected by the change to X and will not be recomputed;
-* recomputations, when they read other datapoints, must see only values current with the new value of X. Example: if A depends on B and X, and B depends on X, when X changes and A reads B and X to compute a new value, B must return a value recomputed from the new value of X;
-* similarly, client observer callbacks must see only values current with the new value of X; and...
-* ...a corollary: should a client observer write to a datapoint Y, all the above must happen with values current with not just X, but also with the value of Y *prior* to the change to Y.
-* deferred "client" code must see only values current with X and not any values current with some subsequent change to Y queued by an observer.
-
-The astute reader will be surprised that observers, so carefully defined earlier *not* to be participants in the dataflow, are free to *initiate* dataflow. We make a careful distinction: they are allowed to do only as outsiders. The changes they initiate must be enqueued for execution *after* the change they are observing, as if they were event handlers initiating change.
-
-As much fun as it was watching multiple async responses flow into the Matrix because we rebuilt all LIs to add or remove one, let us now fix that excess.
-#### git checkout family-values
+You will also note an inefficiency to be addressed in the next section: every to-do gets looked up anew each time the list changes. Let us fix that.
+#### family-values
 A matrix is a simple tree formed of single parents with multiple so-called `kids`, a nice short name for children. Normally we just list the kids, but when the list changes incrementally and the children are mxWeb widgets, the mxWeb observer will be rebuilding those hefty widgets and rebuilding the DOM on each small change.
 
 To prevent this excess, Matrix has a small API we call "family values" after the [Charles Addams-inspired movie](https://www.youtube.com/watch?v=IHgfQ-0lYbg). The idea is to compute a collection of key values and then provide a factory function to be called with the key value to produce mxWeb instances only as needed after diffing the lists of key values.
@@ -415,7 +411,7 @@ Our key value is the abstract to-do model. `cache` above is a variable available
 
 Now when you add or remove items, you will see AE lookups executed only for added items.
 
-#### git checkout ez-dom
+#### ez-dom: editing an existing to-do
 Above we promised more about having easy access to the DOM from front-end code, something one might take for granted but for the example of ReactJS where VDOM hides the DOM. We deliver on that promise with the last feature we will implement: the ability to edit a to-do after it has been entered. 
 
 First, we drop a new input field into each LI dedicated to a to-do item:
@@ -446,7 +442,7 @@ And now the handler, where DOM access is substantial:
           ;; that gets initialized correctly when starting editing
           (stop-editing))))))
 ````
-While the above seems like there should be a better way, we see the same code in many TodoMVC solutions, probably for the reason documented in a comment above: an extraneous blur event when halting editing. We assure these are ignored by directly altering the DOM classlist instead of going through the mxWeb/Matrix lifecycle which would remove the "editing" class too late.
+While the above seems like there should be a better way, we see the same code in many TodoMVC solutions, probably for the reason documented in a comment above: browsers deliver an extraneous blur event when halting editing. We ensure these are ignored by directly altering the DOM classlist instead of going through the mxWeb/Matrix lifecycle which would remove the "editing" class too late.
 
 Finally, we have dropped in one last feature from the TodoMVC spec that makes little U/X sense but does let us demonstrate how me hacked around some unhelpful browser behavior, viz., overriding our own manipulation of a checkbox's checked status.
 ````clojure
