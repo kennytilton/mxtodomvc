@@ -26,7 +26,7 @@ In the next excerpt, the Matrix manages a `to-do` model property, "model" as in 
     :items (cF (remove td-deleted (<mget me :items-raw)))
     :empty? (cF (empty? (<mget me :items))))
 ````
-`cI` sets that property up to tell functional  properties `:items` when `:items-raw` changes. Functional `:items` will tell functional `:empty?` if *it* has changed. 
+`cI` sets that property up to tell functional  properties `:items` when `:items-raw` changes. Functional `:items` will tell functional `:empty?` if *it* has changed. `me` is like `self` or `this`, so here would be the `todo-list`.
 
 Aside: those simple derivations could just as well be ordinary functions of the to-do list, but these are just two small carveouts in the progressive decomposition of TodoMVC. Our win will be the decomposition, not the size of any particular carveout.
 
