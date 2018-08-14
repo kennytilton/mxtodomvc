@@ -109,6 +109,7 @@ In support of the above we extend the model of the to-do list with more dataflow
     :items-completed (cF (doall (filter td-completed (<mget me :items))))
     :empty? (cF (empty? (<mget me :items)))))
 ````
+
 Other things the reader might notice:
 * `mx-todos` and `mx-todo-items` wrap the complexity of navigating the Matrix to find desired data;
 * `doall` in various formulas may soon be baked in to Matrix, because lazy evaluation breaks dependency tracking.  
