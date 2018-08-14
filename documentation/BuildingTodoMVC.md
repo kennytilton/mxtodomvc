@@ -18,7 +18,9 @@ lein deps
 lein clean
 lein fig:build
 ````
-This will auto compile and send all changes to the browser without the need to reload. After the compilation process is complete, you will get a Browser Connected REPL. A web page should appear on a browser near you with a header saying just "hello, Matrix". 
+This will auto compile and send all changes to the browser without the need to reload. After the compilation process is complete, you will get a Browser Connected REPL. A web page should appear on a browser near you with a header saying just "hello, Matrix".
+
+<img height="48px" align="center" src="pix/hello-matrix.png?raw=true">
 
 For issues, questions, or comments, ping us at kentilton on gmail, or DM @hiskennyness on Slack in the #Clojurians channel.
 
@@ -29,10 +31,10 @@ When starting on a TodoMVC implementation, we first execute just the title and f
 git checkout hello-todomx
 lein fig:build
 ````
-Thanks to the miracle of Figwheel, your browser should now look more Todo-ish:
+Things should now look more Todo-ish:
 
-From now on, our cue to check out a new tag will be these headers:
-#### git checkout hello-todomx
+<img height="144px" align="center" src="pix/hello-todomx.png?raw=true">
+
 And here is the mxWeb HTML work-aike, look-alike code for "hello, todomx":
 ````clojure
 (defn matrix-build []
@@ -72,9 +74,11 @@ Hello, [Web Components](https://developer.mozilla.org/en-US/docs/Web/Web_Compone
 ### git checkout wall-clock
 Reminder:
 ````bash
+# Control-D
 git checkout wall-clock
+lein fig:build
 ````
-(insert graphic)
+<img height="192px" align="center" src="pix/wall-clock.png?raw=true">
 We add a simple "wall clock". It is not in the TodoMVC spec, but it lets us take a quick, deep dive into mxWeb in just a few lines of code. Here is what we will see:
 * automatic, transparent state management: our first dataflow;
 * DOM efficiency without VDOM;
