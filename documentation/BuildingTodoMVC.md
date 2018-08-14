@@ -18,7 +18,9 @@ lein deps
 lein clean
 lein fig:build
 ````
-This will auto compile and send all changes to the browser without the need to reload. After the compilation process is complete, you will get a Browser Connected REPL. A web page should appear on a browser near you with a header saying just "hello, Matrix". 
+This will auto compile and send all changes to the browser without the need to reload. After the compilation process is complete, you will get a Browser Connected REPL. A web page should appear on a browser near you with a header saying just "hello, Matrix".
+
+<img height="48px" align="center" src="pix/hello-matrix.png?raw=true">
 
 For issues, questions, or comments, ping us at kentilton on gmail, or DM @hiskennyness on Slack in the #Clojurians channel.
 
@@ -29,10 +31,10 @@ When starting on a TodoMVC implementation, we first execute just the title and f
 git checkout hello-todomx
 lein fig:build
 ````
-Thanks to the miracle of Figwheel, your browser should now look more Todo-ish:
+Things should now look more Todo-ish:
 
-From now on, our cue to check out a new tag will be these headers:
-#### git checkout hello-todomx
+<img height="144px" align="center" src="pix/hello-todomx.png?raw=true">
+
 And here is the mxWeb HTML work-aike, look-alike code for "hello, todomx":
 ````clojure
 (defn matrix-build []
@@ -69,12 +71,7 @@ The sharp-eyed reader has spotted an unlikely HTML tag, `mxtodo-credits`. Here i
 ````
 Hello, [Web Components](https://developer.mozilla.org/en-US/docs/Web/Web_Components). `mxtodo-credits` is rather simple as components go, but next up is one that takes parameters to support reuse.
 
-### git checkout wall-clock
-Reminder:
-````bash
-git checkout wall-clock
-````
-(insert graphic)
+### wall-clock
 We add a simple "wall clock". It is not in the TodoMVC spec, but it lets us take a quick, deep dive into mxWeb in just a few lines of code. Here is what we will see:
 * automatic, transparent state management: our first dataflow;
 * DOM efficiency without VDOM;
@@ -82,6 +79,12 @@ We add a simple "wall clock". It is not in the TodoMVC spec, but it lets us take
 * all dataflow all the time: "lifting" components into the Matrix;
 * a single source of behavior (SSB): co-location of model and view; and
 * the Grail of object reuse.
+````bash
+# Control-D
+git checkout wall-clock
+lein fig:build
+````
+<img height="192px" align="center" src="pix/wall-clock.png?raw=true">
 
 And now the code. First, the big picture illustrating mxWeb's approach to "Web Components":
 ````clojure
@@ -116,29 +119,34 @@ Now let's work through the bullets and see how they are manifested in the code a
 #### automatic, transparent state management
 On every interval, we feed the browser clock epoch into the application Matrix `clock` property. The child string content of the DIV gets regenerated because `clock` changed. There is no explicit publish or subscribe; we simply read with `<mget` and assign with `mset!>`.
 #### DOM efficiency without VDOM
-As the UI clockticks, the only DOM update made to the innerHTML of the `div`. Property-to-property dataflow tells the system  with fine granularity when and what DOM needs updating.
+As the UI clock ticks, the only DOM update made is to set the innerHTML of the `div`. Property-to-property dataflow tells us with fine granularity exactly what DOM changes must be made.
 #### the mxWeb approach to Web Components
-The function `wall-clock` has four parameters, `[mode interval start end]`. Achieving component reuse with mxWeb differs not at all from parameterizing any Clojure function for maximum utility.
+The function `wall-clock` has four parameters, `[mode interval start end]`. mxWeb "components" are as flexible as any Clojure function we care to define.
 #### all dataflow all the time: "lifting" components into the Matrix  
-We want to program with dataflow as much as possible, but browsers do not know about the Matrix, so we write more or less "glue" code to bring the system clock into the dataflow.  
+Browsers do not know about the Matrix, so we write more or less "glue" code to bring the system clock into the dataflow.  
 ````clojure
 (js/setInterval
     #(mset!> me :clock (util/now))
     interval)
 ````  
-We call such glue "lifting". Lifting the system clock required just a few lines of code. We hinted earlier that mxWeb exemplifies lifting. That took six hundred lines.
+We call such glue "lifting". Lifting the system clock required just a few lines of code. We hinted earlier that mxWeb exemplifies lifting. It required six hundred lines.
 #### a single source of behavior (SSB): co-location of model and view  
 Our wall clock widget needs application state, and it generates and relays that state itself. The `clock` property holds the JS epoch, and the 'ticker' property holds a timer driving `clock`. Nearby in the code, a child element consumes the stream of `clock` values. Everything resides together in the source for quick authoring, debugging, revision, and understanding. We call this having a *single source of behavior*, or SSB.
-  
 #### the Grail of object reuse  
 Few DIV elements need a stream of clock values. In a rigid OOP framework, we would need to sub-class DIV to arrange for one. Matrix, like the prototype model of OOP, lets us code up a new dataflow-capable clock property on the fly and attach it to our proxy `div`.
 
-### git checkout enter-todos
+### enter-todos
 As promised, that was a deep first dive. This tag will be simpler, adding a bunch more UI structure but no ability to edit or even create todos:
 * we load a few fixed-todos at start-up;
 * we show them in a list;
 * one control lets us toggle a to-do between completed or not; and
 * another control logically deletes a to-do.
+````bash
+# Control-D
+git checkout enter-todos
+lein fig:build
+````
+<img height="384px" align="center" src="pix/enter-todos.png?raw=true">
 
 Here is the code to make a to-do. `cI` is shorthand for making an "input cell", one to which we can assign new values from imperative code in an event handler.
 ````clojure
@@ -207,10 +215,10 @@ Elsewhere we find the "change" dataflow initiators:
   (mset!> td :deleted (util/now)))
 
 (defn td-toggle-completed! [td]
-  (mset!> td :completed
-    (when-not (td-completed td) (util/now))))
+  (mswap!> td :completed
+    #(when-not % (util/now))))
 ````
-We may as well get what we call the dashboard out of the way (without the selectors if you know your TodoMVC) because it adds a lot of behavior without any more Matrix complexity:
+We execute a simple dashboard as well, without the filters just yet:
 ````clojure
 (defn todo-items-dashboard []
   (footer {:class  "footer"
@@ -234,10 +242,7 @@ In support of the above we extend the model of the to-do list with more dataflow
     :items-completed (cF (doall (filter td-completed (<mget me :items))))
     :empty? (cF (empty? (<mget me :items)))))
 ````
-Other things the reader might notice:
-* `mx-todos` and `mx-todo-items` wrap the complexity of navigating the Matrix to find desired data;
-* `doall` in various formulas may soon be baked in to Matrix, because lazy evaluation breaks dependency tracking.  
-Recall that Matrix works by changing what happens when we read properties. The internal mechanism is to bind a formula to `*depender*` when kicking off its rule. With lazy evaluation, that binding is gone by the time the read occurs.
+`mx-todos` and `mx-todo-items` wrap the complexity of navigating the Matrix to find that desired data.
 
 We can now play with toggling the completion state of to-dos, deleting them directly, or deleting them with the "clear completed" button, keeping an eye on "items remaining".  
 
