@@ -313,11 +313,15 @@ lein fig:build
                                 (make-todo title)))
                             (form/setValue (.-target %) "")))}))
 ````
-The token `%` is the raw DOM event. In a different handler we will see manipulation of the DOM classlist. 
+mxWeb callbacks are passed the raw browser event, above accessed as the token `%`. `getValue` is straight JS, and with `setValue` we easily implement the spec requirement to clear the field. In a different handler we will see manipulation of the DOM classlist. No [`refs` heavy lift](https://reactjs.org/docs/refs-and-the-dom.html) required.
 
 #### lifting-xhr
-Before concluding, we look at an especially interesting example of lifting: XHR, affectionately known as Callback Hell. We do so exceeding the official TodoMVC spec to alert our user of any to-do item that returns results from a search of of the FDA [Adverse Events database](https://open.fda.gov/data/faers/).
-
+Now an especially interesting example of lifting: XHR, affectionately known as Callback Hell. We do so exceeding the official TodoMVC spec to alert our user of any to-do item that returns results from a search of the FDA [Adverse Events database](https://open.fda.gov/data/faers/).
+````bash
+# Control-D
+git checkout lifting-xhr
+lein fig:build
+````
 Our treatment to date of [the XHR lift](https://github.com/kennytilton/matrix/tree/master/cljs/mxxhr) is technically minimal but the test suite includes clean dataflow solutions to several Hellish use cases. Our use case here is trivial, just a simple XHR query to the FDA API and one response, 200 indicating results found, 404 not. Notes follow the code.
 ````clojure
 (defn adverse-event-checker [todo]
@@ -339,7 +343,8 @@ Our treatment to date of [the XHR lift](https://github.com/kennytilton/matrix/tr
                  (make-xhr (pp/cl-format nil ae-by-brand
                              (js/encodeURIComponent
                                (de-whitespace (td-title todo))))
-                   {:name       name :send? true
+                   {:name       name
+                    :send? true
                     :fake-delay (+ 500 (rand-int 2000))}))
      :response (cF (when-let [xhr (<mget me :lookup)]
                      (xhr-response xhr)))
@@ -349,13 +354,13 @@ Our treatment to date of [the XHR lift](https://github.com/kennytilton/matrix/tr
     "warning"))
 ````
     
-That is the application code we can easily review in this project. To see where the response dataflow starts we must look at  mxXHR libary internals. (look for the `mset!>`; as for `with-cc`, we touch on that below):
+That is the application code. To see where the response dataflow starts we must look at mxXHR libary internals. (Look for the `mset!>`; as for `with-cc`, we touch on that below):
 ````clojure
 (defn xhr-send [xhr]
   (go
     (let [response (<! (client/get (<mget xhr :uri) {:with-credentials? false}))]
        (with-cc :xhr-handler-sets-responded
-          (mset!> xhr :response
+          (mset!> xhr :response    ;; <------- DATAFLOW BEGINS HERE
             {:status (:status response)
              :body   (if (:success response)
                        ((:body-parser @xhr) (:body response))
@@ -365,31 +370,20 @@ That is the application code we can easily review in this project. To see where 
 Hellish async XHR responses are now just ordinary Matrix inputs. 
 
 Notes:
-* `ae-checker-style-formula` manifests a nice code win: complex `cF`s can be broken out into their own functions;
-* Google's Material Design icon fonts integrate smoothly;
 * We fake variable response latency;
-* For pedagogic reasons, we break up the lookup into several `cFs`:
-* `lookup` functionally returns an mxXHR incarnation of an actual XHR, but...
-* ...we specify that the XHR be *sent* immediately! This is where `with-cc` comes in...
-* ...getting into the weeds, `with-cc` enqueues its body for execution at the right time in the datafow lifecycle...
-* ...and should the user change the title and kick off a new lookup, an observer will GC the old one;
-* `response` runs immediately, reads the nil lookup `response` but establishing the dependency, and returns nil;
-* the `aes?` predicate runs immediately and does not see a `response`, so it returns `:undecided`;
-* the color and display style properties decide on "gray" and "block";
-* an mxWeb observer updates the DOM so we see a gray "warning" icon;
-* when the actual XHR gets a response, good or bad, it is `<mset!` *with dataflow integrity* into the `response` property of the mxXHR;
-* our AE checker `response` formula runs and captures the response;
-* `aes?` runs, sees the response, and decides on :yes :or :no;
-* the color and display style properties decide on new values;
-* mxWeb does its thing and the warning disappears or turns red.
+* `with-cc`, an advanced trick, enqueues its body for execution at the right time in the datafow lifecycle.
 
 > If you play with new to-dos, do *not* be alarmed by red warnings: all drugs have adverse events, and the FDA search is aggressive: cats have adverse events. Dogs are fine.
 
 You will also note an inefficiency to be addressed in the next section: every to-do gets looked up anew each time the list changes. Let us fix that.
 #### family-values
-A matrix is a simple tree formed of single parents with multiple so-called `kids`, a nice short name for children. Normally we just list the kids, but when the list changes incrementally and the children are mxWeb widgets, the mxWeb observer will be rebuilding those hefty widgets and rebuilding the DOM on each small change.
-
-To prevent this excess, Matrix has a small API we call "family values" after the [Charles Addams-inspired movie](https://www.youtube.com/watch?v=IHgfQ-0lYbg). The idea is to compute a collection of key values and then provide a factory function to be called with the key value to produce mxWeb instances only as needed after diffing the lists of key values.
+A matrix is a simple tree formed of single parents with multiple so-called `kids`, a nice short name for children. When the list changes incrementally and the children are mxWeb widgets, the mxWeb observer will be rebuilding those hefty widgets on each small change.
+````bash
+# Control-D
+git checkout family-values
+lein fig:build
+````
+To prevent this excess, Matrix has a small API we call "family values" after the [Charles Addams-inspired movie](https://www.youtube.com/watch?v=IHgfQ-0lYbg). The idea is to compute a collection of key values and provide a factory function to be called with the key value to produce mxWeb instances only as needed after diffing the key values.
 ````clojure
 (defn todo-items-list []
   (section {:class "main"}
@@ -407,13 +401,17 @@ To prevent this excess, Matrix has a small API we call "family values" after the
       ;; cache is prior value for this implicit 'kids' slot; k-v-k uses it for diffing
       (kid-values-kids me cache))))
 ````
-Our key value is the abstract to-do model. `cache` above is a variable available to any property formula for the rare case when it wants to consider the prior computation when producing the next.
+Our key is the abstract to-do model. `cache` above is a variable supplied by the `cF` macro. It will be bound to the prior computation for a formula, or the symbol `unbound` on the first invocation. `kid-values-kids` does the work of diffing new and prior values and calling the factory as needed for new values.
 
-Now when you add or remove items, you will see AE lookups executed only for added items.
+We do not offer a diagram here because this you have to see live: when you add an item, you will see an AE lookup executed only for the new item. When you delete an item, no lookups will be executed. Before this version, all to-dos were looked up on each change.
 
 #### ez-dom: editing an existing to-do
-Above we promised more about having easy access to the DOM from front-end code, something one might take for granted but for the example of ReactJS where VDOM hides the DOM. We deliver on that promise with the last feature we will implement: the ability to edit a to-do after it has been entered. 
-
+Above we promised more about having easy access to the DOM from front-end code, something one might take for granted but for the example of ReactJS where the `refs` rigmarole is required. We deliver on that promise with the last feature we will implement: the ability to edit a to-do after it has been entered. 
+````bash
+# Control-D
+git checkout family-values
+lein fig:build
+````
 First, we drop a new input field into each LI dedicated to a to-do item:
 ````clojure
 (input {:class     "edit"
@@ -442,7 +440,7 @@ And now the handler, where DOM access is substantial:
           ;; that gets initialized correctly when starting editing
           (stop-editing))))))
 ````
-While the above seems like there should be a better way, we see the same code in many TodoMVC solutions, probably for the reason documented in a comment above: browsers deliver an extraneous blur event when halting editing. We ensure these are ignored by directly altering the DOM classlist instead of going through the mxWeb/Matrix lifecycle which would remove the "editing" class too late.
+While the above seems like there should be a better way, we see the same code in many TodoMVC solutions, probably for the reason documented in a comment above: browsers deliver an extraneous blur event when halting editing. We ensure these are ignored by directly altering the DOM classlist instead of going through the mxWeb/Matrix lifecycle, which removes the "editing" class too late to head off the extra blur.
 
 Finally, we have dropped in one last feature from the TodoMVC spec that makes little U/X sense but does let us demonstrate how me hacked around some unhelpful browser behavior, viz., overriding our own manipulation of a checkbox's checked status.
 ````clojure
@@ -467,13 +465,8 @@ Finally, we have dropped in one last feature from the TodoMVC spec that makes li
                           (mset!> td :completed (when (= action :complete) (util/now)))))}
       "Mark all as complete")))
 ````
-#### The missing TodoMVC requirement
+#### The missing TodoMVC requirement: lifting local-storage
 Nothing will be added by implementing persistence, but if you are curious you can check out [mxLocalStorag](https://github.com/kennytilton/matrix/blob/master/js/matrix/js/Matrix/mxWeb.js) at the very end of the source from our Javascript implementation of mxWeb. 
 
 ## Summary
-
-## License: MIT
-
-Copyright © 2018 Kenneth Tilton
-
-Distributed under the MIT License.
+That completes our implementation of the TodoMVC spec. In our next in-depth write-up of mxWeb, we will look more closely at certain elements to fully lift any sense of mystery created by the dataflow paradigm.
