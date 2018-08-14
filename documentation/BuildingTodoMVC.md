@@ -3,7 +3,7 @@
 
 The [TodoMVC](http://todomvc.com) project specifies a trivial Web application as the basis for comparing Web frameworks. In [the preamble](../README.md) to this write-up, we looked at what makes programming with Matrix and mxWeb different, only lightly touching on mxTodoMVC code. 
 
-> If you have not read that preamble, you might want to start there for a gentler introduction to Matrix and mxWeb.
+> If you have not read that preamble, you might want to start there for a solid grounding in Matrix concepts.
 
 In this write-up, we will checkout a series of git tags marking milestones along our incremental evolution of TodoMVC. At each stage we will review the new code, but not delve too deeply into the mxWeb mechanics. That we will save for a final, [detailed exploration](InDepth.md) for those of us who need to see all the moving parts to be comfortable with high level APIs, especially those that seem like magic.
 
