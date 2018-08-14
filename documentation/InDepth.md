@@ -1,5 +1,5 @@
-# Building TodoMVC, with Matrix Inside&trade;
-*An introduction by example to Matrix dataflow and mxWeb*, in depth
+# TodoMVC, with Matrix Inside&trade;: the Mechanics
+*An introduction by example to Matrix dataflow and mxWeb, in depth*
 
 > Have you read [the preamble](../README.md) to this write-up? If so, you might want to skip down to "Set Up". If not, you might want to start there for a gentler introduction to Matrix and mxWeb.
 
