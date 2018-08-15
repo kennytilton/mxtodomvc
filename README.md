@@ -15,11 +15,16 @@ What does it mean for B to read A? It means B is expressed as an HLL function th
                   "completed"))}
     ...)
 ````
-The above is an excerpt from TodoMVC, which we will build next. `li` makes a proxy LI instance. Its API mirrors the HTML syntax `<li attribute*> children* </li>`. `cF` (for *formulaic cell*) makes `:class` functional. 
+The above is an excerpt from TodoMVC, which we will build in the [next write-up](documentation/BuildingTodoMVC.md). Without getting too much into the weeds, `li` makes a proxy LI instance. Its API mirrors the HTML syntax `<li attribute*> children* </li>`. `cF` (for *formulaic cell*) makes `:class` functional. 
 
-`<mget` is the Matrix property reader that remembers which property is asking. It can be called outside of formulas. Dependencies are detected dynamically, meaning the tracking sees inside function calls. This in turn means we can hide the `<mget` noise behind a simple `(defn td-completed [todo] (<mget todo :completed))`. 
+`<mget` is the Matrix property reader that remembers which property is asking. It can be called outside of formulas. Dependencies are detected dynamically, meaning the tracking sees inside function calls. This in turn means we can hide the `<mget` noise behind a simple:
 
-In the next excerpt, the Matrix manages a `to-do` model property, "model" as in MVC. Note `td-deleted`, hiding an `<mget` while still establishing a dependency on the `:deleted` property of each `to-do`. 
+````clojure
+(defn td-completed [todo]
+  (<mget todo :completed))
+````
+
+Back to our app. In the next excerpt, the Matrix manages a `to-do` model property, "model" as in MVC. Note `td-deleted`, hiding an `<mget` while still establishing a dependency on the `:deleted` property of each `to-do`. 
 ````clojure
 (md/make ::todo-list
     :items-raw (cI nil)
