@@ -3,7 +3,7 @@
 
 The Matrix dataflow library converts the reads and writes of declarative formulas and handlers and somewhow produces a complete application. In our final episode we will lift the hood on Matrix just far enough to see how a simple write propagates out to interested formulas and finally shapes a Web page. 
 
->This in-depth look at what happens under the hood of mxWeb/Matrix will make more sense if you have already read Have you read [the preamble](../README.md) and followed [our implementation](BuildingTodoMVC.md). Much of what follows duplicates material offered so far, just to have a coherent narrative thread.
+>This in-depth look at what happens under the hood of mxWeb/Matrix will make more sense if you have already read Have you read [the preamble](../README.md) and followed [our implementation](BuildingTodoMVC.md). Much of what follows duplicates material offered so far, just to have a coherent narrative thread. To find just the new stuff, look for "Matrix Under The Hood" headers.
 
 We choose *mxWeb* as the vehicle for introducing Matrix because nothing challenges a developer more than keeping application state straight while an intelligent user does their best to use a rich interface correctly. Then marketing wants a U/X overhaul.
 
@@ -87,7 +87,7 @@ We can now start our demo matrix off with a few preset to-dos.
                     (todo-items-dashboard)
                     (webco/app-credits mxtodo-credits)))))
 ````
-Some things to note:
+#### Matrix Under the Hood
 * the optional first "type" parameter ::todoApp is supplied; we will use that in various Matrix searches to identify the root of the TodoMVC matrix.
 * building the matrix DOM is now wrapped in `(cFonce (with-par me ...)`;
   * `cFonce` effectively defers the enclosed form until the right lifecycle point in the matrix's initial construction.
@@ -153,7 +153,7 @@ Other things the reader might notice:
 * `doall` in various formulas may soon be baked in to Matrix, because lazy evaluation breaks dependency tracking.  
 Recall that Matrix works by changing what happens when we read properties. The internal mechanism is to bind a formula to `*depender*` when kicking off its rule. With lazy evaluation, that binding is gone by the time the read occurs.
 
-#### Matrix under the hood
+#### Matrix Under the Hood
 We can now play with toggling the completion state of to-dos, deleting them directly, or deleting them with the "clear completed" button, keeping an eye on "items remaining". Consider specifically what happens when we click the completion toggle of the view displaying an uncompleted todo. This code executes:
 ````clojure
 (mset!> td :completed (now))
@@ -174,7 +174,7 @@ We will spare the reader the detailed analysis of what happens when we click the
 * if the item was the only completed item, "Clear completed" disappears;
 * if the item was the last of any kind, the dashboard disappears.
 
-#### lifting-xhr
+### lifting-xhr
 Next we re-visit an especially interesting example of lifting: XHR, affectionately known as Callback Hell. We do so exceeding the official TodoMVC spec to alert our user of any to-do item that returns results from a search of the FDA [Adverse Events database](https://open.fda.gov/data/faers/).
 
 If you enter a new to-do, it will appear with a gray alert icon, gray signifying undecided. If no adverse events are found, the alert disappears. If any are found, it turns red. (You will also observe excessive such lookups, to be addressed next.)
@@ -234,7 +234,7 @@ Hellish async XHR responses are now just ordinary Matrix inputs.
 > If you play with new to-dos, do *not* be alarmed by red warnings: all drugs have adverse events, and the FDA search is aggressive: cats have adverse events. Dogs are fine.
 Hellish async XHR responses are now just ordinary Matrix inputs. 
 
-#### Matrix under the hood:
+#### Matrix Under the Hood
 One formula generates an XHR, another use the response, success or failure. Some notes on what happens in between:
 * we fake variable response latency;
 * `with-cc`, an advanced trick, enqueues its body for execution at the right time in the datafow lifecycle.
@@ -252,7 +252,7 @@ One formula generates an XHR, another use the response, success or failure. Some
 * the color and display style properties decide on new values;
 * mxWeb does its thing and the warning disappears or turns red.
 
-### Summary
+## Summary
 In this write-up we have detailed all the things that must happen when users make simple changes, or when a Web page needs remote data and emits an XHR. Without dataflow, the programmer must arrange all that. But if one reviews the mxTodoMVC implementation, that complexity is nowhere to be found. 
 
 Where did it go?
