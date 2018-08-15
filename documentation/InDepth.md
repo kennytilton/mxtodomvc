@@ -1,9 +1,9 @@
 # TodoMVC, with Matrix Inside&trade;: the Mechanics
-*An introduction by example to Matrix dataflow and mxWeb, in depth*
+*Matrix dataflow and mxWeb, in depth*
 
-> Have you read [the preamble](../README.md) to this write-up? If so, you might want to skip down to "Set Up". If not, you might want to start there for a gentler introduction to Matrix and mxWeb.
+In our final episode we will dive quite deep into Matrix and mxWeb, but just deep enough to see past the syntactic sugar. Some of what follows reprises material offered so far, just to have a coherent narrative thread.
 
-> In our final episode we will dive quite deep into Matrix and mxWeb, but just deep enough to see past the syntactic sugar. Some of what follows reprises material offered so far, just to have a coherent narrative thread.
+>This in-depth look at what happens under the hood of mxWeb/Matrix will make more sense if you have already read Have you read [the preamble](../README.md) and followed [our implementation](BuildingTodoMVC.md).
 
 We choose *mxWeb* as the vehicle for introducing Matrix because nothing challenges a developer more than keeping application state straight while an intelligent user does their best to use a rich interface correctly. Then marketing wants a U/X overhaul.
 
@@ -20,6 +20,7 @@ Matrix achieves this simply by enhancing how we initialize, read, and write indi
 * we can supply "on change" callbacks for properties.
 
 ## Set-Up
+If you have not already executed these steps during the previous walkthrough, let's get you caught up:
 
 ````bash
 git clone https://github.com/kennytilton/mxtodomvc.git
@@ -32,17 +33,45 @@ This will auto compile and send all changes to the browser without the need to r
 
 For issues, questions, or comments, ping us at kentilton on gmail, or DM @hiskennyness on Slack in the #Clojurians channel.
 
-## Excerpts from "Building TodoMVC", in depth
-As in our prior run through, we will work through the evolving TodoMVC by checking out different tags.
-
 ### enter-todos
-We can now start our demo matrix off with a few preset to-dos. Some things to note:
-* the optional first "type" parameter ::todoApp is supplied; we will use that in various Matrix searches to identify the root of the TodoMVC matrix.
-* building the matrix DOM is now wrapped in `(cFonce (with-par me ...)`;
-  * `cFonce` effectively defers the enclosed form until the right lifecycle point in the matrix's initial construction.
-  * `with-par me` is how the matrix DOM knows where it is in the matrix tree. All matrix nodes know their parents so they can navigate the tree freely to gather information.
-* the app credits are now provided by a new "web component", and that along with the "wall-clock" reusable are off in their own namespace.
-* most interesting is `(mxu-find-type me ::todoApp)`, a bit of exposed wiring that demonstrates how Matrix elements pull information from elsewhere in the Matrix using various "mx-find-\*" CSS selector-like utilities. 
+As promised, that was a deep first dive. This tag will be simpler, adding a bunch more UI structure but no ability to edit or even create todos:
+* we load a few fixed-todos at start-up;
+* we show them in a list;
+* one control lets us toggle a to-do between completed or not; and
+* another control logically deletes a to-do.
+````bash
+# Control-D
+git checkout enter-todos
+lein fig:build
+````
+<img height="384px" align="center" src="pix/enter-todos.png?raw=true">
+
+Here is the code to make a to-do *model*. `cI` is shorthand for "input cell", one to which we can imperatively assign values in an event handler.
+````clojure
+(defn make-todo
+  "Make a matrix incarnation of a todo item"
+  [title]
+
+  (md/make
+    :id (util/uuidv4)
+    :created (util/now)
+    :title (cI title)
+    :completed (cI nil)
+    :deleted (cI nil)))
+````
+Apparent booleans like `:completed` will in fact be nil or timestamps, so no "?" suffixes.
+
+Here is the to-do-list container model, set up to take a list of hard-coded initial to-dos to get us rolling:
+````clojure
+(defn todo-list [seed-todos]
+  (md/make ::todo-list
+    :items-raw (cFn (for [to-do seed-todos]
+                      (make-todo to-do})))
+    :items (cF (doall (remove td-deleted (<mget me :items-raw))))))
+````
+The bulk of the to-do app does not care about deleted to-dos, so we use a clumsy name "items-raw" for the true list of items ever created, and save the name "items" for the ones actually used. `cFn` is short for "formulaic then input", meaning the property is initialized by running the formula and thereafter is set by imperative code.
+
+We can now start our demo matrix off with a few preset to-dos. 
 
 ````clojure
 (md/make ::md/todoApp
@@ -58,7 +87,15 @@ We can now start our demo matrix off with a few preset to-dos. Some things to no
                     (todo-items-dashboard)
                     (webco/app-credits mxtodo-credits)))))
 ````
-And now the to-do item view itself, the structure and nice CSS authored by the developers of the TodoMVC exercise.
+Some things to note:
+* the optional first "type" parameter ::todoApp is supplied; we will use that in various Matrix searches to identify the root of the TodoMVC matrix.
+* building the matrix DOM is now wrapped in `(cFonce (with-par me ...)`;
+  * `cFonce` effectively defers the enclosed form until the right lifecycle point in the matrix's initial construction.
+  * `with-par me` is how the matrix DOM knows where it is in the matrix tree. All matrix nodes know their parents so they can navigate the tree freely to gather information.
+* the app credits are now provided by a new "web component", and that along with the "wall-clock" reusable are off in their own namespace.
+* most interesting is `(mxu-find-type me ::todoApp)`, a bit of exposed wiring that demonstrates how Matrix elements pull information from elsewhere in the Matrix using various "mx-find-\*" CSS selector-like utilities. 
+
+And now the to-do item view itself.
 ````clojure
 (defn todo-list-item [todo]
   (li
@@ -82,10 +119,10 @@ Elsewhere we find the "change" dataflow initiators:
   (mset!> td :deleted (util/now)))
 
 (defn td-toggle-completed! [td]
-  (mset!> td :completed
-    (when-not (td-completed td) (util/now))))
+  (mswap!> td :completed
+    #(when-not % (util/now))))
 ````
-We may as well get what we call the dashboard out of the way (without the selectors if you know your TodoMVC) because it adds a lot of behavior without any more Matrix complexity:
+We execute a simple dashboard as well, without the filters just yet:
 ````clojure
 (defn todo-items-dashboard []
   (footer {:class  "footer"
@@ -99,6 +136,8 @@ We may as well get what we call the dashboard out of the way (without the select
                          (td-delete! td))}
       "Clear completed")))
 ````
+Both `hidden` properties address spec requirements, and are implemented precisely by just adding or removing the DOM hidden attribute. The `content` is adjusted with no more than setting `innerHTML`.
+
 In support of the above we extend the model of the to-do list with more dataflow properties:
 ````clojure
 (defn todo-list [seed-todos]
@@ -109,15 +148,19 @@ In support of the above we extend the model of the to-do list with more dataflow
     :items-completed (cF (doall (filter td-completed (<mget me :items))))
     :empty? (cF (empty? (<mget me :items)))))
 ````
-
 Other things the reader might notice:
 * `mx-todos` and `mx-todo-items` wrap the complexity of navigating the Matrix to find desired data;
 * `doall` in various formulas may soon be baked in to Matrix, because lazy evaluation breaks dependency tracking.  
 Recall that Matrix works by changing what happens when we read properties. The internal mechanism is to bind a formula to `*depender*` when kicking off its rule. With lazy evaluation, that binding is gone by the time the read occurs.
 
-We can now play with toggling the completion state of to-dos, deleting them directly, or deleting them with the "clear completed" button, keeping an eye on "items remaining". Consider now what happens when we click the completion toggle of the view displaying an uncompleted todo:
-* the completed property of the associated model gets set to the current JS epoch;
-* the class of the todo list item view gets recomputed because it read that :completed property. It changes to "completed";
+#### Matrix under the hood
+We can now play with toggling the completion state of to-dos, deleting them directly, or deleting them with the "clear completed" button, keeping an eye on "items remaining". Consider specifically what happens when we click the completion toggle of the view displaying an uncompleted todo. This code executes:
+````clojure
+(mset!> td :completed (now))
+````
+What then does the Matrix engine do for us?
+* the completed property of the associated model gets set to the current JS epoch (duh);
+* the class of the todo list item view gets recomputed because it read the :completed property. It changes to "completed";
 * the LI DOM element classList gets set to "completed" by an mxWeb observer;
 * the :content property formula of the "Items remaining" span recounts the list of todos filtering out the completed and comes up with one less;
 * an mxWeb observer updates the span innerHTML to the new "remaining" count;
@@ -125,17 +168,13 @@ We can now play with toggling the completion state of to-dos, deleting them dire
 * the :hidden property of the "Clear completed" button/map gets recalculated because it reads the :items-completed property of the list of todos. If the length changes either way between zero and one, the :class property gains or loses the "hidden" value and...
 * an mxWeb observer updates the classList of the DOM element corresponding to the "Clear completed" button.
 
-All that happens when this code executes:
-````clojure
-(mset!> td :deleted (now))
-````
-We will spare the reader our detailed analysis of what happens when we click the "delete" button (the red "X" that appears on hover), but the reader might want to work out for themselves the dataflow from the :deleted property to these behaviors:
+We will spare the reader our detailed analysis of what happens when we click the "delete" button (the red "X" that appears on hover), but the they want to work out for themselves the dataflow from the :deleted property to these behaviors:
 * the item disappears;
 * if the item was incomplete when deleted, the "Items remaining" drops by one;
 * if the item was the only completed item, "Clear completed" disappears;
 * if the item was the last of any kind, the dashboard disappears.
 
-Next up: the spec requires a bit of routing.
+
 
 
 #### git checkout lifting-xhr
@@ -206,8 +245,11 @@ Notes:
 * the color and display style properties decide on new values;
 * mxWeb does its thing and the warning disappears or turns red.
 
-If you play with new to-dos, do *not* be alarmed by red warnings: all drugs have adverse events, and the FDA search is aggressive. You will also note an inefficiency we address in the next section, viz. that each to-do gets looked up anew each time the list changes. But first...
+### Summary
+With ReactJS, popularized the power of declarative, functional programming. In mxWeb we see that power extended beyond the view to the model and to any other system for which we care to write sufficient glue, such as XHR.
 
-Matrix dataflow neutralizes the Hell of asynchronous callbacks because Matrix was created to propagate change gracefully. The `mset!>` of an asynchronously received response into the Matrix graph differs not at all from a user deciding to click their mouse or press a key. In either case, Matrix guarantees smooth, consistent propagation of the change throughout the graph of connected properties in accordance with what we call *datafow integrity*.
+In this write-up we have detailed all the things that happen automatically when event handlers make simple changes. User interfaces, as Mr. Hickey adroitly observed, are complex beasts. But if one reviews the mxTodoMVC implementation, that complexity is nowhere to be found.
+
+
 
 
