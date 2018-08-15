@@ -34,7 +34,7 @@ This will auto compile and send all changes to the browser without the need to r
 For issues, questions, or comments, ping us at kentilton on gmail, or DM @hiskennyness on Slack in the #Clojurians channel.
 
 ### enter-todos
-As promised, that was a deep first dive. This tag will be simpler, adding a bunch more UI structure but no ability to edit or even create todos:
+We jump to a point early our implementation of TodoMVC, when we first displayed a list of fixed to-dos. This tag adds a bunch more UI structure but no ability to edit or create todos:
 * we load a few fixed-todos at start-up;
 * we show them in a list;
 * one control lets us toggle a to-do between completed or not; and
