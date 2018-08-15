@@ -75,10 +75,10 @@ mxWeb proxy instances know which DOM element they represent, and because Matrix 
 Notes:
 * we offer no example of a deferred write at this time.  
 Those arise when applications have grown quite large, when the *developer* decides some observed property change demands a change at the application semantic level, as if the user were making a change.
-* *caveat lectorum* we use "observer" in the strict dictionary sense: "monitor, not participant". Other libraries use it for what we call dependent or formulaic properties.
+* *caveat lectorum* we use "observer" in the strict dictionary sense: "monitor, not participant". Other libraries use "observer" for what we call dependent or formulaic properties.
 
 #### K for Kids
-Formulas can compute other than merely descriptive properties such as "completed". We might have `K` for "kids" holding the children of some parent, such as the `LI` nodes under a `UL` DOM list. In other words, the population of our application model can grow or shrink with events. 
+Formulas can compute more than just descriptive properties such as "completed". We might have `K` for "kids" holding the children of some parent, such as the `LI` nodes under a `UL` DOM list. In other words, the population of our application model can grow or shrink with events. 
 
 We call a dynamic population of causally connected models a *matrix*.
 
