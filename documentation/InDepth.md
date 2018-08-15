@@ -34,7 +34,7 @@ This will auto compile and send all changes to the browser without the need to r
 For issues, questions, or comments, ping us at kentilton on gmail, or DM @hiskennyness on Slack in the #Clojurians channel.
 
 ### enter-todos
-We jump to a point early our implementation of TodoMVC, when we first displayed a list of fixed to-dos. This tag adds a bunch more UI structure but no ability to edit or create todos:
+We jump to a point early in our implementation of TodoMVC, when we first display a list of fixed to-dos. This tag adds a bunch more UI structure but no ability to edit or create todos:
 * we load a few fixed-todos at start-up;
 * we show them in a list;
 * one control lets us toggle a to-do between completed or not; and
@@ -165,22 +165,25 @@ What then does the Matrix engine do for us?
 * the :content property formula of the "Items remaining" span recounts the list of todos filtering out the completed and comes up with one less;
 * an mxWeb observer updates the span innerHTML to the new "remaining" count;
 * the :items-completed property on the todos list model container gets recalculated because it reads the :completed property of *all* todo item models. It grows by one;
-* the :hidden property of the "Clear completed" button/map gets recalculated because it reads the :items-completed property of the list of todos. If the length changes either way between zero and one, the :class property gains or loses the "hidden" value and...
-* an mxWeb observer updates the classList of the DOM element corresponding to the "Clear completed" button.
+* the :hidden property of the "Clear completed" button/map gets recalculated because it reads the :items-completed property of the list of todos. If the length changes either way between zero and one, the :hidden property becomes true or false...
+* an mxWeb observer adds or removes the hidden attribute of the "Clear completed" DOM button.
 
-We will spare the reader our detailed analysis of what happens when we click the "delete" button (the red "X" that appears on hover), but the they want to work out for themselves the dataflow from the :deleted property to these behaviors:
+We will spare the reader the detailed analysis of what happens when we click the "delete" button (the red "X" that appears on hover), but they may want to work out for themselves the dataflow from the :deleted property to these behaviors:
 * the item disappears;
 * if the item was incomplete when deleted, the "Items remaining" drops by one;
 * if the item was the only completed item, "Clear completed" disappears;
 * if the item was the last of any kind, the dashboard disappears.
 
+#### lifting-xhr
+Next we re-visit an especially interesting example of lifting: XHR, affectionately known as Callback Hell. We do so exceeding the official TodoMVC spec to alert our user of any to-do item that returns results from a search of the FDA [Adverse Events database](https://open.fda.gov/data/faers/).
 
-
-
-#### git checkout lifting-xhr
-Before concluding, we look at an especially interesting example of lifting: XHR, affectionately known as Callback Hell. We do so exceeding the official TodoMVC spec to alert our user of any to-do item that returns results from a search of of the FDA [Adverse Events database](https://open.fda.gov/data/faers/).
-
-Our treatment to date of [the XHR lift](https://github.com/kennytilton/matrix/tree/master/cljs/mxxhr) is technically minimal but the test suite includes clean dataflow solutions to several Hellish use cases. Our use case here is trivial, just a simple XHR query to the FDA API and one response, 200 indicating results found, 404 not. Notes follow the code.
+If you enter a new to-do, it will appear with a gray alert icon, gray signifying undecided. If no adverse events are found, the alert disappears. If any are found, it turns red. (You will also observe excessive such lookups, to be addressed next.)
+````bash
+# Control-D
+git checkout lifting-xhr
+lein fig:build
+````
+Our treatment to date of [the XHR lift](https://github.com/kennytilton/matrix/tree/master/cljs/mxxhr) is technically minimal but the test suite includes clean dataflow solutions to several Hellish use cases. Our use case here is trivial, just a simple XHR query to the FDA API and one response bound to success or error information.
 ````clojure
 (defn adverse-event-checker [todo]
   (i
@@ -201,7 +204,8 @@ Our treatment to date of [the XHR lift](https://github.com/kennytilton/matrix/tr
                  (make-xhr (pp/cl-format nil ae-by-brand
                              (js/encodeURIComponent
                                (de-whitespace (td-title todo))))
-                   {:name       name :send? true
+                   {:name       name
+                    :send? true
                     :fake-delay (+ 500 (rand-int 2000))}))
      :response (cF (when-let [xhr (<mget me :lookup)]
                      (xhr-response xhr)))
@@ -211,19 +215,28 @@ Our treatment to date of [the XHR lift](https://github.com/kennytilton/matrix/tr
     "warning"))
 ````
     
-That is the application code we can easily review in this project. To see where the response dataflow starts we must look at  mxXHR libary internals. (look for the `mset!>`; as for `with-cc`, we touch on that below):
+That is the application code, a powerful example of the SSB *single source* principle. Add or remove that block of code to completely swap in/out all concerns. 
+
+To see where the response dataflow starts we must look at mxXHR libary internals. (Look for the `mset!>`; as for `with-cc`, we touch on that below):
 ````clojure
 (defn xhr-send [xhr]
   (go
     (let [response (<! (client/get (<mget xhr :uri) {:with-credentials? false}))]
        (with-cc :xhr-handler-sets-responded
-          (mset!> xhr :response
+          (mset!> xhr :response    ;; <------- DATAFLOW BEGINS HERE
             {:status (:status response)
              :body   (if (:success response)
                        ((:body-parser @xhr) (:body response))
                        [(:error-code response)
                         (:error-text response)])}))))))
 ````
+Hellish async XHR responses are now just ordinary Matrix inputs. 
+
+Notes:
+* We fake variable response latency;
+* `with-cc`, an advanced trick, enqueues its body for execution at the right time in the datafow lifecycle.
+
+> If you play with new to-dos, do *not* be alarmed by red warnings: all drugs have adverse events, and the FDA search is aggressive: cats have adverse events. Dogs are fine.
 Hellish async XHR responses are now just ordinary Matrix inputs. 
 
 Notes:
