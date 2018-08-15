@@ -1,9 +1,9 @@
 # TodoMVC, with Matrix Inside&trade;: the Mechanics
 *Matrix dataflow and mxWeb, in depth*
 
-In our final episode we will dive quite deep into Matrix and mxWeb, but just deep enough to see past the syntactic sugar. Some of what follows reprises material offered so far, just to have a coherent narrative thread.
+The Matrix dataflow library converts the reads and writes of declarative formulas and handlers and somewhow produces a complete application. In our final episode we will lift the hood on Matrix just far enough to see how a simple write propagates out to concerned readerts and finally shapes a Web page. 
 
->This in-depth look at what happens under the hood of mxWeb/Matrix will make more sense if you have already read Have you read [the preamble](../README.md) and followed [our implementation](BuildingTodoMVC.md).
+>This in-depth look at what happens under the hood of mxWeb/Matrix will make more sense if you have already read Have you read [the preamble](../README.md) and followed [our implementation](BuildingTodoMVC.md). Much of what follows duplicates material offered so far, just to have a coherent narrative thread.
 
 We choose *mxWeb* as the vehicle for introducing Matrix because nothing challenges a developer more than keeping application state straight while an intelligent user does their best to use a rich interface correctly. Then marketing wants a U/X overhaul.
 
