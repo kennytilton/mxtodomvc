@@ -246,9 +246,15 @@ Notes:
 * mxWeb does its thing and the warning disappears or turns red.
 
 ### Summary
-With ReactJS, popularized the power of declarative, functional programming. In mxWeb we see that power extended beyond the view to the model and to any other system for which we care to write sufficient glue, such as XHR.
+In this write-up we have detailed all the things that must happen when users make simple changes. Without dataflow, the programmer must arrange all that. But if one reviews the mxTodoMVC implementation, that complexity is nowhere to be found. 
 
-In this write-up we have detailed all the things that happen automatically when event handlers make simple changes. User interfaces, as Mr. Hickey adroitly observed, are complex beasts. But if one reviews the mxTodoMVC implementation, that complexity is nowhere to be found.
+Where did it go?
+
+With ReactJS, Facebook engineers popularized the power of declarative, functional programming. In mxWeb we see that power extended beyond the view to the model and to any other system for which we care to write sufficient glue, such as XHR.
+
+User interfaces strike Mr. Hickey as messy beasts. They way we normally code them, they are. But after extending the functional view decomposition Facebook introduced across the application, we discover the simple logic of user interfaces.  
+
+
 
 
 
