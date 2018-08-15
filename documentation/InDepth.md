@@ -3,14 +3,16 @@
 
 The Matrix dataflow library converts the reads and writes of declarative formulas and handlers and somewhow produces a complete application. In our final episode we will lift the hood on Matrix just far enough to see how a simple write propagates out to interested formulas and finally shapes a Web page. 
 
->This in-depth look at what happens under the hood of mxWeb/Matrix will make more sense if you have already read Have you read [the preamble](../README.md) and followed [our implementation](BuildingTodoMVC.md). Much of what follows duplicates material offered so far, just to have a coherent narrative thread. To find just the new stuff, look for "Matrix Under The Hood" headers.
+This in-depth look at what happens under the hood of mxWeb/Matrix will make more sense if you have already read [the preamble](../README.md) and followed [our implementation](BuildingTodoMVC.md). 
 
-We choose *mxWeb* as the vehicle for introducing Matrix because nothing challenges a developer more than keeping application state straight while an intelligent user does their best to use a rich interface correctly. Then marketing wants a U/X overhaul.
+*Warning: Much of what follows duplicates material offered so far, just to have a coherent narrative thread. To find just the new stuff, look for "Matrix Under the Hood" headers.*
+
+We choose *mxWeb* as the vehicle for introducing Matrix because nothing challenges a developer more than managing application state while an intelligent user does their best to use an interface correctly. Then marketing overhauls the U/X.
 
 > "UIs...I am not going to go there. I don't do that part."  
 -- Rich Hickey on the high ratio of code to logic in UIs, *Clojure/Conj 2017*
 
-mxWeb is a thin web un-framework built atop Matrix. We say "un-framework" because mxWeb exists only to wire the DOM for dataflow. The API design imperative is that the MDN reference be the mxWeb reference; mxWeb itself introduces no new architecture.
+mxWeb is a thin web un-framework built atop Matrix. We say "un-framework" because mxWeb exists only to wire the DOM for dataflow. The API design imperative is that [MDN](https://developer.mozilla.org/en-US/) be the mxWeb reference; mxWeb itself introduces no new architecture.
 
 Matrix achieves this simply by enhancing how we initialize, read, and write individual properties:
 * properties can be initialized as a literal value or as a function;
