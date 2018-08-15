@@ -231,19 +231,13 @@ To see where the response dataflow starts we must look at mxXHR libary internals
                         (:error-text response)])}))))))
 ````
 Hellish async XHR responses are now just ordinary Matrix inputs. 
-
-Notes:
-* We fake variable response latency;
-* `with-cc`, an advanced trick, enqueues its body for execution at the right time in the datafow lifecycle.
-
 > If you play with new to-dos, do *not* be alarmed by red warnings: all drugs have adverse events, and the FDA search is aggressive: cats have adverse events. Dogs are fine.
 Hellish async XHR responses are now just ordinary Matrix inputs. 
 
-Notes:
-* `ae-checker-style-formula` manifests a nice code win: complex `cF`s can be broken out into their own functions;
-* Google's Material Design icon fonts integrate smoothly;
-* We fake variable response latency;
-* For pedagogic reasons, we break up the lookup into several `cFs`:
+#### Matrix under the hood:
+One formula generates an XHR, another use the response, success or failure. Some notes on what happens in between:
+* we fake variable response latency;
+* `with-cc`, an advanced trick, enqueues its body for execution at the right time in the datafow lifecycle.
 * `lookup` functionally returns an mxXHR incarnation of an actual XHR, but...
 * ...we specify that the XHR be *sent* immediately! This is where `with-cc` comes in...
 * ...getting into the weeds, `with-cc` enqueues its body for execution at the right time in the datafow lifecycle...
@@ -259,7 +253,7 @@ Notes:
 * mxWeb does its thing and the warning disappears or turns red.
 
 ### Summary
-In this write-up we have detailed all the things that must happen when users make simple changes. Without dataflow, the programmer must arrange all that. But if one reviews the mxTodoMVC implementation, that complexity is nowhere to be found. 
+In this write-up we have detailed all the things that must happen when users make simple changes, or when a Web page needs remote data and emits an XHR. Without dataflow, the programmer must arrange all that. But if one reviews the mxTodoMVC implementation, that complexity is nowhere to be found. 
 
 Where did it go?
 
