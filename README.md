@@ -17,7 +17,7 @@ What does it mean for B to read A? It means B is expressed as an HLL function th
 ````
 The above is an excerpt from TodoMVC, which we will build in the [next write-up](documentation/BuildingTodoMVC.md). Without getting too much into the weeds, `li` makes a proxy LI instance. Its API mirrors the HTML syntax `<li attribute*> children* </li>`. `cF` (for *formulaic cell*) makes `:class` functional. 
 
-`<mget` is the Matrix property reader that remembers which property is asking. It can be called outside of formulas. Dependencies are detected dynamically, meaning the tracking sees inside function calls. This in turn means we can hide the `<mget` noise behind a simple:
+`<mget` is the Matrix property reader that remembers which property is asking. We can hide the `<mget` noise with a pithier wrapper:
 
 ````clojure
 (defn td-completed [todo]
@@ -31,9 +31,9 @@ Back to our app. In the next excerpt, the Matrix manages a `to-do` model propert
     :items (cF (remove td-deleted (<mget me :items-raw)))
     :empty? (cF (empty? (<mget me :items))))
 ````
-`cI` sets that property up to tell functional  properties `:items` when `:items-raw` changes. Functional `:items` will tell functional `:empty?` if *it* has changed. `me` is like `self` or `this`, so here would be the `todo-list`.
+`cI` sets that property up to tell functional  properties `:items` when `:items-raw` changes. Functional `:items` will tell functional `:empty?` if *it* has changed. `me` is like `self` or `this`, so in this case would be the `todo-list`.
 
-Aside: those simple derivations could just as well be ordinary functions of the to-do list, but these are just two small carveouts in the progressive decomposition of TodoMVC. Our win will be the decomposition, not the size of any particular carveout.
+Aside: those simple derivations could just as well be ordinary functions of the to-do list, but these are just two small carveouts in the progressive decomposition of TodoMVC. Our win will be the aggregate decomposition, not the size of any particular carveout.
 
 #### A tells B
 What does it mean for A to tell B? It means that, when we imperatively change A, Matrix internals will automatically recalculate B:
