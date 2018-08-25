@@ -45,7 +45,6 @@
 (defn de-whitespace [s]
   (str/replace s #"\s" ""))
 
-#_
 (defn adverse-event-checker [todo]
   (i
     {:class   "aes material-icons"
@@ -125,7 +124,7 @@
                              (mxweb/input-editing-start edt-dom (td-title todo)))}
         (td-title todo))
 
-      ;;(adverse-event-checker todo)
+      (adverse-event-checker todo)
 
       (button {:class   "destroy"
                ;; we actually have an td-delete! to hide the action, but
