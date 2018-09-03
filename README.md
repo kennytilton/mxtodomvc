@@ -70,10 +70,11 @@ The mxWeb library provides an observer for maintaining the DOM:
        ...others...
        :class (classlist/set dom new-value))))
 ````
-mxWeb proxy instances know which DOM element they represent, and because Matrix tracks change by property we have no need for VDOM or diffing: mxWeb knows exactly what to change.
+Matrix tracks change property by property so we have no need for VDOM/diffing: mxWeb knows exactly what DOM to change.
 
-Notes:
-* we offer no example of a deferred write at this time.  
+*Notes*
+* mxWeb proxy instances know which DOM element they represent, unlike in ReactJS; 
+* we offer no example of a deferred write at this time; 
 Those arise when applications have grown quite large, when the *developer* decides some observed property change demands a change at the application semantic level, as if the user were making a change.
 * *caveat lectorum* we use "observer" in the strict dictionary sense: "monitor, not participant". Other libraries use "observer" for what we call dependent or formulaic properties.
 
