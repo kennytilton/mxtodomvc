@@ -8,14 +8,14 @@ mxWeb&trade; makes web pages easier to build, debug, and revise simply by changi
 Mysterious, right? But those are just the essentials. As we expand on them, their ultimate expression as a different way of programming will be less surprising. We begin with concrete examples of each. 
 
 #### B reads A
-What does it mean for B to read A? It means B is expressed as an HLL function that reads A. Colloquially, we call these *formulas*.
+What does it mean for B to read A? It means B is expressed as an HLL (high-level language) function that reads A. Colloquially, we call these *formulas*.
 ````clojure
 (li
     {:class (cF (when (<mget todo :completed)
                   "completed"))}
     ...)
 ````
-The above is an excerpt from TodoMVC, which we will build in the [next write-up](documentation/BuildingTodoMVC.md). Without getting too much into the weeds, `li` makes a proxy LI instance. Its API mirrors the HTML syntax `<li attribute*> children* </li>`. `cF` (for *formulaic cell*) makes `:class` functional. 
+The above is an excerpt from TodoMVC, which we will build in the [next write-up](documentation/BuildingTodoMVC.md). Without getting too much into the weeds, `li` makes a proxy LI instance. Its API mirrors the HTML syntax `<li attribute*> children* </li>`. `cF` (for *formulaic cell*) makes the `:class` property functional and reactive. 
 
 `<mget` is the Matrix property reader that remembers which property is asking. We can hide the `<mget` noise with a pithier wrapper:
 
@@ -24,7 +24,7 @@ The above is an excerpt from TodoMVC, which we will build in the [next write-up]
   (<mget todo :completed))
 ````
 
-Back to our app. In the next excerpt, the Matrix manages a `to-do` model property, "model" as in MVC. Note `td-deleted`, hiding another `<mget` while still establishing a dependency. Transparency equals productivity.
+Back to our app. In the next excerpt, the Matrix manages a `to-do` model property, "model" as in MVC. Note `td-deleted`, hiding another `<mget`. Transparency equals productivity.
 ````clojure
 (md/make ::todo-list
     :items-raw (cI nil)
