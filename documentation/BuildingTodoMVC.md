@@ -424,7 +424,7 @@ First, we drop a new input field into each LI dedicated to a to-do item:
 ````
 And now the handler, where DOM access is substantial:
 ````clojure
-(defn todo-edit [e todo edit-commited?]
+(defn todo-edit [e todo edit-committed?]
   (let [edt-dom (.-target e)
         li-dom (dom/getAncestorByTagNameAndClass edt-dom "li")]
 
@@ -432,7 +432,7 @@ And now the handler, where DOM access is substantial:
       (let [title (str/trim (form/getValue edt-dom))
             stop-editing #(classlist/remove li-dom "editing")]
         (cond
-          edit-commited?
+          edit-committed?
           (do
             (stop-editing)                                  ;; has to go first cuz a blur event will sneak in
             (if (= title "")
