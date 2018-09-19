@@ -3,7 +3,7 @@
 
 The [TodoMVC](http://todomvc.com) project specifies a trivial Web application as the basis for comparing Web frameworks. In [the preamble](../README.md) to this write-up, we looked at what makes programming with Matrix and mxWeb different, only lightly touching on mxTodoMVC code. 
 
-> If you have not read that preamble, you might want to start there for a solid grounding in Matrix concepts.
+> If you have not read that preamble, you might want to start [there](../README.md) for a solid grounding in Matrix concepts.
 
 In this write-up, we will `git checkout` a series of tags marking milestones along our evolution of TodoMVC. At each step we will review the new code, but not delve too deeply into mxWeb mechanics. That we will save for a final, [detailed exploration](InDepth.md) for those of us who need to see the moving parts of high level APIs, especially those that seem like magic.
 
@@ -67,7 +67,7 @@ The sharp-eyed reader has spotted an unlikely HTML tag, `mxtodo-credits`. Here i
                   "Inspired by <a href=\"https://github.com/tastejs/todomvc/blob/master/app-spec.md\">TodoMVC</a>."]]
       (p credit))))
 ````
-Hello, [Web Components](https://developer.mozilla.org/en-US/docs/Web/Web_Components). `mxtodo-credits` is rather simple as components go, but next up is one that takes parameters to support reuse.
+Hello, [Web Components](https://developer.mozilla.org/en-US/docs/Web/Web_Components). `mxtodo-credits` is rather simple as components go, but next up is one that accepts parameters to support reuse.
 
 ### wall-clock
 We add a simple "wall clock". It is not in the TodoMVC spec, but it lets us take a quick, deep dive into mxWeb in just a few lines of code. Here is what we will see:
