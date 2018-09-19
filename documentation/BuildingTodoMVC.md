@@ -292,7 +292,7 @@ Just two steps are required:
 The routing change then causes the list view to recompute which items to display, and an observer on the `UL` children arranges for the DOM to be updated.
 
 #### todo-entry
-We have called mxWeb an "un-framework". With this tag we add support for user entry of new to-dos, and illustrate one advantage of not being a framework: mxWeb does not hide the DOM. Our next feature -- allowing the user to enter the to-dos -- benefits a couple of places from direct DOM and event access.
+We have called mxWeb an "un-framework". With this tag we add support for user entry of new to-dos, and illustrate one advantage of not being a framework: mxWeb does not hide the DOM. Our next feature -- allowing the user to enter the to-dos -- benefits in a couple of places from direct DOM and event access.
 ````bash
 # Control-D
 git checkout todo-entry
