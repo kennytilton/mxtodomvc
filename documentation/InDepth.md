@@ -262,7 +262,7 @@ Where did it go?
 
 With ReactJS, Facebook engineers popularized the power of declarative, functional programming. In mxWeb we see that power extended beyond the view to the model and to any other system for which we care to write sufficient glue, such as XHR.
 
-User interfaces strike Mr. Hickey as messy beasts. They way we normally code them, they are. But after extending the functional view decomposition Facebook introduced across the application, we discover the simple logic of user interfaces.  
+User interfaces strike Mr. Hickey as messy beasts. The way we normally code them, they are. But after extending the functional view decomposition Facebook introduced across the application, we discover the simple logic of user interfaces.  
 
 
 
