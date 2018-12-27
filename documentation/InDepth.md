@@ -97,7 +97,6 @@ We can now start our demo matrix off with a few preset to-dos.
   * `cFonce` effectively defers the enclosed form until the right lifecycle point in the matrix's initial construction.
   * `with-par me` is how the matrix DOM knows where it is in the matrix tree. All matrix nodes know their parents so they can navigate the tree freely to gather information.
 * the app credits are now provided by a new "web component", and that along with the "wall-clock" reusable are off in their own namespace.
-* most interesting is `(mxu-find-type me ::todoApp)`, a bit of exposed wiring that demonstrates how Matrix elements pull information from elsewhere in the Matrix using various "mx-find-\*" CSS selector-like utilities. 
 
 And now the to-do item view itself.
 ````clojure
