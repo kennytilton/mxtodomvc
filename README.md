@@ -5,7 +5,7 @@ The `Matrix` dataflow library endows application state with causal power over ot
 
 > ma·trix ˈmātriks *noun* an environment in which something else takes form. *Origin:* Latin, female animal used for breeding, parent plant, from *matr-*, *mater*
 
-More grandly, Matrix brings our application models to life, animating them in response to streams of external inputs. The movies were fun, but that Matrix sucked energy from humans to feed machines. Mr. Hickey, a careful man with the dictionary, might disapprove the misconstruction.
+More grandly, Matrix brings our application models to life, animating them in response to streams of external inputs. The movies were fun, but that particular Matrix sucked energy from humans to feed machines. Mr. Hickey, a careful man with the dictionary, might disapprove the misconstruction.
 
 > "Derived Values, Flowing" -- [re-frame](https://github.com/Day8/re-frame/blob/master/README.md) tag-line
 
@@ -13,11 +13,11 @@ Most today call this _reactive programming_. That describes well the programmer 
 
 *Prior and concurrent art*
 
-Matrix enjoys much good company in this field. We believe Matrix offers more simplicity, transparency, granularity, expressiveness, efficiency, and functional coverage, but in each dimension differs in degree, not spirit. Other recommended CLJS libraries are [Reagent](https://reagent-project.github.io/), [Hoplon/Javelin](https://github.com/hoplon/javelin), and [re-frame](https://github.com/Day8/re-frame). Beyond CLJS, we admire [MobX](https://github.com/mobxjs/mobx/blob/master/README.md) (JS), [binding.Scala](https://github.com/ThoughtWorksInc/Binding.scala/blob/11.0.x/README.md), and Python [Trellis](https://pypi.org/project/Trellis/).
+Matrix enjoys much good company in this field. We believe Matrix offers more simplicity, transparency, granularity, expressiveness, efficiency, and functional coverage, but in each dimension differs in degree, not spirit. Other recommended CLJS libraries are [Reagent](https://reagent-project.github.io/), [Hoplon/Javelin](https://github.com/hoplon/javelin), and [re-frame](https://github.com/Day8/re-frame). Beyond CLJS, we admire [MobX](https://github.com/mobxjs/mobx/blob/master/README.md) (JS), [binding.Scala](https://github.com/ThoughtWorksInc/Binding.scala/blob/11.0.x/README.md), and the Matrix-inspired Python [Trellis](https://pypi.org/project/Trellis/).
 
 *mxWeb, "poster" application*
 
-`mxWeb` is a thin web un-framework built atop Matrix. We introduce Matrix in the context of mxWeb because nothing challenges a developer more than keeping application state straight while an intelligent user does their best to use a rich interface correctly. Then marketing wants the U/X redone.
+`mxWeb` is a thin web un-framework built atop Matrix. We introduce Matrix in the context of mxWeb because nothing challenges a developer more than keeping application state straight while an intelligent user does their best to use a rich interface correctly. Then marketing wants the U/X redone, and the UI msut be re-wired.
 
 We say "un-framework" because mxWeb exists only to wire the DOM for dataflow. The API design imperative is that the MDN reference be the mxWeb reference; mxWeb itself introduces no new architecture.
 
