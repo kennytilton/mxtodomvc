@@ -50,15 +50,15 @@ The Matrix property writer `mswap!>`:
 ### Digging deeper
 A few more fundamentals:
 * on-change handlers, or "observers", may be supplied for A or B; and
-* we might have a property K for "kids", such as the children of a parent DOM element.
+* the _children_ of a parent DOM element can be a computed property; we use _kids_ because it is shorter.
 
 Again, some concrete examples...
 #### on-change handlers, or "observers"
-In the example above, the `:class` property of a proxy `li` instance gained or lost the "completed" string as the user toggled the model to-do's `:completed` property via an `onclick` handler. Great, but how does the actual DOM `li` classlist get changed?
+In the example above, the `:class` property of a proxy `li` instance gained or lost the "completed" string as the user toggled the model to-do's `:completed` property via an `onclick` handler. Great, but how does the actual _DOM_ `li` classlist get changed?
 
 Changing properties manifest themselves via on-change callbacks we call *observers*. When `A` changes, an observer can:
-* mutate properties outside the Matrix graph; or
-* enqueue Matrix writes to other properties for execution immediately after the current write.
+* mutate properties outside the Matrix graph, such as the DOM classlist; or
+* getting fancy, enqueue Matrix writes to other *cI* properties for execution immediately after the current write.
 
 The mxWeb library provides an observer for maintaining the DOM:
 ````clojure
@@ -75,7 +75,7 @@ Matrix tracks change property by property so we have no need for VDOM/diffing: m
 *Notes*
 * mxWeb proxy instances know which DOM element they represent, unlike in ReactJS; 
 * we offer no example of a deferred write at this time; 
-Those arise when applications have grown quite large, when the *developer* decides some observed property change demands a change at the application semantic level, as if the user were making a change.
+Those arise when applications have grown quite large, when the *developer* decides some observed property change demands a change at the application semantic level, as if the _user_ were making a change.
 * *caveat lectorum* we use "observer" in the strict dictionary sense: "monitor, not participant". Other libraries use "observer" for what we call dependent or formulaic properties.
 
 #### K for Kids
@@ -85,7 +85,7 @@ We call a dynamic population of causally connected models a *matrix*.
 
 > ma·trix ˈmātriks *noun* an environment in which something else takes form. *Origin:* Latin, female animal used for breeding, parent plant, from *matr-*, *mater*
 
-Here is how our TodoMVC will avoid rebuilding the full DOM list of to-dos when: (1) a to-do is added or deleted; (2) the user selects a different filter; or (3) the `:completed` property of a to-do is changed. 
+Here is how our TodoMVC will avoid rebuilding the full DOM list of to-dos when: (1) a to-do is added or deleted; (2) the user selects a different filter; or (3) the `:completed` property of a to-do is changed. If you are familiar with how *ReactJS* uses the _key_ property, this will seem, well, familiar:
 ````clojure
 (ul {:class "todo-list"}
   {:kid-values  (cF (sort-by td-created
