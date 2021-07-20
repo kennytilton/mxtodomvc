@@ -69,7 +69,7 @@ The sharp-eyed reader has spotted an unlikely HTML tag, `mxtodo-credits`. Here i
 ````
 Hello, [Web Components](https://developer.mozilla.org/en-US/docs/Web/Web_Components). `mxtodo-credits` is rather simple as components go, but next up is one that accepts parameters to support reuse.
 
-### wall-clock
+### git checkout wall-clock
 We add a simple "wall clock". It is not in the TodoMVC spec, but it lets us take a quick, deep dive into mxWeb in just a few lines of code. Here is what we will see:
 * automatic, transparent state management: our first dataflow;
 * DOM efficiency without VDOM;
@@ -133,7 +133,7 @@ Our wall clock widget needs application state, and it generates and relays that 
 #### the Grail of object reuse  
 Few DIV elements need a stream of clock values. In a rigid OOP framework, we would need to sub-class DIV to arrange for one. Matrix, like the prototype model of OOP, lets us code up a new dataflow-capable clock property on the fly and attach it to our proxy `div`.
 
-### enter-todos
+### git checkout enter-todos
 As promised, that was a deep first dive. This tag will be simpler, adding a bunch more UI structure but no ability to edit or even create todos:
 * we load a few fixed-todos at start-up;
 * we show them in a list;
@@ -248,7 +248,7 @@ We can now play with toggling the completion state of to-dos, deleting them dire
 
 Next up, a bit of routing.
 
-#### lift-routing
+#### git checkout lift-routing
 The official TodoMVC spec requires a routing mechanism be used to implement the user filtering of which to-dos are displayed, based on their completion status. The options are "all", "completed" only, and "active" (incomplete) only.
 ````bash
 # Control-D
@@ -291,7 +291,7 @@ Just two steps are required:
 
 The routing change then causes the list view to recompute which items to display, and an observer on the `UL` children arranges for the DOM to be updated.
 
-#### todo-entry
+#### git checkout todo-entry
 We have called mxWeb an "un-framework". With this tag we add support for user entry of new to-dos, and illustrate one advantage of not being a framework: mxWeb does not hide the DOM. Our next feature -- allowing the user to enter the to-dos -- benefits in a couple of places from direct DOM and event access.
 ````bash
 # Control-D
@@ -315,7 +315,7 @@ lein fig:build
 ````
 mxWeb callbacks are passed the raw browser event, above accessed as the token `%`. `getValue` is straight JS, and with `setValue` we easily implement the spec requirement to clear the field. In a different handler we will see manipulation of the DOM classlist. No [`refs` heavy lift](https://reactjs.org/docs/refs-and-the-dom.html) required.
 
-#### lifting-xhr
+#### git checkout lifting-xhr
 Now an especially interesting example of lifting: XHR, affectionately known as Callback Hell. We do so exceeding the official TodoMVC spec to alert our user of any to-do item that returns results from a search of the FDA [Adverse Events database](https://open.fda.gov/data/faers/).
 
 If you enter a new to-do, it will appear with a gray alert icon, gray signifying undecided. If no adverse events are found, the alert disappears. If any are found, it turns red. (You will also observe excessive such lookups, to be addressed next.)
@@ -380,7 +380,7 @@ Notes:
 > If you play with new to-dos, do *not* be alarmed by red warnings: all drugs have adverse events, and the FDA search is aggressive: cats have adverse events. Dogs are fine.
 
 Now let's fix the excess look-ups.
-#### family-values
+#### git checkout family-values
 A matrix is a simple tree formed of single parents with multiple so-called `kids`, a nice short name for children. When the list changes incrementally and the children are mxWeb widgets, the mxWeb observer will be rebuilding those hefty widgets on each small change.
 ````bash
 # Control-D
@@ -409,7 +409,7 @@ Our key is the abstract to-do model. `cache` above is a variable supplied by the
 
 We do not offer a diagram here because this you have to see live: when you add an item, you will see an AE lookup executed only for the new item. When you delete an item, no lookups will be executed. Before this version, all to-dos were looked up on each change.
 
-#### ez-dom: editing an existing to-do
+#### git checkout  ez-dom: editing an existing to-do
 Above we promised more about having easy access to the DOM from front-end code, something one might take for granted but for the example of ReactJS where the `refs` rigmarole is required. We deliver on that promise with the last feature we will implement: the ability to edit a to-do after it has been entered. 
 ````bash
 # Control-D
