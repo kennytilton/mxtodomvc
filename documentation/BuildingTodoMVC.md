@@ -324,7 +324,7 @@ If you enter a new to-do, it will appear with a gray alert icon, gray signifying
 git checkout lifting-xhr
 lein fig:build
 ````
-Our treatment to date of [the XHR lift](https://github.com/kennytilton/matrix/tree/master/cljs/mxxhr) is technically minimal but the test suite includes clean dataflow solutions to several Hellish use cases. Our use case here is trivial, just a simple XHR query to the FDA API and one response bound to success or error information.
+Our treatment to date of [the XHR lift](https://github.com/kennytilton/matrix/tree/master/cljc/mxxhr) is technically minimal but the test suite includes clean dataflow solutions to several Hellish use cases. Our use case here is trivial, just a simple XHR query to the FDA API and one response bound to success or error information.
 ````clojure
 (defn adverse-event-checker [todo]
   (i
@@ -473,4 +473,4 @@ Finally, we have dropped in one last feature from the TodoMVC spec that makes li
 Nothing will be added by implementing persistence, but if you are curious you can check out [mxLocalStorage](https://github.com/kennytilton/matrix/blob/master/js/matrix/js/Matrix/mxWeb.js) at the very end of the source from our Javascript implementation of mxWeb. 
 
 ## Summary
-That completes our implementation of the TodoMVC spec. In our next [in-depth write-up](InDepth.md) of mxWeb, we will look more closely at certain elements to fully lift any sense of mystery created by the dataflow paradigm. Or continue on to a look at the important question of how [Matrix manages lifecycle](https://github.com/kennytilton/matrix/tree/master/cljs/fluxchallenge) issues in a declarative dataflow application
+That completes our implementation of the TodoMVC spec. In our next [in-depth write-up](InDepth.md) of mxWeb, we will look more closely at certain elements to fully lift any sense of mystery created by the dataflow paradigm. 
