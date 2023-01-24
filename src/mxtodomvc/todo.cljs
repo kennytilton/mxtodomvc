@@ -3,7 +3,7 @@
     [tiltontec.util.core :as util]
     [tiltontec.cell.core
      :refer-macros [cF cFn] :refer [cI]]
-    [tiltontec.model.core :as md :refer [make <mget mset!> mswap!>]]))
+    [tiltontec.model.core :as md :refer [make mget mset! mswap!]]))
 
 (declare td-deleted td-completed make-todo)
 
@@ -22,11 +22,11 @@
     ;; is bound as necessary. Look for this to get baked into the
     ;; Matrix internals.
     ;;
-    :items (cF (doall (remove td-deleted (<mget me :items-raw))))
-    :items-completed (cF (doall (filter td-completed (<mget me :items))))
-    :items-active (cF (doall (remove td-completed (<mget me :items))))
+    :items (cF (doall (remove td-deleted (mget me :items-raw))))
+    :items-completed (cF (doall (filter td-completed (mget me :items))))
+    :items-active (cF (doall (remove td-completed (mget me :items))))
 
-    :empty? (cF (empty? (<mget me :items)))))
+    :empty? (cF (empty? (mget me :items)))))
 
 (defn make-todo
   "Make a matrix incarnation of a todo item"
@@ -49,34 +49,34 @@
     :deleted (cI nil)))
 
 ;;; --------------------------------------------------------
-;;; --- handy accessors to hide <mget etc ------------------
+;;; --- handy accessors to hide mget etc ------------------
 ;;; look for a macro RSN to auto-generate these
 
 (defn td-created [td]
-  ;; created is not a Cell because it never changes, but we use the <mget API anyway
-  ;; just in case that changes. (<mget can handle normal slots not wrapped in cells.)
-  (<mget td :created))
+  ;; created is not a Cell because it never changes, but we use the mget API anyway
+  ;; just in case that changes. (mget can handle normal slots not wrapped in cells.)
+  (mget td :created))
 
 (defn td-title [td]
-  (<mget td :title))
+  (mget td :title))
 
 (defn td-id [td]
-  (<mget td :id))
+  (mget td :id))
 
 (defn td-completed [td]
-  (<mget td :completed))
+  (mget td :completed))
 
 (defn td-deleted [td]
-  ;; created is not a Cell because it never changes, but we use the <mget API anyway
+  ;; created is not a Cell because it never changes, but we use the mget API anyway
   ;; just in case that changes (eg, to implement un-delete)
-  (<mget td :deleted))
+  (mget td :deleted))
 
 ;;; ---------------------------------------------
 ;;; --- dataflow triggering setters to hide mset!
 
 (defn td-delete! [td]
-  (mset!> td :deleted (util/now)))
+  (mset! td :deleted (util/now)))
 
 (defn td-toggle-completed! [td]
-  (mswap!> td :completed
+  (mswap! td :completed
     #(when-not % (util/now))))

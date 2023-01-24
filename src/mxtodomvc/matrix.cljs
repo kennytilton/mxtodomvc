@@ -7,8 +7,8 @@
     [tiltontec.model.core
      ; todo trim
      :refer-macros [with-par]
-     :refer [matrix mx-par <mget mset!> mswap!> mxu-find-type] :as md]
-    [mxweb.gen
+     :refer [matrix mx-par mget mset! mswap! mxu-find-type] :as md]
+    [tiltontec.mxweb.gen-macro
      :refer-macros [div section header h1 footer p ul
                     li span input label]]
 
@@ -44,7 +44,7 @@
                           (let [raw (form/getValue (.-target %))
                                 title (str/trim raw)]
                             (when-not (str/blank? title)
-                              (mswap!> (<mget @matrix :todos) :items-raw conj
+                              (mswap! (mget @matrix :todos) :items-raw conj
                                 (make-todo title)))
                             (form/setValue (.-target %) "")))}))
 
@@ -62,7 +62,7 @@
                        {:default     :ignore
                         :on-navigate (fn [route params query]
                                        (when-let [mtx @md/matrix]
-                                         (mset!> mtx :route (name route))))})
+                                         (mset! mtx :route (name route))))})
 
       :todos (todo/todo-list ["Yankees"])
 

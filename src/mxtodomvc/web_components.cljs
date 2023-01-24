@@ -8,10 +8,10 @@
     [tiltontec.model.core
      ; todo trim
      :refer-macros [with-par]
-     :refer [matrix mx-par <mget mset!> mswap!>
+     :refer [matrix mx-par mget mset! mswap!
              fget mxi-find mxu-find-type
              kid-values-kids] :as md]
-    [mxweb.gen
+    [tiltontec.mxweb.gen-macro
      :refer-macros [div section header h1 footer p ul li span]]
     [mxtodomvc.todo
      :refer [make-todo td-title] :as todo]
@@ -79,7 +79,7 @@
     ;;    cI     -- make a Matrix input cell initialized with the value shown;
     ;;    cFonce -- a formulaic cell that runs just once, for Matrix
     ;;              lifecycle reasons we will visit when needed; and
-    ;;    mset!> -- procedural, imperative assignment to an input cell.
+    ;;    mset! -- procedural, imperative assignment to an input cell.
 
     {:clock  (cI (util/now))
      :ticker (cFonce
@@ -92,7 +92,7 @@
                ;; to the instance. But let's stay out of the weeds.
                ;;
                (js/setInterval
-                 #(mset!> me :clock (util/now))
+                 #(mset! me :clock (util/now))
                  interval))}
 
     ;; and now the simple string content as the one and only
@@ -100,7 +100,7 @@
     ;; forms after this point in a formulaic Cell, hiding the
     ;; necessary boilerplate.
 
-    (as-> (<mget me :clock) date
+    (as-> (mget me :clock) date
       (js/Date. date)
       (case mode
         :time (.toTimeString date)

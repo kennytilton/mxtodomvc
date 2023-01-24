@@ -10,16 +10,16 @@
     [tiltontec.cell.core :refer-macros [cF cF+]]
     [tiltontec.cell.evaluate :refer [not-to-be]]
 
-    [tiltontec.model.core :refer [matrix mx-par <mget mset!> ;; mswap!>
+    [tiltontec.model.core :refer [matrix mx-par mget mset! ;; mswap!
                                   ;;fget mxi-find mxu-find-type
                                   ] :as md]
 
-    [mxxhr.core
+    [tiltontec.mxxhr.core
      :refer [make-xhr xhr-response]]
 
-    [mxweb.gen
+    [tiltontec.mxweb.gen-macro
      :refer-macros [label li div input button span i]]
-    [mxweb.html :as mxweb]
+    [tiltontec.mxweb.html :as mxweb]
 
     [mxtodomvc.todo
      :refer [td-title td-created
@@ -51,10 +51,10 @@
      :title "Click to see some AE counts"
      :onclick #(js/alert "Feature to display AEs not yet implemented")
      :style   (cF (str "font-size:36px"
-                    ";display:" (case (<mget me :aes?)
+                    ";display:" (case (mget me :aes?)
                                   :no "none"
                                   "block")
-                    ";color:" (case (<mget me :aes?)
+                    ";color:" (case (mget me :aes?)
                                 :undecided "gray"
                                 :yes "red"
                                 ;; should not get here
@@ -66,9 +66,9 @@
                                (de-whitespace (td-title todo))))
                    {:name       name :send? true
                     :fake-delay (+ 500 (rand-int 2000))}))
-     :response (cF (when-let [xhr (<mget me :lookup)]
+     :response (cF (when-let [xhr (mget me :lookup)]
                      (xhr-response xhr)))
-     :aes?     (cF (if-let [r (<mget me :response)]
+     :aes?     (cF (if-let [r (mget me :response)]
                      (if (= 200 (:status r)) :yes :no)
                      :undecided))}
     "warning"))
@@ -86,7 +86,7 @@
             (stop-editing)                                  ;; has to go first cuz a blur event will sneak in
             (if (= title "")
               (td-delete! todo)
-              (mset!> todo :title title)))
+              (mset! todo :title title)))
 
           (= (.-key e) "Escape")
           ;; this could leave the input field with mid-edit garbage, but
@@ -113,7 +113,7 @@
                              ;; a timestamp that is nil? until the to-do is completed
                              (not (nil? (td-completed todo))))
 
-              ;; td-toggle-completed! expands to an mset!> of the JS epoch or nil
+              ;; td-toggle-completed! expands to an mset! of the JS epoch or nil
               :onclick     #(td-toggle-completed! todo)})
 
       (label {:ondblclick #(let [li-dom (dom/getAncestorByTagNameAndClass
@@ -130,7 +130,7 @@
                ;; we actually have an td-delete! to hide the action, but
                ;; this is a tutorial so let's show the action and use mset!.
                ;; btw, yes, we extend here the spec to support logical deletion
-               :onclick #(md/mset!> todo :deleted (util/now))}))
+               :onclick #(md/mset! todo :deleted (util/now))}))
 
     (input {:class     "edit"
             :onblur    #(todo-edit % todo true)

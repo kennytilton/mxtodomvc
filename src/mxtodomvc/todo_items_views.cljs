@@ -9,13 +9,13 @@
     [tiltontec.model.core
      ; todo trim
      :refer-macros [with-par]
-     :refer [matrix mx-par <mget mset!> mswap!>
+     :refer [matrix mx-par mget mset! mswap!
              kid-values-kids mxu-find-type] :as md]
 
-    [mxweb.gen
+    [tiltontec.mxweb.gen-macro
      :refer-macros [div section header h1 footer p ul li a
                     input label span button]]
-    [mxweb.html :as mxweb]
+    [tiltontec.mxweb.html :as mxweb]
 
     [mxtodomvc.todo
      :refer [td-created td-completed td-delete!] :as todo]
@@ -54,23 +54,23 @@
   and find the matrix in @matrix. Put another way, a starting node is required
   during the matrix's initial build."
   ([]
-   (<mget @matrix :todos))
+   (mget @matrix :todos))
 
   ([mx]
    (if (nil? mx)
      (mx-todos)
      (let [mtrx (mx-find-matrix mx)]
        (assert mtrx)
-       (<mget mtrx :todos)))))
+       (mget mtrx :todos)))))
 
 (defn mx-todo-items
   ([]
    (mx-todo-items nil))
   ([mx]
-   (<mget (mx-todos mx) :items)))
+   (mget (mx-todos mx) :items)))
 
 (defn mx-route [mx]
-  (<mget (mx-find-matrix mx) :route))
+  (mget (mx-find-matrix mx) :route))
 
 ;;; --- toggle all component -----------------------------------------
 
@@ -83,16 +83,16 @@
     (input {:id        "toggle-all"
             :class     "toggle-all"
             ::mxweb/type "checkbox"
-            :checked   (cF (= (<mget (mx-par me) :action) :uncomplete))})
+            :checked   (cF (= (mget (mx-par me) :action) :uncomplete))})
 
     (label {:for     "toggle-all"
-            :onclick #(let [action (<mget me :action)]
+            :onclick #(let [action (mget me :action)]
 
                         ;; else browser messes with checked, which we handle
                         (event/preventDefault %)
 
                         (doseq [td (mx-todo-items)]
-                          (mset!> td :completed (when (= action :complete) (util/now)))))}
+                          (mset! td :completed (when (= action :complete) (util/now)))))}
       "Mark all as complete")))
 
 ;;; --- views --------------------------------------------------------
@@ -103,28 +103,28 @@
     (ul {:class "todo-list"}
       {:kid-values (cF (when-let [rte (mx-route me)]
                          (sort-by td-created
-                           (<mget (mx-todos me)
+                           (mget (mx-todos me)
                              (case rte
                                "All" :items
                                "Completed" :items-completed
                                "Active" :items-active)))))
-       :kid-key #(<mget % :todo)
+       :kid-key #(mget % :todo)
        :kid-factory (fn [me todo]
                       (todo-list-item todo))}
-      ;; cache is prior value for this implicit 'kids' slot; k-v-k uses it for diffing
-      (kid-values-kids me cache))))
+      ;; _cache is prior value for this implicit 'kids' slot; k-v-k uses it for diffing
+      (kid-values-kids me _cache))))
 
 
 
 (defn todo-items-dashboard []
   (footer {:class  "footer"
-           :hidden (cF (<mget (mx-todos me) :empty?))}
+           :hidden (cF (mget (mx-todos me) :empty?))}
 
     ;; Items remaing
 
     (span {:class   "todo-count"
            :content (cF (pp/cl-format nil "<strong>~a</strong>  item~:P remaining"
-                          (count (<mget (mx-todos me) :items-active))))})
+                          (count (mget (mx-todos me) :items-active))))})
 
     ;; Item filters
 
@@ -139,7 +139,7 @@
                  label))))
 
     (button {:class   "clear-completed"
-             :hidden  (cF (empty? (<mget (mx-todos me) :items-completed)))
-             :onclick #(doseq [td (<mget (mx-todos me) :items-completed)]
+             :hidden  (cF (empty? (mget (mx-todos me) :items-completed)))
+             :onclick #(doseq [td (mget (mx-todos me) :items-completed)]
                          (td-delete! td))}
       "Clear completed")))
