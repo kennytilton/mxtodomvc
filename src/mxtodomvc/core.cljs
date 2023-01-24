@@ -3,9 +3,9 @@
     [goog.dom :as dom]
     [clojure.string :as str]
     [tiltontec.cell.core :refer-macros [cFonce]]
-    [tiltontec.model.core :refer [<mget] :as md]
-    [mxweb.gen :refer-macros [h1 div]]
-    [mxweb.html :refer [tag-dom-create]]))
+    [tiltontec.model.core :refer [mget] :as md]
+    [tiltontec.mxweb.gen-macro :refer-macros [h1 div]]
+    [tiltontec.mxweb.html :refer [tag-dom-create]]))
 
 (enable-console-print!)
 
@@ -20,4 +20,4 @@
   (set! (.-innerHTML root) nil)
   (dom/appendChild root
     (tag-dom-create
-      (<mget app-matrix :mx-dom))))
+      (mget app-matrix :mx-dom))))

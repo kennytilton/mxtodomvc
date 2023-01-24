@@ -8,8 +8,8 @@
 
   :dependencies [[org.clojure/clojure "1.9.0"]
                  [org.clojure/clojurescript "1.10.339"]
-                 [tiltontec/matrix "0.1.5-SNAPSHOT"]
-                 [tiltontec/mxweb "0.1.5-SNAPSHOT"]]
+                 [com.tiltontec/matrix "4.2.0"]
+                 [com.tiltontec/mxweb "1.0.0"]]
 
   :source-paths ["src"]
 
