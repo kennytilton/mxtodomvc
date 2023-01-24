@@ -1,17 +1,35 @@
 # TodoMVC, with Matrix Inside&trade;
 *An introduction by example to Matrix dataflow and mxWeb*
 
-mxWeb&trade; makes web pages easier to build, debug, and revise simply by changing what happens when we read and write properties:
+[mxWeb&trade;](https://github.com/kennytilton/matrix/blob/main/cljc/mxweb/README.md) makes web pages easier to build, debug, and revise simply by changing what happens when we read and write properties:
 * when B reads A, A remembers B; and
 * when we write to A, A tells B.
 
 Mysterious, right? But those are just the essentials. As we expand on them, their ultimate expression as a different way of programming will be less surprising. We begin with concrete examples of each. 
 
-#### B reads A
+### Running the app
+Begin by cloning this repository:
+````bash
+git clone https://github.com/kennytilton/mxtodomvc.git
+cd mxtodomvc
+```
+Out of the box, we just see a simple "Hello, world" when we build and run on the `main` branch:
+````bash
+lein fig:build
+````
+Check your browser for a new tab open to [localhost:9500](http://localhost:9500/#/).
+
+All good? Now let us switch to the `building` branch where the Todo app has been started. In another terminal:
+````bash
+git checkout building
+````
+Figwheel should rebuild and display the full TodoMVC in the same browser tab. If not, stop and restart the `lein fig:build`.
+
+### Understanding the mystery
 What does it mean for B to read A? It means B is expressed as an HLL (high-level language) function that reads A. Colloquially, we call these *formulas*.
 ````clojure
 (li
-    {:class (cF (when (<mget todo :completed)
+    {:class (cF (when (mget todo :completed)
                   "completed"))}
     ...)
 ````
@@ -28,8 +46,8 @@ Back to our app. In the next excerpt, the Matrix manages a `to-do` model propert
 ````clojure
 (md/make ::todo-list
     :items-raw (cI nil)
-    :items (cF (remove td-deleted (<mget me :items-raw)))
-    :empty? (cF (empty? (<mget me :items))))
+    :items (cF (remove td-deleted (mget me :items-raw)))
+    :empty? (cF (empty? (mget me :items))))
 ````
 `cI` sets that property up to tell functional  properties `:items` when `:items-raw` changes. Functional `:items` will tell functional `:empty?` if *it* has changed. `me` is like `self` or `this`, in this case being the `todo-list`.
 
@@ -40,10 +58,10 @@ What does it mean for A to tell B? It means that, when we imperatively change A,
 ````cljs
 (input {:class       "toggle"
         ::mxweb/type "checkbox"
-        :onclick     #(mswap!> todo :completed
+        :onclick     #(mswap! todo :completed
                          #(when-not [%] (util/now)})
 ````
-The Matrix property writer `mswap!>`:
+The Matrix property writer `mswap!`:
 * changes the `:completed` property of the model todo; and
 * *before returning* recomputes the :class property of the proxy `li` we saw above.
 
@@ -90,15 +108,15 @@ Here is how our TodoMVC will avoid rebuilding the full DOM list of to-dos when: 
 (ul {:class "todo-list"}
   {:kid-values  (cF (sort-by td-created
                       (<mget (mx-todos me)
-                        (case (<mget (mx-find-matrix mx) :route)
+                        (case (mget (mx-find-matrix mx) :route)
                           "All" :items
                           "Completed" :items-completed
                           "Active" :items-active))))
    :kid-key     #(<mget % :todo)
    :kid-factory (fn [me todo]
                   (todo-list-item todo))}
-  ;; cache is prior value for this implicit ':kids' slot; k-v-k uses it for diffing
-  (kid-values-kids me cache))
+  ;; _cache is prior value for this implicit ':kids' slot; k-v-k uses it for diffing
+  (kid-values-kids me _cache))
 ````
 As an exercise, try pairing  the `<mget` dependencies above with the enumerated ways the list can change. The one not evident -- changes to the completed property of a todo -- is expressed by the collections `:items` *et al* we saw defined above.
 
